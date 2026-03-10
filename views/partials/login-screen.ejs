@@ -1,0 +1,78 @@
+
+    <!--  LOGIN SCREEN  -->
+    <!-- Visible then hidden once the user authenticates -->
+    <div
+        id="loginScreen"
+        class="login-screen"
+        style="<%= isAuthenticated ? 'display: none;' : 'display: flex;' %>"
+      >
+      <div class="login-card">
+
+        <div class="login-brand">
+          <div class="brand-badge"><span>C</span></div>
+          <span class="brand-name">Change</span>
+        </div>
+
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-sub">Enter your credentials to continue</p>
+
+        <!-- Demo credentials -->
+        <div class="demo-hint">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <span> This is just a demo for our 3rd Project Report, please use these credentials: admin / 1234</span>
+        </div>
+
+        <!-- Login form -->
+        <form class="login-form" action="/login" method="POST">
+
+          <!-- Username field -->
+          <div class="lf-field">
+            <label class="lf-label" for="loginUser">Username</label>
+            <div class="lf-input-wrap">
+              <i class="fa-regular fa-user lf-icon" aria-hidden="true"></i>
+              <input id="loginUser" name="username" type="text" placeholder="Your username" autocomplete="username" />
+            </div>
+          </div>
+
+          <!-- Password field with show/hide aid -->
+          <div class="lf-field">
+            <label class="lf-label" for="loginPass">Password</label>
+            <div class="lf-input-wrap">
+              <i class="fa-solid fa-lock lf-icon" aria-hidden="true"></i>
+              <input
+                  id="loginPass"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                />
+              <button
+                id="togglePass"
+                class="lf-eye"
+                type="button"
+                tabindex="-1"
+                aria-label="Show password"
+              >
+                <i id="eyeIcon" class="fa-regular fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember user button -->
+          <label class="lf-remember">
+            <input id="rememberMe" name="rememberMe" type="checkbox" />
+            <span>Remember my session</span>
+          </label>
+
+          <!-- Error message -->
+          <p id="loginError" class="lf-error" aria-live="polite"><%= loginError %></p>
+
+          <!-- Submit button -->
+          <button id="loginBtn" class="btn-login" type="submit">
+            <span id="loginBtnText">Log In</span>
+            <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+          </button>
+
+        </form> 
+      </div> 
+    </div> 

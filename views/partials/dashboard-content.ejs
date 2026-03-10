@@ -1,0 +1,128 @@
+        <!-- Dashboard page content -->
+        <section class="content-area" aria-labelledby="pageTitle">
+          <h1 id="pageTitle" class="page-title">Employee - Dashboard</h1>
+
+          <!-- ── Summary of weekly activities ── -->
+          
+          <%- include('./stats-row') %>
+
+            
+
+          <!--  Weekly activity chart  -->
+          
+            <%- include('./activity-chart') %>
+
+          <!--  Daily report  -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <h2>Daily Report</h2>
+            </div>
+
+            <div class="report-card-body">
+
+              <!-- Completed activities.js -->
+              <div class="report-block">
+                <div class="report-block-header">
+                  <p class="block-title">Activities Completed</p>
+                  <span class="item-count">
+                    <span id="completedCount">0</span> Items
+                  </span>
+                </div>
+                <ul id="completedList" class="report-list"></ul>
+                <!-- Fallback message when the list is empty -->
+                <p id="completedHint" class="no-items-hint">No activities completed.</p>
+              </div>
+
+              <!-- Planned activities for tomorrow -->
+              <div class="report-block">
+                <div class="report-block-header">
+                  <p class="block-title">Activities Planned for Tomorrow</p>
+                  <span class="item-count">
+                    <span id="plannedCount">0</span> Items
+                  </span>
+                </div>
+                <ul id="plannedList" class="report-list"></ul>
+              </div>
+
+              <!-- Active blocker details -->
+              <div class="report-block">
+                <div class="report-block-header">
+                  <p class="block-title">Blockers</p>
+                </div>
+
+                <div class="blocker-box">
+                  <div class="blocker-icon" aria-hidden="true">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                  </div>
+                  <div class="blocker-content">
+                    <p id="blockerTitle" class="blocker-title">Database access issue</p>
+                    <p id="blockerDesc" class="blocker-desc">
+                      Cannot access the database due to an authentication error.
+                    </p>
+                    <!-- Checkbox to mark the blocker as reported -->
+                    <label class="reported-label">
+                      <input id="reportedCheckbox" type="checkbox" />
+                      <span>Reported to Team Leader</span>
+                    </label>
+                  </div>
+                </div>
+              </div> 
+
+              <!-- Report submission form -->
+              <div class="report-block form-block">
+                <div class="report-summary-header">
+                  <p class="block-title">Summary</p>
+                </div>
+
+                <!-- Two-column layout for completed and planned inputs -->
+                <div class="form-columns">
+                  <div class="form-col">
+                    <label class="form-label" for="completedInput">
+                      Completed (one per line)
+                    </label>
+                    <textarea
+                      id="completedInput"
+                      rows="5"
+                      placeholder="Completed homepage redesign&#10;Fixed responsive issues"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-col">
+                    <label class="form-label" for="plannedInput">
+                      Planned (one per line)
+                    </label>
+                    <textarea
+                      id="plannedInput"
+                      rows="5"
+                      placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
+                    ></textarea>
+                  </div>
+                </div> 
+
+                <div class="form-field">
+                  <label class="form-label" for="blockerInput">Blockers</label>
+                  <textarea
+                    id="blockerInput"
+                    rows="3"
+                    placeholder="Describe blockers here..."
+                  ></textarea>
+                </div>
+
+                <!-- Save draft  and final submit buttons -->
+                <div class="action-row">
+                  <button id="saveDraftBtn" class="btn-draft" type="button">
+                    Save as Draft
+                  </button>
+                  <button id="submitBtn" class="btn-submit" type="button">
+                    Submit Report
+                  </button>
+                </div>
+
+                <!-- Status  message-->
+                <p id="statusMessage" class="status-message" aria-live="polite"></p>
+
+              </div>
+            </div>
+          </div>
+
+        </section>

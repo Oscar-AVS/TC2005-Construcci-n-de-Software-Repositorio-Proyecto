@@ -1,0 +1,8 @@
+/* Styles  for our page, all major features have been asigned to their custom css file  */
+@import url('./base.css');
+@import url('./layout.css');
+@import url('./login.css');
+@import url('./sidebar.css');
+@import url('./topbar.css');
+@import url('./dashboard.css');
+@import url('./report.css');

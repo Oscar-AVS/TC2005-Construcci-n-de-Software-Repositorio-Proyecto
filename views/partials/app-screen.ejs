@@ -1,0 +1,20 @@
+    <!--  Main System screen  -->
+    <!-- Hidden by default then shown if the user is successfully logged in -->
+    <div
+    id="appScreen"
+    class="app"
+    style="<%= isAuthenticated ? 'display: flex' : 'display: none' %>"
+      >
+
+        <%- include('./sidebar') %> 
+
+      <!-- Main content area -->
+      <main class="main">
+
+        <%- include('./topbar') %>
+        
+        <%- include('./dashboard-content') %>
+
+
+    </main>
+    </div> 
