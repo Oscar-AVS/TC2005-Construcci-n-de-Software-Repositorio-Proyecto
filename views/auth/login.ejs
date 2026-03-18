@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../partials/head') %>
+  <body>
+    <div id="loginScreen" class="login-screen">
+      <div class="login-card">
+
+        <div class="login-brand">
+          <div class="brand-badge"><span>C</span></div>
+          <span class="brand-name">Change</span>
+        </div>
+
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-sub">Enter your credentials to continue</p>
+
+        <div class="demo-hint">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <span>Demo credentials: admin / 1234</span>
+        </div>
+
+        <form class="login-form" action="/login" method="POST">
+
+          <div class="lf-field">
+            <label class="lf-label" for="loginUser">Username</label>
+            <div class="lf-input-wrap">
+              <i class="fa-regular fa-user lf-icon" aria-hidden="true"></i>
+              <input 
+                id="loginUser" 
+                name="username" 
+                type="text" 
+                placeholder="Your username" 
+                autocomplete="username" 
+                required
+              />
+            </div>
+          </div>
+
+          <div class="lf-field">
+            <label class="lf-label" for="loginPass">Password</label>
+            <div class="lf-input-wrap">
+              <i class="fa-solid fa-lock lf-icon" aria-hidden="true"></i>
+              <input
+                id="loginPass"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                id="togglePass"
+                class="lf-eye"
+                type="button"
+                tabindex="-1"
+                aria-label="Show password"
+              >
+                <i id="eyeIcon" class="fa-regular fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <label class="lf-remember">
+            <input id="rememberMe" name="rememberMe" type="checkbox" />
+            <span>Remember my session</span>
+          </label>
+
+          <p id="loginError" class="lf-error" aria-live="polite"><%= typeof error !== 'undefined' ? error : '' %></p>
+
+          <button id="loginBtn" class="btn-login" type="submit">
+            <span>Log In</span>
+            <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+    <script>
+      const passwordInput = document.getElementById('loginPass');
+      const toggleBtn = document.getElementById('togglePass');
+      const eyeIcon = document.getElementById('eyeIcon');
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const isPassword = passwordInput.type === 'password';
+          passwordInput.type = isPassword ? 'text' : 'password';
+          eyeIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
+      }
+    </script>
+  </body>
+</html>
