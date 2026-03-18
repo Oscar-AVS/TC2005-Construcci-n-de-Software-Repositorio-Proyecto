@@ -6,10 +6,16 @@
 
   <nav class="sidebar-nav" aria-label="Main navigation">
     <ul>
-      <li class="nav-item active">
-        <a href="/empleado/dashboard">
+      <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'dashboard' ? 'active' : '' %>">
+        <a href="/employee/dashboard">
           <i class="fa-solid fa-house" aria-hidden="true"></i>
           <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'log' ? 'active' : '' %>">
+        <a href="/employee/log">
+          <i class="fa-solid fa-book" aria-hidden="true"></i>
+          <span>Log</span>
         </a>
       </li>
     </ul>

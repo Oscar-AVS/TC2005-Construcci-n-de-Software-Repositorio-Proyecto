@@ -1,0 +1,110 @@
+/* Bitacora filters */
+.filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-select,
+.filter-input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafafa;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(240, 90, 40, 0.1);
+}
+
+/* Bitacora entries */
+.bitacora-entry {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.bitacora-entry:last-child {
+  border-bottom: none;
+}
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.entry-date {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.entry-project {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff4f0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.entry-section {
+  display: flex;
+  gap: 8px;
+}
+
+.entry-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 90px;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-edit,
+.btn-delete {
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-edit {
+  color: var(--blue);
+}
+
+.btn-edit:hover {
+  text-decoration: underline;
+}
+
+.btn-delete {
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  text-decoration: underline;
+}

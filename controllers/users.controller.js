@@ -16,7 +16,7 @@ exports.postLogin = (req, res) => {
 
   // Temporary validation until database connection is implemented
   if (username === 'admin' && password === '1234') {
-    return res.redirect('/empleado/dashboard');
+    return res.redirect('/employee/dashboard');
   }
 
   res.render('auth/login', {

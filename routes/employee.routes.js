@@ -6,8 +6,9 @@
 const express = require('express');
 const router = express.Router();
 
-const empleadoController = require('../controllers/empleado.controller');
+const employeeController = require('../controllers/employee.controller');
 
-router.get('/dashboard', empleadoController.getDashboard);
+router.get('/dashboard', employeeController.getDashboard);
+router.get('/log', employeeController.getLog);
 
 module.exports = router;

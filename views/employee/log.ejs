@@ -1,0 +1,96 @@
+<h1 id="pageTitle" class="page-title">Activity Log</h1>
+
+<!-- Filters -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Activity History</h2>
+  </div>
+
+  <div class="report-card-body">
+
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="filterProject">Project</label>
+        <select id="filterProject" class="filter-select">
+          <option value="">All</option>
+          <option value="1">Project Alpha</option>
+          <option value="2">Project Beta</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateFrom">From</label>
+        <input type="date" id="filterDateFrom" class="filter-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateTo">To</label>
+        <input type="date" id="filterDateTo" class="filter-input" />
+      </div>
+
+      <button class="btn-submit" type="button">Filter</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bitacora entries -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Entries</h2>
+  </div>
+
+  <div class="report-card-body">
+
+    <div class="bitacora-entry">
+      <div class="entry-header">
+        <span class="entry-date">15 Mar 2026</span>
+        <span class="entry-project">Project Alpha</span>
+      </div>
+      <div class="entry-content">
+        <div class="entry-section">
+          <p class="entry-label">Completed:</p>
+          <p>Completed homepage redesign, Fixed responsive issues</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Planned:</p>
+          <p>Write unit tests for signup form, Review and merge PR #42</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Blockers:</p>
+          <p>Database access issue - Cannot access due to authentication error</p>
+        </div>
+      </div>
+      <div class="entry-actions">
+        <a href="#" class="btn-edit">Edit</a>
+        <a href="#" class="btn-delete">Delete</a>
+      </div>
+    </div>
+
+    <div class="bitacora-entry">
+      <div class="entry-header">
+        <span class="entry-date">14 Mar 2026</span>
+        <span class="entry-project">Project Beta</span>
+      </div>
+      <div class="entry-content">
+        <div class="entry-section">
+          <p class="entry-label">Completed:</p>
+          <p>Implemented push notifications, Updated user profile screen</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Planned:</p>
+          <p>Fix login bug on iOS, Add dark mode support</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Blockers:</p>
+          <p>None</p>
+        </div>
+      </div>
+      <div class="entry-actions">
+        <a href="#" class="btn-edit">Edit</a>
+        <a href="#" class="btn-delete">Delete</a>
+      </div>
+    </div>
+
+  </div>
+</div>
