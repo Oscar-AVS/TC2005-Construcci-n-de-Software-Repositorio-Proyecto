@@ -14,3 +14,9 @@ exports.getLog = (req, res) => {
     currentPage: 'log',
   });
 };
+
+exports.getAchievements = (req, res) => {
+  res.render('employee/achievements', {
+    currentPage: 'achievements',
+  });
+};

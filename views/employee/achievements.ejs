@@ -1,0 +1,125 @@
+<h1 id="pageTitle" class="page-title">Achievements</h1>
+
+<!-- New Achievement Form -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>New Achievement</h2>
+  </div>
+
+  <div class="report-card-body">
+    <form class="achievement-form">
+      <div class="form-field">
+        <label class="form-label" for="achievementTitle">Title</label>
+        <input 
+          type="text" 
+          id="achievementTitle" 
+          class="form-input" 
+          placeholder="e.g. Launched new payment system"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="achievementDesc">Description</label>
+        <textarea 
+          id="achievementDesc" 
+          class="form-textarea" 
+          rows="3"
+          placeholder="Describe the achievement and its impact..."
+        ></textarea>
+      </div>
+
+      <div class="form-columns">
+        <div class="form-col">
+          <label class="form-label" for="achievementProject">Project (optional)</label>
+          <select id="achievementProject" class="filter-select">
+            <option value="">None</option>
+            <option value="1">Project Alpha</option>
+            <option value="2">Project Beta</option>
+          </select>
+        </div>
+
+        <div class="form-col">
+          <label class="form-label" for="achievementGoal">Goal (optional)</label>
+          <select id="achievementGoal" class="filter-select">
+            <option value="">None</option>
+            <option value="1">Q1 Performance</option>
+            <option value="2">Security Improvements</option>
+          </select>
+        </div>
+
+        <div class="form-col">
+          <label class="form-label" for="achievementDate">Date</label>
+          <input type="date" id="achievementDate" class="filter-input" />
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-submit" type="submit">Save Achievement</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Achievements List -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>My Achievements</h2>
+  </div>
+
+  <div class="report-card-body">
+
+    <div class="achievement-card">
+      <div class="achievement-header">
+        <h3 class="achievement-title">Launched new payment system</h3>
+        <span class="achievement-date">12 Mar 2026</span>
+      </div>
+      <p class="achievement-desc">
+        Successfully deployed the new payment gateway, reducing transaction failures by 40% and improving checkout speed.
+      </p>
+      <div class="achievement-tags">
+        <span class="tag tag-project">Project Alpha</span>
+        <span class="tag tag-goal">Q1 Performance</span>
+      </div>
+      <div class="entry-actions">
+        <a href="#" class="btn-edit">Edit</a>
+        <a href="#" class="btn-delete">Delete</a>
+      </div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-header">
+        <h3 class="achievement-title">Reduced API response time by 60%</h3>
+        <span class="achievement-date">8 Mar 2026</span>
+      </div>
+      <p class="achievement-desc">
+        Optimized database queries and implemented caching, resulting in significantly faster API responses.
+      </p>
+      <div class="achievement-tags">
+        <span class="tag tag-project">Project Beta</span>
+      </div>
+      <div class="entry-actions">
+        <a href="#" class="btn-edit">Edit</a>
+        <a href="#" class="btn-delete">Delete</a>
+      </div>
+    </div>
+
+    <div class="achievement-card">
+      <div class="achievement-header">
+        <h3 class="achievement-title">Mentored 2 junior developers</h3>
+        <span class="achievement-date">1 Mar 2026</span>
+      </div>
+      <p class="achievement-desc">
+        Provided guidance and code reviews, helping them complete their first production features.
+      </p>
+      <div class="achievement-tags">
+        <span class="tag tag-goal">Team Growth</span>
+      </div>
+      <div class="entry-actions">
+        <a href="#" class="btn-edit">Edit</a>
+        <a href="#" class="btn-delete">Delete</a>
+      </div>
+    </div>
+
+  </div>
+</div>

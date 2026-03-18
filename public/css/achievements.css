@@ -1,0 +1,86 @@
+/* Achievement form */
+.achievement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafafa;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(240, 90, 40, 0.1);
+}
+
+/* Achievement cards */
+.achievement-card {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.achievement-card:last-child {
+  border-bottom: none;
+}
+
+.achievement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.achievement-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.achievement-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.achievement-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+/* Tags */
+.achievement-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag-project {
+  background: #fff4f0;
+  color: var(--accent);
+}
+
+.tag-goal {
+  background: #e0f2fe;
+  color: #0369a1;
+}
