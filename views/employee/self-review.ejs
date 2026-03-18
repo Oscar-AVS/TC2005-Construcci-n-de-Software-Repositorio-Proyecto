@@ -1,0 +1,126 @@
+<h1 id="pageTitle" class="page-title">Self-Review</h1>
+
+<!-- Period selector -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Review Period</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="reviewPeriod">Period</label>
+        <select id="reviewPeriod" class="filter-select">
+          <option value="q1-2026">Q1 2026 (Jan - Mar)</option>
+          <option value="q4-2025">Q4 2025 (Oct - Dec)</option>
+          <option value="q3-2025">Q3 2025 (Jul - Sep)</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" type="button">Load Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Self-Review Form -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Q1 2026 Self-Review</h2>
+    <span class="review-status status-draft">Draft</span>
+  </div>
+
+  <div class="report-card-body">
+    <form class="self-review-form">
+
+      <div class="form-field">
+        <label class="form-label" for="reviewAchievements">Key Achievements</label>
+        <p class="form-hint">What were your most significant accomplishments this period?</p>
+        <textarea 
+          id="reviewAchievements" 
+          class="form-textarea" 
+          rows="4"
+          placeholder="e.g. Launched payment system, reducing transaction failures by 40%..."
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="reviewWellDone">Things Done Well</label>
+        <p class="form-hint">What skills or behaviors helped you succeed?</p>
+        <textarea 
+          id="reviewWellDone" 
+          class="form-textarea" 
+          rows="4"
+          placeholder="e.g. Strong collaboration with design team, proactive communication..."
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="reviewContributions">Team Contributions</label>
+        <p class="form-hint">How did you help your team or others succeed?</p>
+        <textarea 
+          id="reviewContributions" 
+          class="form-textarea" 
+          rows="4"
+          placeholder="e.g. Mentored 2 junior developers, led code review sessions..."
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="reviewChallenges">Challenges Overcome</label>
+        <p class="form-hint">What obstacles did you face and how did you handle them?</p>
+        <textarea 
+          id="reviewChallenges" 
+          class="form-textarea" 
+          rows="4"
+          placeholder="e.g. Tight deadline for launch, resolved by prioritizing features..."
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="reviewGrowth">Areas for Growth</label>
+        <p class="form-hint">What would you like to improve or learn?</p>
+        <textarea 
+          id="reviewGrowth" 
+          class="form-textarea" 
+          rows="4"
+          placeholder="e.g. Public speaking, system design, time management..."
+        ></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-draft" type="button">Save as Draft</button>
+        <button class="btn-submit" type="submit">Submit Review</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Past Reviews -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Past Reviews</h2>
+  </div>
+
+  <div class="report-card-body">
+
+    <div class="past-review">
+      <div class="past-review-header">
+        <span class="past-review-period">Q4 2025</span>
+        <span class="review-status status-submitted">Submitted</span>
+      </div>
+      <p class="past-review-date">Submitted on Dec 15, 2025</p>
+      <a href="#" class="btn-edit">View</a>
+    </div>
+
+    <div class="past-review">
+      <div class="past-review-header">
+        <span class="past-review-period">Q3 2025</span>
+        <span class="review-status status-submitted">Submitted</span>
+      </div>
+      <p class="past-review-date">Submitted on Sep 20, 2025</p>
+      <a href="#" class="btn-edit">View</a>
+    </div>
+
+  </div>
+</div>

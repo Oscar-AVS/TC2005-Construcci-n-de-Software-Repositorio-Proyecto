@@ -11,5 +11,6 @@ const employeeController = require('../controllers/employee.controller');
 router.get('/dashboard', employeeController.getDashboard);
 router.get('/log', employeeController.getLog);
 router.get('/achievements', employeeController.getAchievements);
+router.get('/self-review', employeeController.getSelfReview);
 
 module.exports = router;

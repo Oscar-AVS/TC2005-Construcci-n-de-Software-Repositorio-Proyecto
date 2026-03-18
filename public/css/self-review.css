@@ -1,0 +1,59 @@
+/* Form hints */
+.form-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* Review status badges */
+.review-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-submitted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Self-review form */
+.self-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Past reviews */
+.past-review {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.past-review:last-child {
+  border-bottom: none;
+}
+
+.past-review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.past-review-period {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.past-review-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}

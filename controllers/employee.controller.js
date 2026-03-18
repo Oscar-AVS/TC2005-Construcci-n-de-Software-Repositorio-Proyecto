@@ -20,3 +20,9 @@ exports.getAchievements = (req, res) => {
     currentPage: 'achievements',
   });
 };
+
+exports.getSelfReview = (req, res) => {
+  res.render('employee/self-review', {
+    currentPage: 'self-review',
+  });
+};
