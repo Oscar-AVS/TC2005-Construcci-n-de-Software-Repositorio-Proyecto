@@ -313,11 +313,16 @@ const initLogin = () => {
 
 // Entry point
 document.addEventListener('DOMContentLoaded', () => {
-  initLogin();
+  const loginScreen = byId('loginScreen');
+  const activityChart = byId('activityChart');
 
-  const appScreen = byId('appScreen');
+  // Initialize login only if login screen exists
+  if (loginScreen) {
+    initLogin();
+  }
 
-  if (appScreen && appScreen.style.display !== 'none') {
+  // Initialize dashboard only if chart canvas exists
+  if (activityChart) {
     initDashboard();
   }
 });

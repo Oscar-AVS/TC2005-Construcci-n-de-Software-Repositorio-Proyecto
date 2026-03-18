@@ -32,5 +32,4 @@ app.use('/empleado', empleadoRoutes);
 // 404 handler for undefined routes
 app.use((req, res) => res.status(404).send('Page not found'));
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server: http://localhost:${PORT}`));
+app.listen(3000)
