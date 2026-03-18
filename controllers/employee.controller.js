@@ -1,6 +1,6 @@
 /**
  * Employee views controller.
- * Handles dashboard, log, achievements, self-review and projects.
+ * Handles dashboard, log, achievements, self-review, projects and profile.
  */
 
 exports.getDashboard = (req, res) => {
@@ -30,5 +30,11 @@ exports.getSelfReview = (req, res) => {
 exports.getProjects = (req, res) => {
   res.render('employee/projects', {
     currentPage: 'projects',
+  });
+};
+
+exports.getProfile = (req, res) => {
+  res.render('employee/profile', {
+    currentPage: 'profile',
   });
 };

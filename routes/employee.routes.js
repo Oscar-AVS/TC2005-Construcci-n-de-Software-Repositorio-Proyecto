@@ -13,5 +13,6 @@ router.get('/log', employeeController.getLog);
 router.get('/achievements', employeeController.getAchievements);
 router.get('/self-review', employeeController.getSelfReview);
 router.get('/projects', employeeController.getProjects);
+router.get('/profile', employeeController.getProfile);
 
 module.exports = router;
