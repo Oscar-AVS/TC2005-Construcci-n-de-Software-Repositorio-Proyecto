@@ -1,35 +1,31 @@
-<!-- Top bar menu that includes a search tool, notifications, and  user info -->
-        <header class="topbar">
-          <div class="topbar-search">
-            <span class="search-icon" aria-hidden="true">
-              <i class="fa-solid fa-magnifying-glass"></i>
-            </span>
-            <input type="text" placeholder="Search" aria-label="Search" />
-          </div>
+<header class="topbar">
+  <div class="topbar-search">
+    <span class="search-icon" aria-hidden="true">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </span>
+    <input type="text" placeholder="Search" aria-label="Search" />
+  </div>
 
-          <div class="topbar-actions">
-            <!-- Icon buttons for notifications -->
-            <button class="icon-btn" type="button" aria-label="Notifications">
-              <i class="fa-regular fa-bell" aria-hidden="true"></i>
-            </button>
-            <button class="icon-btn" type="button" aria-label="Messages">
-              <i class="fa-regular fa-envelope" aria-hidden="true"></i>
-            </button>
+  <div class="topbar-actions">
+    <button class="icon-btn" type="button" aria-label="Notifications">
+      <i class="fa-regular fa-bell" aria-hidden="true"></i>
+    </button>
+    <button class="icon-btn" type="button" aria-label="Messages">
+      <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+    </button>
 
-            <!-- Logged-in user chip with logout option  ( We used a LuisMi photo bc why not?? LOL-->
-            <div class="user-chip">
-              <div class="avatar">
-                <img
-                  id="userAvatar"
-                  src="https://wallpapercave.com/wp/wp6608939.jpg"
-                  alt="User profile picture"
-                />
-              </div>
-              <span id="userChipName" class="user-chip-name">Employee</span>
-              <a id="logoutBtn" class="logout-btn" href="/logout" title="Log out">
-                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-              </a>
-              </button>
-            </div>
-          </div>
-        </header> 
+    <div class="user-chip">
+      <div class="avatar">
+        <img
+          id="userAvatar"
+          src="https://wallpapercave.com/wp/wp6608939.jpg"
+          alt="User profile picture"
+        />
+      </div>
+      <span id="userChipName" class="user-chip-name">Employee</span>
+      <a id="logoutBtn" class="logout-btn" href="/logout" title="Log out">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</header>
