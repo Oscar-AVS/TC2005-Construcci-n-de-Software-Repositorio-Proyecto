@@ -1,13 +1,17 @@
-/* Styles  for our page, all major features have been asigned to their custom css file  */
-@import url('./base.css');
-@import url('./layout.css');
-@import url('./login.css');
-@import url('./sidebar.css');
-@import url('./topbar.css');
-@import url('./dashboard.css');
-@import url('./report.css');
-@import url('./log.css');
-@import url('./achievements.css');
-@import url('./self-review.css');
-@import url('./projects.css');
-@import url('./profile.css');
+/* Base */
+@import url('./base/base.css');
+@import url('./base/layout.css');
+
+/* Components */
+@import url('./components/sidebar.css');
+@import url('./components/topbar.css');
+@import url('./components/report.css');
+
+/* Pages */
+@import url('./pages/login.css');
+@import url('./pages/dashboard.css');
+@import url('./pages/log.css');
+@import url('./pages/achievements.css');
+@import url('./pages/self-review.css');
+@import url('./pages/projects.css');
+@import url('./pages/profile.css');

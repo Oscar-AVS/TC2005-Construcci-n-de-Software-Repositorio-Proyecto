@@ -10,3 +10,9 @@
   flex-direction: column;
   overflow: hidden;
 }
+.main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
