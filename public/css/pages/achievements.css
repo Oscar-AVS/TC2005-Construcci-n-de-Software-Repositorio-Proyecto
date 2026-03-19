@@ -1,77 +1,78 @@
-/* Achievement form */
-.achievement-form {
+/* Achievements list */
+.achievements-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fafafa;
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 14px;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  border-color: var(--accent);
-  background: var(--white);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(240, 90, 40, 0.1);
-}
-
-/* Achievement cards */
 .achievement-card {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg);
+  border-radius: 12px;
+  transition: all 0.15s;
 }
 
-.achievement-card:last-child {
-  border-bottom: none;
+.achievement-card:hover {
+  background: #f0f1f3;
+}
+
+.achievement-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff4f0 0%, #ffe8e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.achievement-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .achievement-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 8px;
 }
 
 .achievement-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 .achievement-date {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .achievement-desc {
+  font-size: 13px;
   color: var(--text-secondary);
-  font-size: 14px;
   line-height: 1.5;
   margin-bottom: 12px;
 }
 
-/* Tags */
 .achievement-tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
 }
 
 .tag {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -81,6 +82,12 @@
 }
 
 .tag-goal {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.achievement-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

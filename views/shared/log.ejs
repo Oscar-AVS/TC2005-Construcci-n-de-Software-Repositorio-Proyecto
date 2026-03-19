@@ -1,0 +1,188 @@
+<h1 id="pageTitle" class="page-title">My Activity Log</h1>
+
+<!-- Daily Report Form -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Today's Report</h2>
+    <span class="report-date">18 Mar 2026</span>
+  </div>
+
+  <div class="report-card-body">
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="completedInput">Completed (one per line)</label>
+        <textarea
+          id="completedInput"
+          rows="4"
+          placeholder="Completed homepage redesign&#10;Fixed responsive issues"
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="plannedInput">Planned for tomorrow (one per line)</label>
+        <textarea
+          id="plannedInput"
+          rows="4"
+          placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="blockerInput">Blockers</label>
+        <textarea
+          id="blockerInput"
+          rows="2"
+          placeholder="Describe any blockers..."
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="projectSelect">Project</label>
+        <select id="projectSelect" class="form-select">
+          <option value="">Select project...</option>
+          <option value="1">Internal Tools</option>
+          <option value="2">API Integration</option>
+          <option value="3">Dashboard Redesign</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-draft" type="button">Save as Draft</button>
+      <button class="btn-submit" type="button">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Entry History -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Entry History</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="filterProject">Project</label>
+        <select id="filterProject" class="form-select">
+          <option value="">All Projects</option>
+          <option value="1">Internal Tools</option>
+          <option value="2">API Integration</option>
+          <option value="3">Dashboard Redesign</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateFrom">From</label>
+        <input type="date" id="filterDateFrom" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateTo">To</label>
+        <input type="date" id="filterDateTo" class="form-input" />
+      </div>
+
+      <button class="btn-submit" type="button">Filter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Entries List -->
+<div class="entries-list">
+
+  <div class="entry-card">
+    <div class="entry-card-header">
+      <div class="entry-meta">
+        <span class="entry-date">17 Mar 2026</span>
+        <span class="entry-project-tag">Internal Tools</span>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-icon" type="button" title="Edit">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="btn-icon btn-danger" type="button" title="Delete">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="entry-card-body">
+      <div class="entry-row">
+        <span class="entry-label">Completed</span>
+        <p>Built MVC structure, Created employee views and routes</p>
+      </div>
+      <div class="entry-row">
+        <span class="entry-label">Planned</span>
+        <p>Implement team leader module</p>
+      </div>
+      <div class="entry-row">
+        <span class="entry-label">Blockers</span>
+        <p class="no-blocker">None</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="entry-card">
+    <div class="entry-card-header">
+      <div class="entry-meta">
+        <span class="entry-date">16 Mar 2026</span>
+        <span class="entry-project-tag purple">Dashboard Redesign</span>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-icon" type="button" title="Edit">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="btn-icon btn-danger" type="button" title="Delete">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="entry-card-body">
+      <div class="entry-row">
+        <span class="entry-label">Completed</span>
+        <p>Designed stats cards, Implemented sidebar navigation</p>
+      </div>
+      <div class="entry-row">
+        <span class="entry-label">Planned</span>
+        <p>Add activity chart with Chart.js</p>
+      </div>
+      <div class="entry-row">
+        <span class="entry-label">Blockers</span>
+        <p class="no-blocker">None</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="entry-card">
+    <div class="entry-card-header">
+      <div class="entry-meta">
+        <span class="entry-date">15 Mar 2026</span>
+        <span class="entry-project-tag blue">API Integration</span>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-icon" type="button" title="Edit">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="btn-icon btn-danger" type="button" title="Delete">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="entry-card-body">
+      <div class="entry-row">
+        <span class="entry-label">Completed</span>
+        <p>Set up Express routes, Configured MySQL connection</p>
+      </div>
+      <div class="entry-row">
+        <span class="entry-label">Planned</span>
+        <p>Create user authentication middleware</p>
+      </div>
+      <div class="entry-row has-blocker">
+        <span class="entry-label">Blockers</span>
+        <p>Waiting for database credentials</p>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,4 +1,4 @@
-<h1 id="pageTitle" class="page-title">Employee - Dashboard</h1>
+<h1 id="pageTitle" class="page-title">Employee Dashboard</h1>
 
 <%- include('../partials/stats-row') %>
 
@@ -6,103 +6,50 @@
 
 <div class="report-card">
   <div class="report-card-header">
-    <h2>Daily Report</h2>
+    <h2>Today's Activities</h2>
+    <span class="report-date">18 Mar 2026</span>
   </div>
 
   <div class="report-card-body">
-
-    <div class="report-block">
-      <div class="report-block-header">
-        <p class="block-title">Activities Completed</p>
-        <span class="item-count">
-          <span id="completedCount">0</span> Items
-        </span>
-      </div>
-      <ul id="completedList" class="report-list"></ul>
-      <p id="completedHint" class="no-items-hint">No activities completed.</p>
+    <div class="activities-summary">
+      <span class="summary-item">
+        <span class="summary-count" id="completedCount">0</span> completed
+      </span>
+      <span class="summary-divider">•</span>
+      <span class="summary-item">
+        <span class="summary-count" id="pendingCount">4</span> pending
+      </span>
     </div>
 
-    <div class="report-block">
-      <div class="report-block-header">
-        <p class="block-title">Activities Planned for Tomorrow</p>
-        <span class="item-count">
-          <span id="plannedCount">0</span> Items
-        </span>
-      </div>
-      <ul id="plannedList" class="report-list"></ul>
-    </div>
-
-    <div class="report-block">
-      <div class="report-block-header">
-        <p class="block-title">Blockers</p>
-      </div>
-
-      <div class="blocker-box">
-        <div class="blocker-icon" aria-hidden="true">
-          <i class="fa-solid fa-circle-exclamation"></i>
-        </div>
-        <div class="blocker-content">
-          <p id="blockerTitle" class="blocker-title">Database access issue</p>
-          <p id="blockerDesc" class="blocker-desc">
-            Cannot access the database due to an authentication error.
-          </p>
-          <label class="reported-label">
-            <input id="reportedCheckbox" type="checkbox" />
-            <span>Reported to Team Leader</span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="report-block form-block">
-      <div class="report-summary-header">
-        <p class="block-title">Summary</p>
-      </div>
-
-      <div class="form-columns">
-        <div class="form-col">
-          <label class="form-label" for="completedInput">
-            Completed (one per line)
-          </label>
-          <textarea
-            id="completedInput"
-            rows="5"
-            placeholder="Completed homepage redesign&#10;Fixed responsive issues"
-          ></textarea>
-        </div>
-
-        <div class="form-col">
-          <label class="form-label" for="plannedInput">
-            Planned (one per line)
-          </label>
-          <textarea
-            id="plannedInput"
-            rows="5"
-            placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
-          ></textarea>
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="blockerInput">Blockers</label>
-        <textarea
-          id="blockerInput"
-          rows="3"
-          placeholder="Describe blockers here..."
-        ></textarea>
-      </div>
-
-      <div class="action-row">
-        <button id="saveDraftBtn" class="btn-draft" type="button">
-          Save as Draft
-        </button>
-        <button id="submitBtn" class="btn-submit" type="button">
-          Submit Report
-        </button>
-      </div>
-
-      <p id="statusMessage" class="status-message" aria-live="polite"></p>
-    </div>
-
+    <ul class="activity-list" id="activityList">
+      <li class="activity-item">
+        <label class="activity-check">
+          <input type="checkbox" />
+          <span class="checkmark"></span>
+        </label>
+        <span class="activity-text">Completed homepage redesign</span>
+      </li>
+      <li class="activity-item">
+        <label class="activity-check">
+          <input type="checkbox" />
+          <span class="checkmark"></span>
+        </label>
+        <span class="activity-text">Fixed responsive issues</span>
+      </li>
+      <li class="activity-item">
+        <label class="activity-check">
+          <input type="checkbox" />
+          <span class="checkmark"></span>
+        </label>
+        <span class="activity-text">Write unit tests for signup form</span>
+      </li>
+      <li class="activity-item">
+        <label class="activity-check">
+          <input type="checkbox" />
+          <span class="checkmark"></span>
+        </label>
+        <span class="activity-text">Review and merge PR #42</span>
+      </li>
+    </ul>
   </div>
 </div>

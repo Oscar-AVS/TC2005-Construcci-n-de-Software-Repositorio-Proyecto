@@ -1,37 +1,312 @@
-/* Team log entry member badge */
-.entry-member {
+/* ========================================
+   DASHBOARD STYLES
+   ======================================== */
+
+/* Stats row - 4 columns grid */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-icon-green {
+  background: #dcfce7;
+  color: var(--green);
+}
+
+/* Dashboard two-column grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header with icon */
+.header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-with-icon i {
+  font-size: 16px;
+}
+
+.header-with-icon.warning i {
+  color: var(--yellow);
+}
+
+.header-with-icon.warning h2 {
+  color: var(--yellow);
+}
+
+/* Link action */
+.link-action {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.link-action:hover {
+  text-decoration: underline;
+}
+
+/* Blockers card with left border */
+.blockers-card {
+  border-left: 4px solid var(--yellow);
+}
+
+.blocker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blocker-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #fffbeb;
+  border-radius: 8px;
+}
+
+.blocker-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.blocker-content {
+  flex: 1;
+}
+
+.blocker-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.blocker-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.blocker-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Members overview - dashboard mini version */
+.members-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.member-info-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-info-mini img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.member-name-mini {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.member-role-mini {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.member-week-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-entries {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.member-status-badge {
   padding: 4px 10px;
   border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
-/* Member cards */
+.member-status-badge.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.member-status-badge.blocked {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Activity feed */
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.feed-item:hover {
+  background: var(--bg);
+}
+
+.feed-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.feed-icon.green {
+  background: #dcfce7;
+  color: var(--green);
+}
+
+.feed-icon.yellow {
+  background: #fef3c7;
+  color: var(--yellow);
+}
+
+.feed-icon.accent {
+  background: #fff4f0;
+  color: var(--accent);
+}
+
+.feed-content {
+  flex: 1;
+}
+
+.feed-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.feed-author {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.feed-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Quick actions grid */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.quick-action-btn:hover {
+  background: #ffe8e0;
+}
+
+.quick-action-btn i {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.quick-action-btn span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+/* ========================================
+   TEAM MEMBERS PAGE STYLES
+   ======================================== */
+
 .member-card {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 20px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.15s;
 }
 
 .member-card:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
-.member-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  overflow: hidden;
+.member-card:hover {
+  background: #f0f1f3;
 }
 
 .member-avatar img {
-  width: 100%;
-  height: 100%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 3px solid var(--white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .member-info {
@@ -40,15 +315,16 @@
 
 .member-name {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .member-role {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
 .member-email {
@@ -58,21 +334,519 @@
 
 .member-stats {
   text-align: center;
+  padding: 0 20px;
 }
 
-.stat-item {
+.member-stats .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
 }
 
-.stat-value {
+.member-stats .stat-value {
   font-size: 24px;
   font-weight: 700;
   color: var(--accent);
 }
 
-.stat-label {
-  font-size: 12px;
+.member-stats .stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.member-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Icon buttons */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
   color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-icon:hover {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.btn-icon.btn-danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+/* ========================================
+   TEAM LOG STYLES
+   ======================================== */
+
+.team-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.team-entry-card {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid var(--green);
+}
+
+.team-entry-card.has-blocker {
+  border-left-color: var(--yellow);
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.entry-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.entry-author img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.author-role {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.entry-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.entry-project {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f3e8ff;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.entry-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.entry-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.entry-section {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 110px;
+  padding: 4px 0;
+}
+
+.section-label.completed {
+  color: var(--green);
+}
+
+.section-label.planned {
+  color: var(--blue);
+}
+
+.section-label.blocker {
+  color: var(--yellow);
+}
+
+.entry-section p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Item count badge */
+.item-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ========================================
+   TEAM REPORT STYLES
+   ======================================== */
+
+.report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.report-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+
+.report-stat-card i {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.report-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.report-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.report-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.report-sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.report-section-card {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.report-section-card.warning {
+  background: #fffbeb;
+}
+
+.report-section-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.report-section-card .section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.report-section-card .section-header i {
+  font-size: 16px;
+  color: var(--accent);
+}
+
+.report-section-card.warning .section-header i {
+  color: var(--yellow);
+}
+
+.report-section-card .section-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.report-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-list.success li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.report-list.success li::before {
+  content: "✓";
+  color: var(--green);
+  font-weight: 700;
+}
+
+.report-list.blockers li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.report-list.blockers li:last-child {
+  border-bottom: none;
+}
+
+.blocker-owner {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.blocker-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Member activity breakdown bars */
+.member-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 80px;
+  align-items: center;
+  gap: 16px;
+}
+
+.breakdown-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.breakdown-member img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.breakdown-member span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.breakdown-bar {
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 5px;
+}
+
+.breakdown-value {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Export buttons - small version */
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-export:hover {
+  background: var(--bg);
+  border-color: var(--text-muted);
+}
+
+.btn-export i {
+  font-size: 14px;
+}
+
+.btn-export .fa-file-pdf {
+  color: #dc2626;
+}
+
+.btn-export .fa-file-excel {
+  color: #16a34a;
+}
+
+/* Header actions container */
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Action row aligned left - for export buttons at bottom */
+.action-row-left {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Large export buttons */
+.btn-export-large {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-export-large:hover {
+  background: var(--bg);
+  border-color: var(--text-muted);
+}
+
+.btn-export-large i {
+  font-size: 16px;
+}
+
+.btn-export-large .fa-file-pdf {
+  color: #dc2626;
+}
+
+.btn-export-large .fa-file-excel {
+  color: #16a34a;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .report-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .member-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .member-stats {
+    padding: 0;
+  }
+
+  .member-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .breakdown-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .entry-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .entry-meta {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .member-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .report-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-row-left {
+    flex-direction: column;
+  }
 }
