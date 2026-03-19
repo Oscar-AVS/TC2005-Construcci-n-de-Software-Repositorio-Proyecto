@@ -1,0 +1,206 @@
+<h1 id="pageTitle" class="page-title">Project Manager Dashboard</h1>
+
+<!-- Stats Row -->
+<div class="pm-stats-row">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <i class="fa-solid fa-folder-open"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">3</p>
+      <p class="stat-label">Active Projects</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">12</p>
+      <p class="stat-label">Team Members</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon yellow">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">3</p>
+      <p class="stat-label">Active Blockers</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon accent">
+      <i class="fa-solid fa-check-circle"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">1</p>
+      <p class="stat-label">Completed This Month</p>
+    </div>
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div class="pm-dashboard-grid">
+  <!-- Projects Overview -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Projects Overview</h2>
+      <a href="/project-manager/projects" class="btn-link">View All</a>
+    </div>
+
+    <div class="report-card-body">
+      <div class="projects-summary">
+        <!-- Project 1 -->
+        <div class="project-summary-card">
+          <div class="project-summary-header">
+            <div class="project-summary-info">
+              <h3 class="project-summary-name">Internal Tools</h3>
+              <span class="project-status active">Active</span>
+            </div>
+          </div>
+          <div class="project-summary-meta">
+            <span><i class="fa-solid fa-users"></i> 4 members</span>
+            <span><i class="fa-solid fa-calendar"></i> Due Mar 30</span>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-summary-card">
+          <div class="project-summary-header">
+            <div class="project-summary-info">
+              <h3 class="project-summary-name">API Integration</h3>
+              <span class="project-status on-hold">On Hold</span>
+            </div>
+          </div>
+          <div class="project-summary-meta">
+            <span><i class="fa-solid fa-users"></i> 3 members</span>
+            <span><i class="fa-solid fa-calendar"></i> Due Apr 15</span>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-summary-card">
+          <div class="project-summary-header">
+            <div class="project-summary-info">
+              <h3 class="project-summary-name">Dashboard Redesign</h3>
+              <span class="project-status completed">Completed</span>
+            </div>
+          </div>
+          <div class="project-summary-meta">
+            <span><i class="fa-solid fa-users"></i> 5 members</span>
+            <span><i class="fa-solid fa-calendar"></i> Delivered Mar 10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Blockers -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Active Blockers</h2>
+      <span class="item-count">3 blockers</span>
+    </div>
+
+    <div class="report-card-body">
+      <div class="blockers-list">
+        <div class="blocker-item critical">
+          <div class="blocker-priority">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="blocker-content">
+            <p class="blocker-title">Waiting for production server access</p>
+            <div class="blocker-meta">
+              <span class="blocker-project">API Integration</span>
+              <span class="blocker-author">Oscar Vilchis</span>
+              <span class="blocker-date">2 days ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="blocker-item medium">
+          <div class="blocker-priority">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="blocker-content">
+            <p class="blocker-title">Design specs incomplete for mobile views</p>
+            <div class="blocker-meta">
+              <span class="blocker-project">Internal Tools</span>
+              <span class="blocker-author">Lakshmi Martinez</span>
+              <span class="blocker-date">1 day ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="blocker-item low">
+          <div class="blocker-priority">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="blocker-content">
+            <p class="blocker-title">Need clarification on auth flow requirements</p>
+            <div class="blocker-meta">
+              <span class="blocker-project">Internal Tools</span>
+              <span class="blocker-author">Francisco Arreola</span>
+              <span class="blocker-date">3 days ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Recent Activity</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="activity-timeline">
+      <div class="activity-item">
+        <div class="activity-icon green">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="activity-content">
+          <p class="activity-text"><strong>Dashboard Redesign</strong> marked as completed</p>
+          <span class="activity-time">Today at 2:30 PM</span>
+        </div>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-icon blue">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="activity-content">
+          <p class="activity-text"><strong>Víctor Esquivel</strong> added to API Integration</p>
+          <span class="activity-time">Today at 11:00 AM</span>
+        </div>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-icon yellow">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="activity-content">
+          <p class="activity-text"><strong>Oscar Vilchis</strong> reported a blocker on API Integration</p>
+          <span class="activity-time">Yesterday at 4:15 PM</span>
+        </div>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-icon accent">
+          <i class="fa-solid fa-pause"></i>
+        </div>
+        <div class="activity-content">
+          <p class="activity-text"><strong>API Integration</strong> put on hold</p>
+          <span class="activity-time">Mar 15 at 9:00 AM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

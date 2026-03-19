@@ -1,0 +1,198 @@
+<h1 id="pageTitle" class="page-title">Reports</h1>
+
+<!-- Filters -->
+<div class="report-card filters-card">
+  <div class="report-card-header">
+    <h2>Filter Reports</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="form-label" for="filterProject">Project</label>
+        <select id="filterProject" class="form-select">
+          <option value="">All Projects</option>
+          <option value="1">Internal Tools</option>
+          <option value="2">API Integration</option>
+          <option value="3">Dashboard Redesign</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterTeam">Team</label>
+        <select id="filterTeam" class="form-select">
+          <option value="">All Teams</option>
+          <option value="1">Mufasa Solutions</option>
+          <option value="2">Phoenix Team</option>
+          <option value="3">Delta Squad</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterFrom">From</label>
+        <input type="date" id="filterFrom" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterTo">To</label>
+        <input type="date" id="filterTo" class="form-input" />
+      </div>
+
+      <button class="btn-submit" type="button">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export Actions -->
+<div class="export-bar">
+  <div class="export-info">
+    <span>Showing data for <strong>All Projects</strong> • Last 30 days</span>
+  </div>
+  <div class="export-buttons">
+    <button class="btn-export" type="button">
+      <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn-export" type="button">
+      <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+  </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="pm-stats-row">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <i class="fa-solid fa-folder-open"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">3</p>
+      <p class="stat-label">Active Projects</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <i class="fa-solid fa-check-circle"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">1</p>
+      <p class="stat-label">Completed</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon yellow">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">8</p>
+      <p class="stat-label">Blockers Resolved</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon accent">
+      <i class="fa-solid fa-clipboard-list"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">156</p>
+      <p class="stat-label">Log Entries</p>
+    </div>
+  </div>
+</div>
+
+<!-- Projects Performance -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Projects Overview</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="performance-table">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Team</th>
+            <th>Members</th>
+            <th>Status</th>
+            <th>Blockers</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Internal Tools</strong></td>
+            <td>Mufasa Solutions</td>
+            <td>4</td>
+            <td><span class="status-badge active">Active</span></td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><strong>API Integration</strong></td>
+            <td>Phoenix Team</td>
+            <td>3</td>
+            <td><span class="status-badge on-hold">On Hold</span></td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td><strong>Dashboard Redesign</strong></td>
+            <td>Delta Squad</td>
+            <td>5</td>
+            <td><span class="status-badge completed">Completed</span></td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Activity Log -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Activity Log</h2>
+    <span class="item-count">Last 30 days</span>
+  </div>
+
+  <div class="report-card-body">
+    <div class="activity-log-list">
+      <div class="activity-log-item">
+        <div class="log-date">Mar 19</div>
+        <div class="log-entries">
+          <div class="log-entry">
+            <span class="log-time">2:30 PM</span>
+            <span class="log-text"><strong>Dashboard Redesign</strong> marked as completed</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">11:00 AM</span>
+            <span class="log-text"><strong>Víctor Esquivel</strong> added to API Integration</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-log-item">
+        <div class="log-date">Mar 18</div>
+        <div class="log-entries">
+          <div class="log-entry">
+            <span class="log-time">4:15 PM</span>
+            <span class="log-text"><strong>Oscar Vilchis</strong> reported blocker on API Integration</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">10:00 AM</span>
+            <span class="log-text"><strong>Lakshmi Martinez</strong> uploaded wireframes for Internal Tools</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-log-item">
+        <div class="log-date">Mar 15</div>
+        <div class="log-entries">
+          <div class="log-entry">
+            <span class="log-time">9:00 AM</span>
+            <span class="log-text"><strong>API Integration</strong> project put on hold</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
