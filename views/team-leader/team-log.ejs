@@ -1,0 +1,111 @@
+<h1 id="pageTitle" class="page-title">Team Activity Log</h1>
+
+<!-- Filters -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Filter Entries</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="filterMember">Team Member</label>
+        <select id="filterMember" class="filter-select">
+          <option value="">All Members</option>
+          <option value="1">John Doe</option>
+          <option value="2">Jane Smith</option>
+          <option value="3">Mike Johnson</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateFrom">From</label>
+        <input type="date" id="filterDateFrom" class="filter-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterDateTo">To</label>
+        <input type="date" id="filterDateTo" class="filter-input" />
+      </div>
+
+      <button class="btn-submit" type="button">Filter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team Log Entries -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Entries</h2>
+  </div>
+
+  <div class="report-card-body">
+
+    <div class="log-entry">
+      <div class="entry-header">
+        <span class="entry-date">18 Mar 2026</span>
+        <span class="entry-member">John Doe</span>
+        <span class="entry-project">Project Alpha</span>
+      </div>
+      <div class="entry-content">
+        <div class="entry-section">
+          <p class="entry-label">Completed:</p>
+          <p>Fixed authentication bug, Updated user dashboard</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Planned:</p>
+          <p>Implement password reset flow</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Blockers:</p>
+          <p>None</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="entry-header">
+        <span class="entry-date">18 Mar 2026</span>
+        <span class="entry-member">Jane Smith</span>
+        <span class="entry-project">Project Alpha</span>
+      </div>
+      <div class="entry-content">
+        <div class="entry-section">
+          <p class="entry-label">Completed:</p>
+          <p>Designed new onboarding screens</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Planned:</p>
+          <p>Create prototype for review</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Blockers:</p>
+          <p>Waiting for API documentation</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="entry-header">
+        <span class="entry-date">17 Mar 2026</span>
+        <span class="entry-member">Mike Johnson</span>
+        <span class="entry-project">Project Beta</span>
+      </div>
+      <div class="entry-content">
+        <div class="entry-section">
+          <p class="entry-label">Completed:</p>
+          <p>Set up CI/CD pipeline, Configured staging environment</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Planned:</p>
+          <p>Add automated tests to pipeline</p>
+        </div>
+        <div class="entry-section">
+          <p class="entry-label">Blockers:</p>
+          <p>None</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

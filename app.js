@@ -24,10 +24,12 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 const usersRoutes = require('./routes/users.routes');
 const employeeRoutes = require('./routes/employee.routes');
+const teamLeaderRoutes = require('./routes/team-leader.routes');
 
 app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', usersRoutes);
 app.use('/employee', employeeRoutes);
+app.use('/team-leader', teamLeaderRoutes);
 
 // 404 handler for undefined routes
 app.use((req, res) => res.status(404).send('Page not found'));
