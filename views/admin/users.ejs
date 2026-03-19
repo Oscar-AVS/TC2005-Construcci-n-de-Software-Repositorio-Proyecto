@@ -1,0 +1,215 @@
+<!-- Admin Users View -->
+<h1 id="pageTitle" class="page-title">Users Management</h1>
+
+<!-- Add User Card -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Add New User</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="userName">Full Name</label>
+        <input type="text" id="userName" class="form-input" placeholder="Enter full name..." />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="userEmail">Email</label>
+        <input type="email" id="userEmail" class="form-input" placeholder="email@change.org" />
+      </div>
+    </div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="userRole">Role</label>
+        <select id="userRole" class="form-select">
+          <option value="">Select role...</option>
+          <option value="employee">Employee</option>
+          <option value="team-leader">Team Leader</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="userTeam">Assign to Team</label>
+        <select id="userTeam" class="form-select">
+          <option value="">Select team...</option>
+          <option value="1">Mufasa Solutions</option>
+          <option value="2">Phoenix Team</option>
+          <option value="3">Delta Squad</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-submit" type="button">
+        <i class="fa-solid fa-user-plus"></i> Create User
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="report-card users-table-card">
+  <div class="report-card-header">
+    <h2>All Users</h2>
+    <span class="item-count">47 users</span>
+  </div>
+
+  <div class="report-card-body" style="padding: 0 0 0 0;">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Team</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
+              <div class="user-cell-info">
+                <span class="user-cell-name">Francisco Arreola</span>
+                <span class="user-cell-email">francisco.arreola@change.org</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge employee">Employee</span></td>
+          <td>Mufasa Solutions</td>
+          <td><span class="status-badge active">Active</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon" type="button" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Reset Password">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button class="btn-icon btn-danger" type="button" title="Deactivate">
+                <i class="fa-solid fa-user-slash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
+              <div class="user-cell-info">
+                <span class="user-cell-name">Lakshmi Martinez Jara</span>
+                <span class="user-cell-email">lakshmi.martinez@change.org</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge employee">Employee</span></td>
+          <td>Mufasa Solutions</td>
+          <td><span class="status-badge active">Active</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon" type="button" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Reset Password">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button class="btn-icon btn-danger" type="button" title="Deactivate">
+                <i class="fa-solid fa-user-slash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
+              <div class="user-cell-info">
+                <span class="user-cell-name">Oscar Vilchis</span>
+                <span class="user-cell-email">oscar.vilchis@change.org</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge team-leader">Team Leader</span></td>
+          <td>Mufasa Solutions</td>
+          <td><span class="status-badge active">Active</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon" type="button" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Reset Password">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button class="btn-icon btn-danger" type="button" title="Deactivate">
+                <i class="fa-solid fa-user-slash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Víctor Esquivel" />
+              <div class="user-cell-info">
+                <span class="user-cell-name">Víctor Esquivel</span>
+                <span class="user-cell-email">victor.esquivel@change.org</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge manager">Manager</span></td>
+          <td>—</td>
+          <td><span class="status-badge active">Active</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon" type="button" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Reset Password">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button class="btn-icon btn-danger" type="button" title="Deactivate">
+                <i class="fa-solid fa-user-slash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Ana García" />
+              <div class="user-cell-info">
+                <span class="user-cell-name">Ana García</span>
+                <span class="user-cell-email">ana.garcia@change.org</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge employee">Employee</span></td>
+          <td>Phoenix Team</td>
+          <td><span class="status-badge inactive">Inactive</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon" type="button" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Reset Password">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button class="btn-icon" type="button" title="Activate">
+                <i class="fa-solid fa-user-check"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

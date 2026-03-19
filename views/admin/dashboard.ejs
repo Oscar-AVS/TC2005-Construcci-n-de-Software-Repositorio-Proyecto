@@ -1,0 +1,224 @@
+<!-- Admin Dashboard View -->
+<h1 id="pageTitle" class="page-title">System Dashboard</h1>
+
+<!-- System Stats -->
+<div class="admin-stats-row three-cols">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-blue" aria-hidden="true">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">47</p>
+      <p class="stat-label">Total Users</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-accent" aria-hidden="true">
+      <i class="fa-solid fa-people-group"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">8</p>
+      <p class="stat-label">Active Teams</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-green" aria-hidden="true">
+      <i class="fa-solid fa-plug"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value">3</p>
+      <p class="stat-label">Integrations</p>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Grid -->
+<div class="dashboard-grid">
+
+  <!-- Left Column -->
+  <div class="dashboard-column">
+
+    <!-- Users by Role -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <h2>Users by Role</h2>
+      </div>
+
+      <div class="report-card-body">
+        <div class="role-breakdown">
+          <div class="role-breakdown-item">
+            <div class="role-breakdown-info">
+              <span class="role-breakdown-label">Employees</span>
+              <span class="role-breakdown-count">32</span>
+            </div>
+            <div class="role-breakdown-bar">
+              <div class="role-breakdown-fill employee" style="width: 68%;"></div>
+            </div>
+          </div>
+
+          <div class="role-breakdown-item">
+            <div class="role-breakdown-info">
+              <span class="role-breakdown-label">Team Leaders</span>
+              <span class="role-breakdown-count">8</span>
+            </div>
+            <div class="role-breakdown-bar">
+              <div class="role-breakdown-fill team-leader" style="width: 17%;"></div>
+            </div>
+          </div>
+
+          <div class="role-breakdown-item">
+            <div class="role-breakdown-info">
+              <span class="role-breakdown-label">Managers</span>
+              <span class="role-breakdown-count">5</span>
+            </div>
+            <div class="role-breakdown-bar">
+              <div class="role-breakdown-fill manager" style="width: 11%;"></div>
+            </div>
+          </div>
+
+          <div class="role-breakdown-item">
+            <div class="role-breakdown-info">
+              <span class="role-breakdown-label">Admins</span>
+              <span class="role-breakdown-count">2</span>
+            </div>
+            <div class="role-breakdown-bar">
+              <div class="role-breakdown-fill admin" style="width: 4%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <h2>Quick Actions</h2>
+      </div>
+
+      <div class="report-card-body">
+        <div class="quick-actions">
+          <a href="/admin/users" class="quick-action-btn">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Add User</span>
+          </a>
+          <a href="/admin/teams" class="quick-action-btn">
+            <i class="fa-solid fa-people-group"></i>
+            <span>New Team</span>
+          </a>
+          <a href="/admin/integrations" class="quick-action-btn">
+            <i class="fa-solid fa-plug"></i>
+            <span>Integrations</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column -->
+  <div class="dashboard-column">
+
+    <!-- Recent Users -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <h2>Recent Users</h2>
+        <a href="/admin/users" class="view-all-link">View all</a>
+      </div>
+
+      <div class="report-card-body">
+        <div class="recent-users-list">
+          <div class="recent-user-item">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Carlos Mendez" />
+            <div class="recent-user-info">
+              <span class="recent-user-name">Carlos Mendez</span>
+              <span class="recent-user-role">Employee</span>
+            </div>
+            <span class="recent-user-date">Today</span>
+          </div>
+
+          <div class="recent-user-item">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Sofia Torres" />
+            <div class="recent-user-info">
+              <span class="recent-user-name">Sofia Torres</span>
+              <span class="recent-user-role">Employee</span>
+            </div>
+            <span class="recent-user-date">Yesterday</span>
+          </div>
+
+          <div class="recent-user-item">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Juan Perez" />
+            <div class="recent-user-info">
+              <span class="recent-user-name">Juan Perez</span>
+              <span class="recent-user-role">Team Leader</span>
+            </div>
+            <span class="recent-user-date">Mar 15</span>
+          </div>
+
+          <div class="recent-user-item">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Ana García" />
+            <div class="recent-user-info">
+              <span class="recent-user-name">Ana García</span>
+              <span class="recent-user-role">Employee</span>
+            </div>
+            <span class="recent-user-date">Mar 12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <h2>Recent Activity</h2>
+      </div>
+
+      <div class="report-card-body">
+        <div class="admin-activity-list">
+          <div class="admin-activity-item">
+            <div class="activity-icon user">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="activity-info">
+              <p class="activity-text">New user <strong>Carlos Mendez</strong> created</p>
+              <p class="activity-time">10 minutes ago</p>
+            </div>
+          </div>
+
+          <div class="admin-activity-item">
+            <div class="activity-icon team">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="activity-info">
+              <p class="activity-text"><strong>Phoenix Team</strong> added 2 new members</p>
+              <p class="activity-time">1 hour ago</p>
+            </div>
+          </div>
+
+          <div class="admin-activity-item">
+            <div class="activity-icon role">
+              <i class="fa-solid fa-shield"></i>
+            </div>
+            <div class="activity-info">
+              <p class="activity-text">Role permissions updated for <strong>Team Leader</strong></p>
+              <p class="activity-time">3 hours ago</p>
+            </div>
+          </div>
+
+          <div class="admin-activity-item">
+            <div class="activity-icon integration">
+              <i class="fa-solid fa-plug"></i>
+            </div>
+            <div class="activity-info">
+              <p class="activity-text"><strong>GitHub</strong> integration connected</p>
+              <p class="activity-time">Yesterday</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

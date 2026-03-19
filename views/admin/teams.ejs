@@ -1,0 +1,208 @@
+<!-- Admin Teams View -->
+<h1 id="pageTitle" class="page-title">Teams Management</h1>
+
+<!-- Add Team Card -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Create New Team</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="teamName">Team Name</label>
+        <input type="text" id="teamName" class="form-input" placeholder="Enter team name..." />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="teamLeader">Team Leader</label>
+        <select id="teamLeader" class="form-select">
+          <option value="">Select team leader...</option>
+          <option value="1">Oscar Vilchis</option>
+          <option value="2">Carlos Mendez</option>
+          <option value="3">Maria Lopez</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-submit" type="button">
+        <i class="fa-solid fa-people-group"></i> Create Team
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Teams Grid -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>All Teams</h2>
+    <span class="item-count">8 teams</span>
+  </div>
+
+  <div class="report-card-body">
+    <div class="teams-grid">
+
+      <!-- Team 1 -->
+      <div class="team-card">
+        <div class="team-card-header">
+          <div>
+            <h3 class="team-card-title">Mufasa Solutions</h3>
+            <p class="team-card-leader">Leader: <span>Oscar Vilchis</span></p>
+          </div>
+          <div class="team-card-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="team-members-preview">
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
+            <span class="team-member-name">Francisco Arreola</span>
+            <span class="team-member-role">Full Stack</span>
+          </div>
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez" />
+            <span class="team-member-name">Lakshmi Martinez</span>
+            <span class="team-member-role">UI/UX</span>
+          </div>
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
+            <span class="team-member-name">Oscar Vilchis</span>
+            <span class="team-member-role">Backend</span>
+          </div>
+        </div>
+
+        <div class="team-card-footer">
+          <span class="team-stat">
+            <i class="fa-solid fa-users"></i> 3 members
+          </span>
+          <button class="btn-icon" type="button" title="Add member">
+            <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Team 2 -->
+      <div class="team-card">
+        <div class="team-card-header">
+          <div>
+            <h3 class="team-card-title">Phoenix Team</h3>
+            <p class="team-card-leader">Leader: <span>Carlos Mendez</span></p>
+          </div>
+          <div class="team-card-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="team-members-preview">
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Carlos Mendez" />
+            <span class="team-member-name">Carlos Mendez</span>
+            <span class="team-member-role">Lead Dev</span>
+          </div>
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Sofia Torres" />
+            <span class="team-member-name">Sofia Torres</span>
+            <span class="team-member-role">Frontend</span>
+          </div>
+        </div>
+
+        <div class="team-card-footer">
+          <span class="team-stat">
+            <i class="fa-solid fa-users"></i> 4 members
+          </span>
+          <button class="btn-icon" type="button" title="Add member">
+            <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Team 3 -->
+      <div class="team-card">
+        <div class="team-card-header">
+          <div>
+            <h3 class="team-card-title">Delta Squad</h3>
+            <p class="team-card-leader">Leader: <span>Maria Lopez</span></p>
+          </div>
+          <div class="team-card-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="team-members-preview">
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Maria Lopez" />
+            <span class="team-member-name">Maria Lopez</span>
+            <span class="team-member-role">Tech Lead</span>
+          </div>
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Juan Perez" />
+            <span class="team-member-name">Juan Perez</span>
+            <span class="team-member-role">DevOps</span>
+          </div>
+        </div>
+
+        <div class="team-card-footer">
+          <span class="team-stat">
+            <i class="fa-solid fa-users"></i> 5 members
+          </span>
+          <button class="btn-icon" type="button" title="Add member">
+            <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Team 4 -->
+      <div class="team-card">
+        <div class="team-card-header">
+          <div>
+            <h3 class="team-card-title">Alpha Unit</h3>
+            <p class="team-card-leader">Leader: <span>Roberto Silva</span></p>
+          </div>
+          <div class="team-card-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="team-members-preview">
+          <div class="team-member-row">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Roberto Silva" />
+            <span class="team-member-name">Roberto Silva</span>
+            <span class="team-member-role">Architect</span>
+          </div>
+        </div>
+
+        <div class="team-card-footer">
+          <span class="team-stat">
+            <i class="fa-solid fa-users"></i> 3 members
+          </span>
+          <button class="btn-icon" type="button" title="Add member">
+            <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

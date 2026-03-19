@@ -26,12 +26,14 @@ const usersRoutes = require('./routes/users.routes');
 const employeeRoutes = require('./routes/employee.routes');
 const teamLeaderRoutes = require('./routes/team-leader.routes');
 const managerRoutes = require('./routes/manager.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', usersRoutes);
 app.use('/employee', employeeRoutes);
 app.use('/team-leader', teamLeaderRoutes);
 app.use('/manager', managerRoutes);
+app.use('/admin', adminRoutes);
 
 // 404 handler for undefined routes
 app.use((req, res) => res.status(404).send('Page not found'));
