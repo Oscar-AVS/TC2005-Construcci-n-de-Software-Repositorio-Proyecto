@@ -183,6 +183,11 @@
   border-color: var(--accent);
 }
 
+/* Fix spacing for action buttons inside cards */
+.report-card-body .action-row {
+  margin-top: 16px;
+}
+
 @media (max-width: 768px) {
   .profile-settings {
     grid-template-columns: 1fr;
