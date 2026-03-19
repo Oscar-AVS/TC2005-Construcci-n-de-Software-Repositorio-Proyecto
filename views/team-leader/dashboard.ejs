@@ -1,232 +1,414 @@
 <h1 id="pageTitle" class="page-title">Team Dashboard</h1>
 
-<!-- Team Stats -->
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-blue" aria-hidden="true">
-      <i class="fa-solid fa-users"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value">3</p>
-      <p class="stat-label">Team Members</p>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-accent" aria-hidden="true">
-      <i class="fa-solid fa-clipboard-list"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value">37</p>
-      <p class="stat-label">Entries This Week</p>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-green" aria-hidden="true">
-      <i class="fa-solid fa-trophy"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value">5</p>
-      <p class="stat-label">Achievements</p>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-yellow" aria-hidden="true">
-      <i class="fa-solid fa-triangle-exclamation"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value">2</p>
-      <p class="stat-label">Active Blockers</p>
-    </div>
-  </div>
+<!-- Dashboard Tabs -->
+<div class="dashboard-tabs">
+  <button type="button" class="dashboard-tab active" data-tab="team-dashboard">
+    <i class="fa-solid fa-users"></i> Team Dashboard
+  </button>
+  <button type="button" class="dashboard-tab" data-tab="activity">
+    <i class="fa-solid fa-chart-line"></i> Activity
+  </button>
 </div>
 
-<!-- Two Column Layout -->
-<div class="dashboard-grid">
+<!-- =============================================
+     TAB 1: TEAM DASHBOARD
+     ============================================= -->
+<div class="tab-content active" id="tab-team-dashboard">
 
-  <!-- Left Column -->
-  <div class="dashboard-column">
+  <!-- Team Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue" aria-hidden="true">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">3</p>
+        <p class="stat-label">Team Members</p>
+      </div>
+    </div>
 
-    <!-- Active Blockers -->
-    <div class="report-card blockers-card">
-      <div class="report-card-header">
-        <div class="header-with-icon warning">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <h2>Active Blockers</h2>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-accent" aria-hidden="true">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">37</p>
+        <p class="stat-label">Entries This Week</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green" aria-hidden="true">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">5</p>
+        <p class="stat-label">Achievements</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">2</p>
+        <p class="stat-label">Active Blockers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="dashboard-grid">
+
+    <!-- Left Column -->
+    <div class="dashboard-column">
+
+      <!-- Active Blockers -->
+      <div class="report-card blockers-card">
+        <div class="report-card-header">
+          <div class="header-with-icon warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h2>Active Blockers</h2>
+          </div>
+          <a href="/team-leader/team-log" class="link-action">View All →</a>
         </div>
-        <a href="/team-leader/team-log" class="link-action">View All →</a>
+
+        <div class="report-card-body">
+          <div class="blocker-list">
+            <div class="blocker-item">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
+              <div class="blocker-content">
+                <p class="blocker-author">Oscar Vilchis</p>
+                <p class="blocker-text">Waiting for production server access</p>
+              </div>
+              <span class="blocker-date">Today</span>
+            </div>
+
+            <div class="blocker-item">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
+              <div class="blocker-content">
+                <p class="blocker-author">Lakshmi Martinez Jara</p>
+                <p class="blocker-text">Pending API documentation from Slack</p>
+              </div>
+              <span class="blocker-date">Yesterday</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="report-card-body">
-        <div class="blocker-list">
-          <div class="blocker-item">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-            <div class="blocker-content">
-              <p class="blocker-author">Oscar Vilchis</p>
-              <p class="blocker-text">Waiting for production server access</p>
-            </div>
-            <span class="blocker-date">Today</span>
-          </div>
+      <!-- Team Members Overview -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Team Members</h2>
+          <a href="/team-leader/team-members" class="link-action">Manage →</a>
+        </div>
 
-          <div class="blocker-item">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-            <div class="blocker-content">
-              <p class="blocker-author">Lakshmi Martinez Jara</p>
-              <p class="blocker-text">Pending API documentation from Slack</p>
+        <div class="report-card-body">
+          <div class="members-overview">
+
+            <div class="member-row">
+              <div class="member-info-mini">
+                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
+                <div>
+                  <p class="member-name-mini">Francisco Arreola</p>
+                  <p class="member-role-mini">Full Stack Developer</p>
+                </div>
+              </div>
+              <div class="member-week-stats">
+                <span class="week-entries">15 entries</span>
+                <span class="member-status-badge ok">On Track</span>
+              </div>
             </div>
-            <span class="blocker-date">Yesterday</span>
+
+            <div class="member-row">
+              <div class="member-info-mini">
+                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
+                <div>
+                  <p class="member-name-mini">Lakshmi Martinez Jara</p>
+                  <p class="member-role-mini">UI/UX Designer</p>
+                </div>
+              </div>
+              <div class="member-week-stats">
+                <span class="week-entries">12 entries</span>
+                <span class="member-status-badge blocked">Blocked</span>
+              </div>
+            </div>
+
+            <div class="member-row">
+              <div class="member-info-mini">
+                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
+                <div>
+                  <p class="member-name-mini">Oscar Vilchis</p>
+                  <p class="member-role-mini">Backend Developer</p>
+                </div>
+              </div>
+              <div class="member-week-stats">
+                <span class="week-entries">10 entries</span>
+                <span class="member-status-badge blocked">Blocked</span>
+              </div>
+            </div>
+
           </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="dashboard-column">
+
+      <!-- Recent Activity -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Recent Activity</h2>
+          <a href="/team-leader/team-log" class="link-action">View Log →</a>
+        </div>
+
+        <div class="report-card-body">
+          <div class="activity-feed">
+
+            <div class="feed-item">
+              <div class="feed-icon green">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text"><span class="feed-author">Lakshmi Martinez Jara</span> submitted daily report</p>
+                <p class="feed-meta">Dashboard Redesign • 5:30 PM</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon yellow">
+                <i class="fa-solid fa-exclamation"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> reported a blocker</p>
+                <p class="feed-meta">API Integration • 4:15 PM</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon accent">
+                <i class="fa-solid fa-trophy"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text"><span class="feed-author">Francisco Arreola</span> added an achievement</p>
+                <p class="feed-meta">Internal Tools • 2:00 PM</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon green">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> submitted daily report</p>
+                <p class="feed-meta">API Integration • Yesterday</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon green">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text"><span class="feed-author">Francisco Arreola</span> submitted daily report</p>
+                <p class="feed-meta">Internal Tools • Yesterday</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Quick Actions</h2>
+        </div>
+
+        <div class="report-card-body">
+          <div class="quick-actions">
+            <a href="/team-leader/team-report" class="quick-action-btn">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>Generate Report</span>
+            </a>
+            <a href="/team-leader/team-members" class="quick-action-btn">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Add Member</span>
+            </a>
+            <a href="/team-leader/log" class="quick-action-btn">
+              <i class="fa-solid fa-pen"></i>
+              <span>Log</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =============================================
+     TAB 2: ACTIVITY (Personal / Organization)
+     ============================================= -->
+<div class="tab-content" id="tab-activity">
+
+  <!-- View Mode Toggle -->
+  <div class="view-mode-toggle">
+    <button type="button" class="view-mode-btn active" data-view="personal">
+      <i class="fa-solid fa-user"></i> Personal
+    </button>
+    <button type="button" class="view-mode-btn" data-view="organization">
+      <i class="fa-solid fa-building"></i> Organization
+    </button>
+  </div>
+
+  <!-- PERSONAL VIEW -->
+  <div class="activity-view active" id="view-personal">
+
+    <!-- Personal Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-accent" aria-hidden="true">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value" id="statCompletedPersonal">2</p>
+          <p class="stat-label">Completed today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue" aria-hidden="true">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value" id="statPendingPersonal">2</p>
+          <p class="stat-label">Pending</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value">1</p>
+          <p class="stat-label">Active blockers</p>
         </div>
       </div>
     </div>
 
-    <!-- Team Members Overview -->
+    <!-- Personal Activity Chart -->
+    <div class="media-row single-chart-row">
+      <div class="media-card chart-card">
+        <div class="media-card-header">
+          <div>
+            <p class="media-card-title">Weekly Activity</p>
+            <p class="media-card-sub">Click a bar to see that day's tasks</p>
+          </div>
+        </div>
+        <div class="chart-area">
+          <canvas id="personalActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Activities -->
     <div class="report-card">
       <div class="report-card-header">
-        <h2>Team Members</h2>
-        <a href="/team-leader/team-members" class="link-action">Manage →</a>
+        <h2 id="personalActivitiesTitle">Today's Activities</h2>
+        <span class="report-date" id="personalActivitiesDate">19 Mar 2026</span>
       </div>
 
       <div class="report-card-body">
-        <div class="members-overview">
-
-          <div class="member-row">
-            <div class="member-info-mini">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-              <div>
-                <p class="member-name-mini">Francisco Arreola</p>
-                <p class="member-role-mini">Full Stack Developer</p>
-              </div>
-            </div>
-            <div class="member-week-stats">
-              <span class="week-entries">15 entries</span>
-              <span class="member-status-badge ok">On Track</span>
-            </div>
-          </div>
-
-          <div class="member-row">
-            <div class="member-info-mini">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-              <div>
-                <p class="member-name-mini">Lakshmi Martinez Jara</p>
-                <p class="member-role-mini">UI/UX Designer</p>
-              </div>
-            </div>
-            <div class="member-week-stats">
-              <span class="week-entries">12 entries</span>
-              <span class="member-status-badge blocked">Blocked</span>
-            </div>
-          </div>
-
-          <div class="member-row">
-            <div class="member-info-mini">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-              <div>
-                <p class="member-name-mini">Oscar Vilchis</p>
-                <p class="member-role-mini">Backend Developer</p>
-              </div>
-            </div>
-            <div class="member-week-stats">
-              <span class="week-entries">10 entries</span>
-              <span class="member-status-badge blocked">Blocked</span>
-            </div>
-          </div>
-
+        <div class="activities-summary">
+          <span class="summary-item">
+            <span class="summary-count" id="personalCompletedCount">2</span> completed
+          </span>
+          <span class="summary-divider">•</span>
+          <span class="summary-item">
+            <span class="summary-count" id="personalPendingCount">2</span> pending
+          </span>
         </div>
+
+        <ul class="activity-list" id="personalActivityList">
+          <!-- Activities rendered by JS -->
+        </ul>
       </div>
     </div>
 
   </div>
 
-  <!-- Right Column -->
-  <div class="dashboard-column">
+  <!-- ORGANIZATION VIEW -->
+  <div class="activity-view" id="view-organization">
 
-    <!-- Recent Activity -->
-    <div class="report-card">
-      <div class="report-card-header">
-        <h2>Recent Activity</h2>
-        <a href="/team-leader/team-log" class="link-action">View Log →</a>
+    <!-- Organization Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue" aria-hidden="true">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value">42</p>
+          <p class="stat-label">Active employees</p>
+        </div>
       </div>
-
-      <div class="report-card-body">
-        <div class="activity-feed">
-
-          <div class="feed-item">
-            <div class="feed-icon green">
-              <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="feed-content">
-              <p class="feed-text"><span class="feed-author">Lakshmi Martinez Jara</span> submitted daily report</p>
-              <p class="feed-meta">Dashboard Redesign • 5:30 PM</p>
-            </div>
-          </div>
-
-          <div class="feed-item">
-            <div class="feed-icon yellow">
-              <i class="fa-solid fa-exclamation"></i>
-            </div>
-            <div class="feed-content">
-              <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> reported a blocker</p>
-              <p class="feed-meta">API Integration • 4:15 PM</p>
-            </div>
-          </div>
-
-          <div class="feed-item">
-            <div class="feed-icon accent">
-              <i class="fa-solid fa-trophy"></i>
-            </div>
-            <div class="feed-content">
-              <p class="feed-text"><span class="feed-author">Francisco Arreola</span> added an achievement</p>
-              <p class="feed-meta">Internal Tools • 2:00 PM</p>
-            </div>
-          </div>
-
-          <div class="feed-item">
-            <div class="feed-icon green">
-              <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="feed-content">
-              <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> submitted daily report</p>
-              <p class="feed-meta">API Integration • Yesterday</p>
-            </div>
-          </div>
-
-          <div class="feed-item">
-            <div class="feed-icon green">
-              <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="feed-content">
-              <p class="feed-text"><span class="feed-author">Francisco Arreola</span> submitted daily report</p>
-              <p class="feed-meta">Internal Tools • Yesterday</p>
-            </div>
-          </div>
-
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-accent" aria-hidden="true">
+          <i class="fa-solid fa-clipboard-list"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value">156</p>
+          <p class="stat-label">Logs today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value">8</p>
+          <p class="stat-label">Active blockers</p>
         </div>
       </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Organization Activity Chart -->
+    <div class="media-row single-chart-row">
+      <div class="media-card chart-card">
+        <div class="media-card-header">
+          <div>
+            <p class="media-card-title">Organization Activity</p>
+            <p class="media-card-sub">Click a bar to see that day's team activities</p>
+          </div>
+        </div>
+        <div class="chart-area">
+          <canvas id="orgActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Activity Feed -->
     <div class="report-card">
       <div class="report-card-header">
-        <h2>Quick Actions</h2>
+        <div class="header-title-group">
+          <h2 id="orgFeedTitle">Team Activity Feed</h2>
+          <span class="report-date" id="orgFeedDate" style="display: none;"></span>
+        </div>
+        <select id="teamFilter" class="team-filter-select">
+          <option value="">All Teams</option>
+          <option value="mufasa">Mufasa Solutions</option>
+          <option value="phoenix">Phoenix Team</option>
+          <option value="delta">Delta Squad</option>
+        </select>
       </div>
 
       <div class="report-card-body">
-        <div class="quick-actions">
-          <a href="/team-leader/team-report" class="quick-action-btn">
-            <i class="fa-solid fa-file-lines"></i>
-            <span>Generate Report</span>
-          </a>
-          <a href="/team-leader/team-members" class="quick-action-btn">
-            <i class="fa-solid fa-user-plus"></i>
-            <span>Add Member</span>
-          </a>
-          <a href="/team-leader/log" class="quick-action-btn">
-            <i class="fa-solid fa-pen"></i>
-            <span>Log</span>
-          </a>
+        <div class="team-activity-feed" id="teamActivityFeed">
+          <!-- Rendered by JS -->
         </div>
       </div>
     </div>
