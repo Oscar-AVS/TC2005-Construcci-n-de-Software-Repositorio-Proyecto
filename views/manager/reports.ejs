@@ -1,0 +1,197 @@
+<!-- Manager Reports View -->
+<h1 id="pageTitle" class="page-title">Reports</h1>
+
+<!-- Report Filters -->
+<div class="report-card reports-filters-card">
+  <div class="report-card-header">
+    <h2>Generate Report</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="reportFrom">From</label>
+        <input type="date" id="reportFrom" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="reportTo">To</label>
+        <input type="date" id="reportTo" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="reportTeam">Team</label>
+        <select id="reportTeam" class="form-select">
+          <option value="">All Teams</option>
+          <option value="1">Mufasa Solutions</option>
+          <option value="2">Phoenix Team</option>
+          <option value="3">Delta Squad</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" type="button">Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Summary Section -->
+<div class="ai-summary-card">
+  <div class="ai-summary-header">
+    <div class="ai-summary-title">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <span>AI-Powered Summary</span>
+    </div>
+    <button class="btn-generate-ai" type="button">
+      <i class="fa-solid fa-sparkles"></i>
+      Generate Summary
+    </button>
+  </div>
+
+  <div class="ai-summary-body">
+    <div class="ai-summary-placeholder">
+      <i class="fa-solid fa-robot"></i>
+      <p>Click "Generate Summary" to create an AI-powered analysis of your team's activity, achievements, and areas for improvement.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Report Preview -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Engineering Department — Weekly Summary</h2>
+    <span class="report-date">Mar 11 - Mar 18, 2026</span>
+  </div>
+
+  <div class="report-card-body">
+
+    <!-- Stats Summary -->
+    <div class="report-stats-grid">
+      <div class="report-stat-card">
+        <i class="fa-solid fa-users"></i>
+        <div class="report-stat-info">
+          <span class="report-stat-value">12</span>
+          <span class="report-stat-label">Team Members</span>
+        </div>
+      </div>
+
+      <div class="report-stat-card">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <div class="report-stat-info">
+          <span class="report-stat-value">156</span>
+          <span class="report-stat-label">Total Entries</span>
+        </div>
+      </div>
+
+      <div class="report-stat-card">
+        <i class="fa-solid fa-trophy"></i>
+        <div class="report-stat-info">
+          <span class="report-stat-value">23</span>
+          <span class="report-stat-label">Achievements</span>
+        </div>
+      </div>
+
+      <div class="report-stat-card">
+        <i class="fa-solid fa-bullseye"></i>
+        <div class="report-stat-info">
+          <span class="report-stat-value">3</span>
+          <span class="report-stat-label">Goals Completed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Sections Grid -->
+    <div class="report-sections-grid">
+
+      <!-- Key Achievements -->
+      <div class="report-section-card">
+        <div class="section-header">
+          <i class="fa-solid fa-trophy"></i>
+          <h3>Key Achievements</h3>
+        </div>
+        <ul class="report-list success">
+          <li>Launched new authentication system</li>
+          <li>Completed Q1 security audit</li>
+          <li>Team expanded to 12 members</li>
+          <li>API latency reduced by 45%</li>
+          <li>CI/CD pipeline fully automated</li>
+        </ul>
+      </div>
+
+      <!-- Active Blockers -->
+      <div class="report-section-card warning">
+        <div class="section-header">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <h3>Current Blockers</h3>
+        </div>
+        <ul class="report-list blockers">
+          <li>
+            <span class="blocker-owner">Oscar Vilchis</span>
+            <span class="blocker-desc">Waiting for production server access</span>
+          </li>
+          <li>
+            <span class="blocker-owner">Lakshmi Martinez Jara</span>
+            <span class="blocker-desc">Pending API documentation from Slack</span>
+          </li>
+          <li>
+            <span class="blocker-owner">Phoenix Team</span>
+            <span class="blocker-desc">Third-party integration delayed</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Team Breakdown -->
+    <div class="report-section-card full-width">
+      <div class="section-header">
+        <i class="fa-solid fa-chart-bar"></i>
+        <h3>Team Activity Breakdown</h3>
+      </div>
+      <div class="member-breakdown">
+        <div class="breakdown-row">
+          <div class="breakdown-member">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Mufasa Solutions" />
+            <span>Mufasa Solutions</span>
+          </div>
+          <div class="breakdown-bar">
+            <div class="bar-fill" style="width: 85%;"></div>
+          </div>
+          <span class="breakdown-value">37 entries</span>
+        </div>
+
+        <div class="breakdown-row">
+          <div class="breakdown-member">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Phoenix Team" />
+            <span>Phoenix Team</span>
+          </div>
+          <div class="breakdown-bar">
+            <div class="bar-fill" style="width: 72%;"></div>
+          </div>
+          <span class="breakdown-value">31 entries</span>
+        </div>
+
+        <div class="breakdown-row">
+          <div class="breakdown-member">
+            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Delta Squad" />
+            <span>Delta Squad</span>
+          </div>
+          <div class="breakdown-bar">
+            <div class="bar-fill" style="width: 65%;"></div>
+          </div>
+          <span class="breakdown-value">28 entries</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="action-row-left">
+      <button class="btn-export-large" type="button">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </button>
+      <button class="btn-export-large" type="button">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+      </button>
+    </div>
+
+  </div>
+</div>
