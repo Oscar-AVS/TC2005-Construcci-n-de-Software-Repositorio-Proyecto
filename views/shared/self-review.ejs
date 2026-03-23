@@ -1,0 +1,161 @@
+<h1 id="pageTitle" class="page-title">Self-Review</h1>
+
+<!-- Period Selection -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Review Period</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="periodFrom">From</label>
+        <input type="date" id="periodFrom" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="periodTo">To</label>
+        <input type="date" id="periodTo" class="form-input" />
+      </div>
+
+      <button class="btn-submit" type="button">Generate Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Self Review Content -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>My Self-Review</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="review-grid">
+
+      <!-- Left Column -->
+      <div class="review-column">
+
+        <!-- Achievements -->
+        <div class="review-section">
+          <div class="section-header">
+            <i class="fa-solid fa-trophy"></i>
+            <h3>My Achievements</h3>
+          </div>
+          <p class="section-hint">Pulled from your registered achievements.</p>
+          <ul class="review-achievements">
+            <li>Completed MVC architecture implementation</li>
+            <li>Deployed staging environment</li>
+            <li>Finished employee module with all views</li>
+            <li>Integrated Chart.js for activity visualization</li>
+          </ul>
+        </div>
+
+        <!-- What I Worked On -->
+        <div class="review-section">
+          <div class="section-header">
+            <i class="fa-solid fa-briefcase"></i>
+            <h3>What I Worked On</h3>
+          </div>
+          <p class="section-hint">Summary of your logged activities.</p>
+          <div class="work-breakdown">
+            <div class="work-item">
+              <span class="work-name">Internal Tools</span>
+              <div class="work-bar">
+                <div class="work-fill" style="width: 48%;"></div>
+              </div>
+              <span class="work-count">12 entries</span>
+            </div>
+            <div class="work-item">
+              <span class="work-name">Dashboard Redesign</span>
+              <div class="work-bar">
+                <div class="work-fill" style="width: 32%;"></div>
+              </div>
+              <span class="work-count">8 entries</span>
+            </div>
+            <div class="work-item">
+              <span class="work-name">API Integration</span>
+              <div class="work-bar">
+                <div class="work-fill" style="width: 20%;"></div>
+              </div>
+              <span class="work-count">5 entries</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="review-column">
+
+        <!-- What I Did Well -->
+        <div class="review-section">
+          <div class="section-header">
+            <i class="fa-solid fa-thumbs-up"></i>
+            <h3>What I Did Well</h3>
+          </div>
+          <textarea
+            id="doneWell"
+            rows="4"
+            placeholder="Reflect on what you did well..."
+          >Consistently delivered features on time. Maintained clean code standards and helped teammates with code reviews.</textarea>
+        </div>
+
+        <!-- Contributions -->
+        <div class="review-section">
+          <div class="section-header">
+            <i class="fa-solid fa-hands-helping"></i>
+            <h3>My Contributions</h3>
+          </div>
+          <textarea
+            id="contributions"
+            rows="4"
+            placeholder="How did you contribute to the team?"
+          >Led the frontend architecture decisions. Created reusable components that the team now uses across projects.</textarea>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Full Width Sections -->
+    <div class="review-section full-width">
+      <div class="section-header">
+        <i class="fa-solid fa-mountain"></i>
+        <h3>Challenges I Overcame</h3>
+      </div>
+      <textarea
+        id="challenges"
+        rows="3"
+        placeholder="What obstacles did you face and how did you overcome them?"
+      >Resolved complex state management issues in the dashboard. Learned new Chart.js features under tight deadlines.</textarea>
+    </div>
+
+    <div class="review-section full-width">
+      <div class="section-header">
+        <i class="fa-solid fa-seedling"></i>
+        <h3>Areas for Growth</h3>
+      </div>
+      <textarea
+        id="growth"
+        rows="3"
+        placeholder="What areas would you like to improve?"
+      >Want to improve my backend skills, especially with database optimization. Also planning to learn more about testing strategies.</textarea>
+    </div>
+
+    <!-- Action Row: Export left, Submit right -->
+    <div class="action-row-split">
+      <div class="export-actions">
+        <button class="btn-export-large" type="button">
+          <i class="fa-solid fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export-large" type="button">
+          <i class="fa-solid fa-file-excel"></i> Excel
+        </button>
+      </div>
+      <div class="submit-actions">
+        <button class="btn-draft" type="button">Save Draft</button>
+        <button class="btn-submit" type="button">Submit Review</button>
+      </div>
+    </div>
+  </div>
+</div>

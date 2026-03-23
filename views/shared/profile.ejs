@@ -1,0 +1,132 @@
+<h1 id="pageTitle" class="page-title">My Profile</h1>
+
+<div class="profile-container">
+
+  <!-- Profile Card -->
+  <div class="report-card profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar-wrapper">
+        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Profile picture" />
+        <button class="avatar-edit" type="button" title="Change photo">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+      </div>
+      <h2 class="profile-name">Lakshmi Jara</h2>
+      <p class="profile-role">Full Stack Developer</p>
+      <div class="profile-team">
+        <i class="fa-solid fa-users"></i>
+        <span>Team MUFASA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Grid -->
+  <div class="profile-settings">
+
+    <!-- Slack Integration -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="header-with-icon">
+          <i class="fa-brands fa-slack"></i>
+          <h2>Slack Integration</h2>
+        </div>
+      </div>
+
+      <div class="report-card-body">
+        <p class="field-hint">Connect your Slack account to sync activity log entries automatically.</p>
+        
+        <div class="form-field">
+          <label class="form-label" for="slackUsername">Slack Username</label>
+          <div class="input-with-icon">
+            <span class="input-icon">@</span>
+            <input 
+              type="text" 
+              id="slackUsername" 
+              class="form-input with-icon" 
+              placeholder="username"
+              value="lakshmi.jara"
+            />
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-submit" type="button">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="header-with-icon">
+          <i class="fa-solid fa-envelope"></i>
+          <h2>Email Address</h2>
+        </div>
+      </div>
+
+      <div class="report-card-body">
+        <div class="form-field">
+          <label class="form-label" for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            class="form-input disabled" 
+            value="lakshmi.jara@change.org"
+            disabled
+          />
+          <p class="field-hint">Contact your administrator to change your email.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="report-card full-width">
+      <div class="report-card-header">
+        <div class="header-with-icon">
+          <i class="fa-solid fa-lock"></i>
+          <h2>Change Password</h2>
+        </div>
+      </div>
+
+      <div class="report-card-body">
+        <div class="password-grid">
+          <div class="form-field">
+            <label class="form-label" for="currentPassword">Current Password</label>
+            <input 
+              type="password" 
+              id="currentPassword" 
+              class="form-input" 
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="newPassword">New Password</label>
+            <input 
+              type="password" 
+              id="newPassword" 
+              class="form-input" 
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              class="form-input" 
+              placeholder="••••••••"
+            />
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-submit" type="button">Update Password</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
