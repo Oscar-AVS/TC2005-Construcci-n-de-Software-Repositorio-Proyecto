@@ -1,0 +1,163 @@
+<h1 id="pageTitle" class="page-title">Employee Dashboard</h1>
+
+<!-- View Mode Toggle (directo, sin tabs) -->
+<div class="view-mode-toggle">
+  <button type="button" class="view-mode-btn active" data-view="personal">
+    <i class="fa-solid fa-user"></i> Personal
+  </button>
+  <button type="button" class="view-mode-btn" data-view="organization">
+    <i class="fa-solid fa-building"></i> Organization
+  </button>
+</div>
+
+<!-- =============================================
+     PERSONAL VIEW
+     ============================================= -->
+<div class="activity-view active" id="view-personal">
+
+  <!-- Personal Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-accent" aria-hidden="true">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value" id="statCompletedPersonal">2</p>
+        <p class="stat-label">Completed today</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue" aria-hidden="true">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value" id="statPendingPersonal">2</p>
+        <p class="stat-label">Pending</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">1</p>
+        <p class="stat-label">Active blockers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal Activity Chart -->
+  <div class="media-row single-chart-row">
+    <div class="media-card chart-card">
+      <div class="media-card-header">
+        <div>
+          <p class="media-card-title">Weekly Activity</p>
+          <p class="media-card-sub">Click a bar to see that day's tasks</p>
+        </div>
+      </div>
+      <div class="chart-area">
+        <canvas id="personalActivityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Activities -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2 id="personalActivitiesTitle">Today's Activities</h2>
+      <span class="report-date" id="personalActivitiesDate">19 Mar 2026</span>
+    </div>
+
+    <div class="report-card-body">
+      <div class="activities-summary">
+        <span class="summary-item">
+          <span class="summary-count" id="personalCompletedCount">2</span> completed
+        </span>
+        <span class="summary-divider">•</span>
+        <span class="summary-item">
+          <span class="summary-count" id="personalPendingCount">2</span> pending
+        </span>
+      </div>
+
+      <ul class="activity-list" id="personalActivityList">
+        <!-- Activities rendered by JS -->
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- =============================================
+     ORGANIZATION VIEW
+     ============================================= -->
+<div class="activity-view" id="view-organization">
+
+  <!-- Organization Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue" aria-hidden="true">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">42</p>
+        <p class="stat-label">Active employees</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-accent" aria-hidden="true">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">156</p>
+        <p class="stat-label">Logs today</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">8</p>
+        <p class="stat-label">Active blockers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Organization Activity Chart -->
+  <div class="media-row single-chart-row">
+    <div class="media-card chart-card">
+      <div class="media-card-header">
+        <div>
+          <p class="media-card-title">Organization Activity</p>
+          <p class="media-card-sub">Click a bar to see that day's team activities</p>
+        </div>
+      </div>
+      <div class="chart-area">
+        <canvas id="orgActivityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Activity Feed -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <div class="header-title-group">
+        <h2 id="orgFeedTitle">Team Activity Feed</h2>
+        <span class="report-date" id="orgFeedDate" style="display: none;"></span>
+      </div>
+      <select id="teamFilter" class="team-filter-select">
+        <option value="">All Teams</option>
+        <option value="mufasa">Mufasa Solutions</option>
+        <option value="phoenix">Phoenix Team</option>
+        <option value="delta">Delta Squad</option>
+      </select>
+    </div>
+
+    <div class="report-card-body">
+      <div class="team-activity-feed" id="teamActivityFeed">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+</div>

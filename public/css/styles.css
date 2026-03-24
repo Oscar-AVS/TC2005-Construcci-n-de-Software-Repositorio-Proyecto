@@ -1,0 +1,21 @@
+/* Base */
+@import url('./base/base.css');
+@import url('./base/layout.css');
+
+/* Components */
+@import url('./components/sidebar.css');
+@import url('./components/topbar.css');
+@import url('./components/report.css');
+
+/* Pages */
+@import url('./pages/login.css');
+@import url('./pages/dashboard.css');
+@import url('./pages/log.css');
+@import url('./pages/achievements.css');
+@import url('./pages/self-review.css');
+@import url('./pages/projects.css');
+@import url('./pages/profile.css');
+@import url('./pages/team-leader.css');
+@import url('./pages/manager.css');
+@import url('./pages/admin.css');
+@import 'pages/project-manager.css';

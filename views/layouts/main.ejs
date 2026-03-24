@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../partials/head') %>
+  <body>
+    <div class="app">
+      <%- include('../partials/sidebar') %>
+      <main class="main">
+        <%- include('../partials/topbar') %>
+        <section class="content-area" aria-labelledby="pageTitle">
+          <%- body %>
+        </section>
+      </main>
+    </div>
+    <%- include('../partials/scripts') %>
+  </body>
+</html>

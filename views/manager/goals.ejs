@@ -1,0 +1,200 @@
+<!-- Manager Goals View -->
+<h1 id="pageTitle" class="page-title">Goals</h1>
+
+<!-- Add Goal Card -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Create New Goal</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="goalTitle">Goal Title</label>
+        <input type="text" id="goalTitle" class="form-input" placeholder="Enter goal title..." />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="goalProject">Link to Project</label>
+        <select id="goalProject" class="form-select">
+          <option value="">Select a project...</option>
+          <option value="1">Internal Tools</option>
+          <option value="2">API Integration</option>
+          <option value="3">Dashboard Redesign</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="goalDesc">Description</label>
+      <textarea id="goalDesc" rows="3" placeholder="Describe the goal and expected outcomes..."></textarea>
+    </div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="goalDue">Due Date</label>
+        <input type="date" id="goalDue" class="form-input" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="goalStatus">Status</label>
+        <select id="goalStatus" class="form-select">
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-draft" type="button">Save as Draft</button>
+      <button class="btn-submit" type="button">Create Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goals List -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Active Goals</h2>
+    <span class="item-count">5 goals</span>
+  </div>
+
+  <div class="report-card-body">
+    <div class="goals-list">
+
+      <!-- Goal 1 -->
+      <div class="goal-card in-progress">
+        <div class="goal-icon">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="goal-content">
+          <div class="goal-header">
+            <h3 class="goal-title">Increase platform uptime to 99.9%</h3>
+            <span class="goal-status in-progress">In Progress</span>
+          </div>
+          <p class="goal-desc">Implement redundancy measures and improve monitoring to achieve 99.9% uptime SLA for all production services.</p>
+          <div class="goal-meta">
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-folder"></i> API Integration
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-calendar"></i> Due: Apr 30, 2026
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-chart-line"></i> 75% complete
+            </span>
+          </div>
+        </div>
+        <div class="goal-actions">
+          <button class="btn-icon" type="button" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-danger" type="button" title="Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Goal 2 -->
+      <div class="goal-card in-progress">
+        <div class="goal-icon">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="goal-content">
+          <div class="goal-header">
+            <h3 class="goal-title">Launch mobile app v2.0</h3>
+            <span class="goal-status in-progress">In Progress</span>
+          </div>
+          <p class="goal-desc">Complete redesign and development of mobile application with new features including offline support and push notifications.</p>
+          <div class="goal-meta">
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-folder"></i> Dashboard Redesign
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-calendar"></i> Due: May 15, 2026
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-chart-line"></i> 45% complete
+            </span>
+          </div>
+        </div>
+        <div class="goal-actions">
+          <button class="btn-icon" type="button" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-danger" type="button" title="Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Goal 3 -->
+      <div class="goal-card pending">
+        <div class="goal-icon">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="goal-content">
+          <div class="goal-header">
+            <h3 class="goal-title">Reduce API response time by 30%</h3>
+            <span class="goal-status pending">Pending</span>
+          </div>
+          <p class="goal-desc">Optimize database queries and implement caching layer to significantly improve API performance across all endpoints.</p>
+          <div class="goal-meta">
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-folder"></i> Internal Tools
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-calendar"></i> Due: Jun 01, 2026
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-chart-line"></i> 20% complete
+            </span>
+          </div>
+        </div>
+        <div class="goal-actions">
+          <button class="btn-icon" type="button" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-danger" type="button" title="Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Goal 4 -->
+      <div class="goal-card completed">
+        <div class="goal-icon">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="goal-content">
+          <div class="goal-header">
+            <h3 class="goal-title">Complete Q1 security audit</h3>
+            <span class="goal-status completed">Completed</span>
+          </div>
+          <p class="goal-desc">Conduct comprehensive security audit of all systems and address identified vulnerabilities.</p>
+          <div class="goal-meta">
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-folder"></i> Internal Tools
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-calendar"></i> Completed: Mar 15, 2026
+            </span>
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-chart-line"></i> 100% complete
+            </span>
+          </div>
+        </div>
+        <div class="goal-actions">
+          <button class="btn-icon" type="button" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-danger" type="button" title="Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

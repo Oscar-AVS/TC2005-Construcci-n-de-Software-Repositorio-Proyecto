@@ -1,0 +1,89 @@
+<h1 id="pageTitle" class="page-title">Achievements</h1>
+
+<!-- New Achievement Form -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>New Achievement</h2>
+  </div>
+
+  <div class="report-card-body">
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="achievementTitle">Title</label>
+        <input 
+          type="text" 
+          id="achievementTitle" 
+          class="form-input" 
+          placeholder="e.g. Launched new payment system"
+        />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="achievementDate">Date</label>
+        <input type="date" id="achievementDate" class="form-input" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="achievementDesc">Description</label>
+      <textarea
+        id="achievementDesc"
+        rows="3"
+        placeholder="Describe the achievement and its impact..."
+      ></textarea>
+    </div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label" for="achievementProject">Project (optional)</label>
+        <select id="achievementProject" class="form-select">
+          <option value="">None</option>
+          <option value="1">Internal Tools</option>
+          <option value="2">API Integration</option>
+          <option value="3">Dashboard Redesign</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="achievementGoal">Goal (optional)</label>
+        <select id="achievementGoal" class="form-select">
+          <option value="">None</option>
+          <option value="1">Q1 Performance</option>
+          <option value="2">Q2 Objectives</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-submit" type="button">Save Achievement</button>
+    </div>
+  </div>
+</div>
+
+<!-- Achievements List -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>My Achievements</h2>
+    <span class="item-count">3 total</span>
+  </div>
+
+  <div class="report-card-body">
+    <div class="achievements-list">
+
+      <div class="achievement-card">
+        <div class="achievement-icon">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="achievement-content">
+          <div class="achievement-header">
+            <h3 class="achievement-title">Launched new payment system</h3>
+            <span class="achievement-date">12 Mar 2026</span>
+          </div>
+          <p class="achievement-desc">Successfully deployed the new payment gateway, reducing transaction failures by 40% and improving checkout speed.</p>
+          <div class="achievement-tags">
+            <span class="tag tag-project">Internal Tools</span>
+            <span class="tag tag-goal">Q1 Performance</span>
+          </div>
+        </div>
+        <div class="achievement-actions">
+          <button class="btn-icon" type="button"

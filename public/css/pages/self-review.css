@@ -1,0 +1,251 @@
+/* ========================================
+   SELF-REVIEW STYLES
+   ======================================== */
+
+/* Review grid layout - two columns */
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.review-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Review sections */
+.review-section {
+  padding: 20px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+
+.review-section.full-width {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.section-header i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.section-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Review achievements list */
+.review-achievements {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-achievements li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.review-achievements li::before {
+  content: "★";
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* Work breakdown bars */
+.work-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.work-item {
+  display: grid;
+  grid-template-columns: 140px 1fr 70px;
+  align-items: center;
+  gap: 12px;
+}
+
+.work-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.work-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.work-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+.work-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Textarea in review sections */
+.review-section textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  background: var(--white);
+  transition: border-color 0.15s;
+}
+
+.review-section textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Action row split - export left, submit right */
+.action-row-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.export-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.submit-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Large export buttons */
+.btn-export-large {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-export-large:hover {
+  background: var(--bg);
+  border-color: var(--text-muted);
+}
+
+.btn-export-large i {
+  font-size: 16px;
+}
+
+.btn-export-large .fa-file-pdf {
+  color: #dc2626;
+}
+
+.btn-export-large .fa-file-excel {
+  color: #16a34a;
+}
+
+/* Draft button */
+.btn-draft {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-draft:hover {
+  background: var(--bg);
+  border-color: var(--text-muted);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 900px) {
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .work-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .work-count {
+    text-align: left;
+  }
+}
+
+@media (max-width: 600px) {
+  .action-row-split {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .export-actions,
+  .submit-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .export-actions {
+    order: 2;
+  }
+
+  .submit-actions {
+    order: 1;
+  }
+
+  .btn-export-large,
+  .btn-draft,
+  .btn-submit {
+    flex: 1;
+  }
+}
