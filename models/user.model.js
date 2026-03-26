@@ -1,16 +1,16 @@
-const users = [
-  {
-    username: 'admin',
-    password: '1234',
-    name: 'Employee',
-    avatar: 'https://wallpapercave.com/wp/wp6608939.jpg',
-  },
-];
+/**
+ * User model.
+ * Handles database operations for the user table.
+ */
 
-class User {
+const db = require('../util/database');
+
+module.exports = class User {
   static findByUsername(username) {
-    return users.find((user) => user.username === username);
+    return db.execute('SELECT * FROM user WHERE username = ?', [username]);
   }
-}
 
-module.exports = User;
+  static fetchOne(id_user) {
+    return db.execute('SELECT * FROM user WHERE id_user = ?', [id_user]);
+  }
+};
