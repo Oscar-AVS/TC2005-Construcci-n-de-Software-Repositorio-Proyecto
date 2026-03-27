@@ -99,99 +99,51 @@
       </div>
     </div>
 
-    <!-- Report Sections Grid -->
-    <div class="report-sections-grid">
-
-      <!-- Key Achievements -->
-      <div class="report-section-card">
-        <div class="section-header">
-          <i class="fa-solid fa-trophy"></i>
-          <h3>Key Achievements</h3>
-        </div>
-        <ul class="report-list success">
-          <li>Launched new authentication system</li>
-          <li>Completed Q1 security audit</li>
-          <li>Team expanded to 12 members</li>
-          <li>API latency reduced by 45%</li>
-          <li>CI/CD pipeline fully automated</li>
-        </ul>
-      </div>
-
-      <!-- Active Blockers -->
-      <div class="report-section-card warning">
-        <div class="section-header">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <h3>Current Blockers</h3>
-        </div>
-        <ul class="report-list blockers">
-          <li>
-            <span class="blocker-owner">Oscar Vilchis</span>
-            <span class="blocker-desc">Waiting for production server access</span>
-          </li>
-          <li>
-            <span class="blocker-owner">Lakshmi Martinez Jara</span>
-            <span class="blocker-desc">Pending API documentation from Slack</span>
-          </li>
-          <li>
-            <span class="blocker-owner">Phoenix Team</span>
-            <span class="blocker-desc">Third-party integration delayed</span>
-          </li>
-        </ul>
-      </div>
-
-    </div>
-
-    <!-- Team Breakdown -->
-    <div class="report-section-card full-width">
-      <div class="section-header">
-        <i class="fa-solid fa-chart-bar"></i>
-        <h3>Team Activity Breakdown</h3>
-      </div>
-      <div class="member-breakdown">
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Mufasa Solutions" />
-            <span>Mufasa Solutions</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 85%;"></div>
-          </div>
-          <span class="breakdown-value">37 entries</span>
-        </div>
-
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Phoenix Team" />
-            <span>Phoenix Team</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 72%;"></div>
-          </div>
-          <span class="breakdown-value">31 entries</span>
-        </div>
-
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Delta Squad" />
-            <span>Delta Squad</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 65%;"></div>
-          </div>
-          <span class="breakdown-value">28 entries</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Export Actions -->
     <div class="action-row-left">
-      <button class="btn-export-large" type="button">
+      <button class="btn-export-large" type="button" onclick="exportPDF()">
         <i class="fa-solid fa-file-pdf"></i> Export PDF
       </button>
       <button class="btn-export-large" type="button">
         <i class="fa-solid fa-file-excel"></i> Export Excel
       </button>
     </div>
+
+    <!-- Success Message -->
+    <p id="msg-confirmation" style="display:none; color:green; margin-top:10px;">
+      ✅ Report generated successfully
+    </p>
+
+    <script>
+      function exportPDF() {
+        const idEquipo    = document.getElementById('reportTeam').value;
+        const fechaInicio = document.getElementById('reportFrom').value;
+        const fechaFin    = document.getElementById('reportTo').value;
+
+        const idProyecto = '1'; // still hardcoded
+
+        if (!idEquipo) {
+          alert('Please select a team.');
+          return;
+        }
+        if (!fechaInicio || !fechaFin) {
+          alert('Please select a valid period (From and To).');
+          return;
+        }
+        if (fechaInicio > fechaFin) {
+          alert('Start date cannot be later than end date.');
+          return;
+        }
+
+        const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+
+        window.location.href = url;
+
+        const msg = document.getElementById('msg-confirmation');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+      }
+    </script>
 
   </div>
 </div>
