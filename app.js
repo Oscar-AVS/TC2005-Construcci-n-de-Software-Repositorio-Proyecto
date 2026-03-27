@@ -13,7 +13,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Enables a base layout for all authenticated views
+// Enable base layout for all views
 app.use(expressLayouts);
 app.set('layout', 'layouts/main');
 
@@ -28,14 +28,18 @@ const teamLeaderRoutes = require('./routes/team-leader.routes');
 const managerRoutes = require('./routes/manager.routes');
 const adminRoutes = require('./routes/admin.routes');
 const projectManagerRoutes = require('./routes/project-manager.routes');
+const reportRoutes = require('./routes/report.routes');
 
+// Route configuration
 app.get('/', (req, res) => res.redirect('/login'));
+
 app.use('/', usersRoutes);
 app.use('/employee', employeeRoutes);
 app.use('/team-leader', teamLeaderRoutes);
 app.use('/manager', managerRoutes);
 app.use('/admin', adminRoutes);
 app.use('/project-manager', projectManagerRoutes);
+app.use('/manager/reports', reportRoutes);
 
 // 404 handler for undefined routes
 app.use((req, res) => res.status(404).send('Page not found'));
