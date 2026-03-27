@@ -4,55 +4,65 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>Today's Report</h2>
-    <span class="report-date">18 Mar 2026</span>
+    <span class="report-date"><%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
   </div>
 
   <div class="report-card-body">
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="completedInput">Completed (one per line)</label>
-        <textarea
-          id="completedInput"
-          rows="4"
-          placeholder="Completed homepage redesign&#10;Fixed responsive issues"
-        ></textarea>
+    <form action="/employee/log" method="POST" id="logForm">
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="completedInput">Completed (one per line)</label>
+          <textarea
+            id="completedInput"
+            name="completed"
+            rows="4"
+            placeholder="Completed homepage redesign&#10;Fixed responsive issues"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="plannedInput">Planned for tomorrow (one per line)</label>
+          <textarea
+            id="plannedInput"
+            name="planned"
+            rows="4"
+            placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
+            required
+          ></textarea>
+        </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label" for="plannedInput">Planned for tomorrow (one per line)</label>
-        <textarea
-          id="plannedInput"
-          rows="4"
-          placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
-        ></textarea>
-      </div>
-    </div>
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="blockerInput">Blockers</label>
+          <textarea
+            id="blockerInput"
+            name="blocker"
+            rows="2"
+            placeholder="Describe any blockers..."
+          ></textarea>
+        </div>
 
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="blockerInput">Blockers</label>
-        <textarea
-          id="blockerInput"
-          rows="2"
-          placeholder="Describe any blockers..."
-        ></textarea>
+        <div class="form-field">
+          <label class="form-label">Projects</label>
+          <div id="projectSelects">
+            <div class="project-select-row">
+              <select name="id_projects" class="form-select project-select">
+                <option value="">Select project...</option>
+                <% for (let project of projects) { %>
+                  <option value="<%= project.id_project %>"><%= project.project_name %></option>
+                <% } %>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="form-field">
-        <label class="form-label" for="projectSelect">Project</label>
-        <select id="projectSelect" class="form-select">
-          <option value="">Select project...</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
-        </select>
+      <div class="action-row">
+        <button class="btn-submit" type="submit">Submit Report</button>
       </div>
-    </div>
-
-    <div class="action-row">
-      <button class="btn-draft" type="button">Save as Draft</button>
-      <button class="btn-submit" type="button">Submit Report</button>
-    </div>
+    </form>
   </div>
 </div>
 
@@ -63,126 +73,170 @@
   </div>
 
   <div class="report-card-body">
-    <div class="filter-row">
-      <div class="filter-group">
-        <label class="form-label" for="filterProject">Project</label>
-        <select id="filterProject" class="form-select">
-          <option value="">All Projects</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
-        </select>
-      </div>
+    <form action="/employee/log" method="GET">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="form-label" for="filterProject">Project</label>
+          <select id="filterProject" name="id_project" class="form-select">
+            <option value="">All Projects</option>
+            <% for (let project of projects) { %>
+              <option value="<%= project.id_project %>" <%= filters.id_project == project.id_project ? 'selected' : '' %>>
+                <%= project.project_name %>
+              </option>
+            <% } %>
+          </select>
+        </div>
 
-      <div class="filter-group">
-        <label class="form-label" for="filterDateFrom">From</label>
-        <input type="date" id="filterDateFrom" class="form-input" />
-      </div>
+        <div class="filter-group">
+          <label class="form-label" for="filterDateFrom">From</label>
+          <input type="date" id="filterDateFrom" name="date_from" class="form-input" value="<%= filters.date_from || '' %>" />
+        </div>
 
-      <div class="filter-group">
-        <label class="form-label" for="filterDateTo">To</label>
-        <input type="date" id="filterDateTo" class="form-input" />
-      </div>
+        <div class="filter-group">
+          <label class="form-label" for="filterDateTo">To</label>
+          <input type="date" id="filterDateTo" name="date_to" class="form-input" value="<%= filters.date_to || '' %>" />
+        </div>
 
-      <button class="btn-submit" type="button">Filter</button>
-    </div>
+        <button class="btn-submit" type="submit">Filter</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Entries List -->
 <div class="entries-list">
-
-  <div class="entry-card">
-    <div class="entry-card-header">
-      <div class="entry-meta">
-        <span class="entry-date">17 Mar 2026</span>
-        <span class="entry-project-tag">Internal Tools</span>
+  <% if (logs.length > 0) { %>
+    <% for (let log of logs) { %>
+      <div class="entry-card">
+        <div class="entry-card-header">
+          <div class="entry-meta">
+            <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+            <span class="entry-project-tag"><%= log.project_names %></span>
+            <span class="entry-project-tag blue"><%= log.team_names %></span>
+          </div>
+        </div>
+        <div class="entry-card-body">
+          <div class="entry-row">
+            <span class="entry-label">Completed</span>
+            <p><%= log.completed %></p>
+          </div>
+          <div class="entry-row">
+            <span class="entry-label">Planned</span>
+            <p><%= log.planned %></p>
+          </div>
+          <% if (log.blockers.length > 0) { %>
+            <% for (let blocker of log.blockers) { %>
+              <div class="entry-row has-blocker">
+                <span class="entry-label">Blocker</span>
+                <p><%= blocker.description %></p>
+                <span class="tag <%= blocker.resolution_status === 'resolved' ? 'tag-resolved' : 'tag-pending' %>">
+                  <%= blocker.resolution_status %>
+                </span>
+              </div>
+            <% } %>
+          <% } else { %>
+            <div class="entry-row">
+              <span class="entry-label">Blockers</span>
+              <p class="no-blocker">None</p>
+            </div>
+          <% } %>
+        </div>
       </div>
-      <div class="entry-actions">
-        <button class="btn-icon" type="button" title="Edit">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-icon btn-danger" type="button" title="Delete">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-    </div>
-    <div class="entry-card-body">
-      <div class="entry-row">
-        <span class="entry-label">Completed</span>
-        <p>Built MVC structure, Created employee views and routes</p>
-      </div>
-      <div class="entry-row">
-        <span class="entry-label">Planned</span>
-        <p>Implement team leader module</p>
-      </div>
-      <div class="entry-row">
-        <span class="entry-label">Blockers</span>
-        <p class="no-blocker">None</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="entry-card">
-    <div class="entry-card-header">
-      <div class="entry-meta">
-        <span class="entry-date">16 Mar 2026</span>
-        <span class="entry-project-tag purple">Dashboard Redesign</span>
-      </div>
-      <div class="entry-actions">
-        <button class="btn-icon" type="button" title="Edit">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-icon btn-danger" type="button" title="Delete">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-    </div>
-    <div class="entry-card-body">
-      <div class="entry-row">
-        <span class="entry-label">Completed</span>
-        <p>Designed stats cards, Implemented sidebar navigation</p>
-      </div>
-      <div class="entry-row">
-        <span class="entry-label">Planned</span>
-        <p>Add activity chart with Chart.js</p>
-      </div>
-      <div class="entry-row">
-        <span class="entry-label">Blockers</span>
-        <p class="no-blocker">None</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="entry-card">
-    <div class="entry-card-header">
-      <div class="entry-meta">
-        <span class="entry-date">15 Mar 2026</span>
-        <span class="entry-project-tag blue">API Integration</span>
-      </div>
-      <div class="entry-actions">
-        <button class="btn-icon" type="button" title="Edit">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-icon btn-danger" type="button" title="Delete">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-    </div>
-    <div class="entry-card-body">
-      <div class="entry-row">
-        <span class="entry-label">Completed</span>
-        <p>Set up Express routes, Configured MySQL connection</p>
-      </div>
-      <div class="entry-row">
-        <span class="entry-label">Planned</span>
-        <p>Create user authentication middleware</p>
-      </div>
-      <div class="entry-row has-blocker">
-        <span class="entry-label">Blockers</span>
-        <p>Waiting for database credentials</p>
-      </div>
-    </div>
-  </div>
-
+    <% } %>
+  <% } else { %>
+    <p>No log entries yet.</p>
+  <% } %>
 </div>
+
+<script>
+  const allProjects = [
+    <% for (let project of projects) { %>
+      { id: '<%= project.id_project %>', name: '<%= project.project_name %>' },
+    <% } %>
+  ];
+
+  const container = document.getElementById('projectSelects');
+
+  function getSelectedIds() {
+    return Array.from(container.querySelectorAll('.project-select'))
+      .map((s) => s.value)
+      .filter((v) => v !== '');
+  }
+
+  function rebuildSelects() {
+    const selectedIds = getSelectedIds();
+    const rows = container.querySelectorAll('.project-select-row');
+
+    rows.forEach((row, index) => {
+      const select = row.querySelector('.project-select');
+      const currentVal = select.value;
+
+      // Rebuild options excluding other selected projects
+      select.innerHTML = '<option value="">Select project...</option>';
+      allProjects.forEach((p) => {
+        if (p.id === currentVal || !selectedIds.includes(p.id)) {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name;
+          if (p.id === currentVal) opt.selected = true;
+          select.appendChild(opt);
+        }
+      });
+
+      // Remove button (only if more than one row)
+      let removeBtn = row.querySelector('.btn-remove-project');
+      if (rows.length > 1) {
+        if (!removeBtn) {
+          removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-icon btn-danger btn-remove-project';
+          removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+          removeBtn.addEventListener('click', () => {
+            row.remove();
+            rebuildSelects();
+          });
+          row.appendChild(removeBtn);
+        }
+      } else {
+        if (removeBtn) removeBtn.remove();
+      }
+    });
+
+    // Add new select row if all current selects have a value and not all projects selected
+    const allSelected = selectedIds.length === allProjects.length;
+    const lastSelect = container.querySelector('.project-select-row:last-child .project-select');
+    const lastHasValue = lastSelect && lastSelect.value !== '';
+
+    if (lastHasValue && !allSelected) {
+      addSelectRow();
+    }
+  }
+
+  function addSelectRow() {
+    const selectedIds = getSelectedIds();
+    const row = document.createElement('div');
+    row.className = 'project-select-row';
+
+    const select = document.createElement('select');
+    select.name = 'id_projects';
+    select.className = 'form-select project-select';
+    select.innerHTML = '<option value="">Select project...</option>';
+
+    allProjects.forEach((p) => {
+      if (!selectedIds.includes(p.id)) {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      }
+    });
+
+    select.addEventListener('change', rebuildSelects);
+    row.appendChild(select);
+    container.appendChild(row);
+    rebuildSelects();
+  }
+
+  // Attach change listener to first select
+  container.querySelector('.project-select').addEventListener('change', rebuildSelects);
+</script>
