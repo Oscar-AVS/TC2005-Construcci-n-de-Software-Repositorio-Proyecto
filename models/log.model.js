@@ -74,4 +74,11 @@ module.exports = class Log {
       );
     });
   }
+
+    static delete(id_log) {
+    return db.execute(
+      'DELETE FROM log WHERE id_log = ?',
+      [id_log]
+    );
+  }
 };

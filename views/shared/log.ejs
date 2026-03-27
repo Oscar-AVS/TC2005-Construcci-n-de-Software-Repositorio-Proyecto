@@ -59,9 +59,8 @@
         </div>
       </div>
 
-      <div class="action-row" style="justify-content: center; gap: 16px;">
-        <button type="button" class="btn-draft" onclick="closeEditModal()">Cancel</button>
-        <button type="submit" class="btn-submit">Save Changes</button>
+      <div class="action-row">
+        <button class="btn-submit" type="submit">Submit Report</button>
       </div>
     </form>
   </div>
@@ -116,9 +115,14 @@
           </div>
           <div class="entry-actions">
             <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
-            <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= JSON.stringify(log) %>)">
-              <i class="fa-solid fa-pen"></i>
-            </button>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= JSON.stringify(log) %>)">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon btn-danger" type="button" title="Delete" onclick="openDeleteModal(<%= log.id_log %>)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
           </div>
         </div>
         <div class="entry-card-body">
@@ -154,6 +158,23 @@
   <% } else { %>
     <p>No log entries yet.</p>
   <% } %>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <div class="modal-header" style="justify-content: center; border: none;">
+      <h2>Delete Entry</h2>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 14px;">Are you sure you want to delete this entry? This action cannot be undone.</p>
+    <form action="/employee/log/delete" method="POST">
+      <input type="hidden" name="id_log" id="deleteIdLog" />
+      <div class="action-row" style="justify-content: center; gap: 16px; margin-top: 16px;">
+        <button type="button" class="btn-draft" onclick="closeDeleteModal()">Cancel</button>
+        <button type="submit" class="btn-submit" style="background: #dc2626;">Delete</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Edit Modal -->
@@ -199,7 +220,7 @@
         </select>
       </div>
 
-      <div class="action-row">
+      <div class="action-row" style="justify-content: center; gap: 16px;">
         <button type="button" class="btn-draft" onclick="closeEditModal()">Cancel</button>
         <button type="submit" class="btn-submit">Save Changes</button>
       </div>
@@ -337,6 +358,19 @@
 
   document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
+  });
+
+  function openDeleteModal(id_log) {
+    document.getElementById('deleteIdLog').value = id_log;
+    document.getElementById('deleteModal').classList.add('active');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+  }
+
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
   });
 
   function rebuildEditSelects() {

@@ -12,6 +12,7 @@ router.get('/dashboard', employeeController.getDashboard);
 router.get('/log', employeeController.getLog);
 router.post('/log', employeeController.postLog);
 router.post('/log/edit', employeeController.putLog);
+router.post('/log/delete', employeeController.deleteLog);
 router.get('/achievements', employeeController.getAchievements);
 router.get('/self-review', employeeController.getSelfReview);
 router.get('/projects', employeeController.getProjects);

@@ -123,6 +123,17 @@ exports.putLog = (req, res) => {
     });
 };
 
+exports.deleteLog = (req, res) => {
+  const { id_log } = req.body;
+
+  Log.delete(id_log)
+    .then(() => res.redirect('/employee/log'))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
+};
+
 exports.getAchievements = (req, res) => {
   res.render('employee/achievements', {
     currentPage: 'achievements',
