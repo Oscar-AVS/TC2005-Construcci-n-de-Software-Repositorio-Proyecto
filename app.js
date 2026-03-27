@@ -20,6 +20,7 @@ app.set('layout', 'layouts/main');
 // Static files and form parsing
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); 
 
 // Routes
 const usersRoutes = require('./routes/users.routes');

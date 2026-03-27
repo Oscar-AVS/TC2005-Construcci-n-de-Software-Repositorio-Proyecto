@@ -6,20 +6,17 @@
   <div class="report-card-header">
     <h2>Add New User</h2>
   </div>
-
   <div class="report-card-body">
     <div class="form-row-grid">
       <div class="form-field">
         <label class="form-label" for="userName">Full Name</label>
         <input type="text" id="userName" class="form-input" placeholder="Enter full name..." />
       </div>
-
       <div class="form-field">
         <label class="form-label" for="userEmail">Email</label>
         <input type="email" id="userEmail" class="form-input" placeholder="email@change.org" />
       </div>
     </div>
-
     <div class="form-row-grid">
       <div class="form-field">
         <label class="form-label" for="userRole">Role</label>
@@ -31,7 +28,6 @@
           <option value="admin">Admin</option>
         </select>
       </div>
-
       <div class="form-field">
         <label class="form-label" for="userTeam">Assign to Team</label>
         <select id="userTeam" class="form-select">
@@ -42,7 +38,6 @@
         </select>
       </div>
     </div>
-
     <div class="action-row">
       <button class="btn-submit" type="button">
         <i class="fa-solid fa-user-plus"></i> Create User
@@ -55,10 +50,10 @@
 <div class="report-card users-table-card">
   <div class="report-card-header">
     <h2>All Users</h2>
-    <span class="item-count">47 users</span>
+    <span class="item-count"><%= users.length %> users</span>
   </div>
 
-  <div class="report-card-body" style="padding: 0 0 0 0;">
+  <div class="report-card-body" style="padding: 0;">
     <table class="users-table">
       <thead>
         <tr>
@@ -70,19 +65,32 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <% users.forEach(user => { %>
+        <tr id="user-row-<%= user.id %>">
           <td>
             <div class="user-cell">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
+              <img
+                src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg"
+                alt="<%= user.full_name %>"
+              />
               <div class="user-cell-info">
-                <span class="user-cell-name">Francisco Arreola</span>
-                <span class="user-cell-email">francisco.arreola@change.org</span>
+                <span class="user-cell-name"><%= user.full_name %></span>
+                <span class="user-cell-email"><%= user.email %></span>
               </div>
             </div>
           </td>
-          <td><span class="role-badge employee">Employee</span></td>
-          <td>Mufasa Solutions</td>
-          <td><span class="status-badge active">Active</span></td>
+          <td>
+            <span class="role-badge <%= user.role %>"><%= user.role %></span>
+          </td>
+          <td><%= user.team || '—' %></td>
+          <td>
+            <span
+              id="status-badge-<%= user.id %>"
+              class="status-badge <%= user.is_active ? 'active' : 'inactive' %>"
+            >
+              <%= user.is_active ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
           <td>
             <div class="table-actions">
               <button class="btn-icon" type="button" title="Edit">
@@ -91,125 +99,85 @@
               <button class="btn-icon" type="button" title="Reset Password">
                 <i class="fa-solid fa-key"></i>
               </button>
-              <button class="btn-icon btn-danger" type="button" title="Deactivate">
-                <i class="fa-solid fa-user-slash"></i>
+              <!-- Toggle status button -->
+              <button
+                class="btn-icon <%= user.is_active ? 'btn-danger' : '' %>"
+                type="button"
+                title="<%= user.is_active ? 'Deactivate' : 'Activate' %>"
+                onclick="toggleStatus(<%= user.id %>, <%= user.is_active %>)"
+                id="toggle-btn-<%= user.id %>"
+              >
+                <i
+                  id="toggle-icon-<%= user.id %>"
+                  class="fa-solid <%= user.is_active ? 'fa-user-slash' : 'fa-user-check' %>"
+                ></i>
               </button>
             </div>
           </td>
         </tr>
-
-        <tr>
-          <td>
-            <div class="user-cell">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-              <div class="user-cell-info">
-                <span class="user-cell-name">Lakshmi Martinez Jara</span>
-                <span class="user-cell-email">lakshmi.martinez@change.org</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="role-badge employee">Employee</span></td>
-          <td>Mufasa Solutions</td>
-          <td><span class="status-badge active">Active</span></td>
-          <td>
-            <div class="table-actions">
-              <button class="btn-icon" type="button" title="Edit">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button class="btn-icon" type="button" title="Reset Password">
-                <i class="fa-solid fa-key"></i>
-              </button>
-              <button class="btn-icon btn-danger" type="button" title="Deactivate">
-                <i class="fa-solid fa-user-slash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="user-cell">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-              <div class="user-cell-info">
-                <span class="user-cell-name">Oscar Vilchis</span>
-                <span class="user-cell-email">oscar.vilchis@change.org</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="role-badge team-leader">Team Leader</span></td>
-          <td>Mufasa Solutions</td>
-          <td><span class="status-badge active">Active</span></td>
-          <td>
-            <div class="table-actions">
-              <button class="btn-icon" type="button" title="Edit">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button class="btn-icon" type="button" title="Reset Password">
-                <i class="fa-solid fa-key"></i>
-              </button>
-              <button class="btn-icon btn-danger" type="button" title="Deactivate">
-                <i class="fa-solid fa-user-slash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="user-cell">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Víctor Esquivel" />
-              <div class="user-cell-info">
-                <span class="user-cell-name">Víctor Esquivel</span>
-                <span class="user-cell-email">victor.esquivel@change.org</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="role-badge manager">Manager</span></td>
-          <td>—</td>
-          <td><span class="status-badge active">Active</span></td>
-          <td>
-            <div class="table-actions">
-              <button class="btn-icon" type="button" title="Edit">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button class="btn-icon" type="button" title="Reset Password">
-                <i class="fa-solid fa-key"></i>
-              </button>
-              <button class="btn-icon btn-danger" type="button" title="Deactivate">
-                <i class="fa-solid fa-user-slash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="user-cell">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Ana García" />
-              <div class="user-cell-info">
-                <span class="user-cell-name">Ana García</span>
-                <span class="user-cell-email">ana.garcia@change.org</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="role-badge employee">Employee</span></td>
-          <td>Phoenix Team</td>
-          <td><span class="status-badge inactive">Inactive</span></td>
-          <td>
-            <div class="table-actions">
-              <button class="btn-icon" type="button" title="Edit">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button class="btn-icon" type="button" title="Reset Password">
-                <i class="fa-solid fa-key"></i>
-              </button>
-              <button class="btn-icon" type="button" title="Activate">
-                <i class="fa-solid fa-user-check"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
+        <% }) %>
       </tbody>
     </table>
   </div>
 </div>
+
+<script>
+  /**
+   * Sends PATCH to toggle user status.
+   * Handles alternate flows: 6.1 (cancel), 4.1 (not found), 7.1 (server error).
+   */
+  async function toggleStatus(userId, currentStatus) {
+
+    // el admin cancela
+    const action = currentStatus ? 'deactivate' : 'reactivate';
+    const confirmed = confirm(
+      currentStatus
+        ? 'Are you sure you want to deactivate this account?'
+        : 'Do you want to reactivate this account?'
+    );
+    if (!confirmed) return; // no se realizan cambios
+
+    try {
+      const res = await fetch(`/admin/users/${userId}/toggle-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      // usuario no encontrado
+      if (res.status === 404) {
+        alert('User not found. Refreshing list...');
+        location.reload(); // regresa al listado
+        return;
+      }
+
+      // error al procesar
+      if (!res.ok || !data.success) {
+        alert('Something went wrong. No changes were made.');
+        return; // no se actualiza el estado
+      }
+
+      // confirmación visual sin reload
+      const isNowActive = data.is_active === 1;
+
+      const badge = document.getElementById(`status-badge-${userId}`);
+      badge.textContent = isNowActive ? 'Active' : 'Inactive';
+      badge.className = `status-badge ${isNowActive ? 'active' : 'inactive'}`;
+
+      const btn = document.getElementById(`toggle-btn-${userId}`);
+      btn.title = isNowActive ? 'Deactivate' : 'Activate';
+      btn.className = `btn-icon ${isNowActive ? 'btn-danger' : ''}`;
+
+      const icon = document.getElementById(`toggle-icon-${userId}`);
+      icon.className = `fa-solid ${isNowActive ? 'fa-user-slash' : 'fa-user-check'}`;
+
+      btn.setAttribute('onclick', `toggleStatus(${userId}, ${isNowActive ? 1 : 0})`);
+
+    } catch (err) {
+      // error de red / conexión
+      console.error('toggleStatus error:', err);
+      alert('Connection error. Please try again.');
+    }
+  }
+</script>
