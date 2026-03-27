@@ -59,8 +59,9 @@
         </div>
       </div>
 
-      <div class="action-row">
-        <button class="btn-submit" type="submit">Submit Report</button>
+      <div class="action-row" style="justify-content: center; gap: 16px;">
+        <button type="button" class="btn-draft" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Save Changes</button>
       </div>
     </form>
   </div>
@@ -110,17 +111,22 @@
       <div class="entry-card">
         <div class="entry-card-header">
           <div class="entry-meta">
-            <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
             <span class="entry-project-tag"><%= log.project_names %></span>
             <span class="entry-project-tag blue"><%= log.team_names %></span>
           </div>
+          <div class="entry-actions">
+            <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+            <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= JSON.stringify(log) %>)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
         </div>
         <div class="entry-card-body">
-          <div class="entry-row">
+          <div class="entry-row completed">
             <span class="entry-label">Completed</span>
             <p><%= log.completed %></p>
           </div>
-          <div class="entry-row">
+          <div class="entry-row planned">
             <span class="entry-label">Planned</span>
             <p><%= log.planned %></p>
           </div>
@@ -128,10 +134,12 @@
             <% for (let blocker of log.blockers) { %>
               <div class="entry-row has-blocker">
                 <span class="entry-label">Blocker</span>
-                <p><%= blocker.description %></p>
-                <span class="tag <%= blocker.resolution_status === 'resolved' ? 'tag-resolved' : 'tag-pending' %>">
-                  <%= blocker.resolution_status %>
-                </span>
+                <p>
+                  <%= blocker.description %>
+                  <span class="tag <%= blocker.resolution_status === 'resolved' ? 'tag-resolved' : 'tag-pending' %>">
+                    <%= blocker.resolution_status %>
+                  </span>
+                </p>
               </div>
             <% } %>
           <% } else { %>
@@ -146,6 +154,57 @@
   <% } else { %>
     <p>No log entries yet.</p>
   <% } %>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Log Entry</h2>
+      <button class="modal-close" type="button" onclick="closeEditModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form action="/employee/log/edit" method="POST">
+      <input type="hidden" name="id_log" id="editIdLog" />
+
+      <div class="form-field">
+        <label class="form-label">Completed</label>
+        <textarea name="completed" id="editCompleted" rows="3" required></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Planned</label>
+        <textarea name="planned" id="editPlanned" rows="3" required></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Projects</label>
+        <div id="editProjectSelects"></div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Blocker</label>
+        <textarea name="blocker" id="editBlocker" rows="2" placeholder="Describe any blockers..."></textarea>
+        <input type="hidden" name="blocker_id" id="editBlockerId" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Blocker Status</label>
+        <select name="blocker_status" id="editBlockerStatus" class="form-select">
+          <option value="">Select status...</option>
+          <option value="pending">Pending</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn-draft" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Save Changes</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -171,7 +230,6 @@
       const select = row.querySelector('.project-select');
       const currentVal = select.value;
 
-      // Rebuild options excluding other selected projects
       select.innerHTML = '<option value="">Select project...</option>';
       allProjects.forEach((p) => {
         if (p.id === currentVal || !selectedIds.includes(p.id)) {
@@ -183,7 +241,6 @@
         }
       });
 
-      // Remove button (only if more than one row)
       let removeBtn = row.querySelector('.btn-remove-project');
       if (rows.length > 1) {
         if (!removeBtn) {
@@ -202,7 +259,6 @@
       }
     });
 
-    // Add new select row if all current selects have a value and not all projects selected
     const allSelected = selectedIds.length === allProjects.length;
     const lastSelect = container.querySelector('.project-select-row:last-child .project-select');
     const lastHasValue = lastSelect && lastSelect.value !== '';
@@ -237,6 +293,106 @@
     rebuildSelects();
   }
 
-  // Attach change listener to first select
   container.querySelector('.project-select').addEventListener('change', rebuildSelects);
+
+  function openEditModal(log) {
+    document.getElementById('editIdLog').value = log.id_log;
+    document.getElementById('editCompleted').value = log.completed;
+    document.getElementById('editPlanned').value = log.planned;
+
+    if (log.blockers && log.blockers.length > 0) {
+      const blocker = log.blockers[0];
+      document.getElementById('editBlocker').value = blocker.description;
+      document.getElementById('editBlockerId').value = blocker.id_blocker;
+      document.getElementById('editBlockerStatus').value = blocker.resolution_status;
+    } else {
+      document.getElementById('editBlocker').value = '';
+      document.getElementById('editBlockerId').value = '';
+      document.getElementById('editBlockerStatus').value = '';
+    }
+
+    const editContainer = document.getElementById('editProjectSelects');
+    editContainer.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'project-select-row';
+    const select = document.createElement('select');
+    select.name = 'id_projects';
+    select.className = 'form-select project-select';
+    select.innerHTML = '<option value="">Select project...</option>';
+    allProjects.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', () => rebuildEditSelects());
+    row.appendChild(select);
+    editContainer.appendChild(row);
+    document.getElementById('editModal').classList.add('active');
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+  }
+
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  function rebuildEditSelects() {
+    const cont = document.getElementById('editProjectSelects');
+    const selectedIds = Array.from(cont.querySelectorAll('.project-select'))
+      .map((s) => s.value).filter((v) => v !== '');
+    const rows = cont.querySelectorAll('.project-select-row');
+
+    rows.forEach((row) => {
+      const select = row.querySelector('.project-select');
+      const currentVal = select.value;
+      select.innerHTML = '<option value="">Select project...</option>';
+      allProjects.forEach((p) => {
+        if (p.id === currentVal || !selectedIds.includes(p.id)) {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name;
+          if (p.id === currentVal) opt.selected = true;
+          select.appendChild(opt);
+        }
+      });
+      let removeBtn = row.querySelector('.btn-remove-project');
+      if (rows.length > 1) {
+        if (!removeBtn) {
+          removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-icon btn-danger btn-remove-project';
+          removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+          removeBtn.addEventListener('click', () => { row.remove(); rebuildEditSelects(); });
+          row.appendChild(removeBtn);
+        }
+      } else {
+        if (removeBtn) removeBtn.remove();
+      }
+    });
+
+    const allSelected = selectedIds.length === allProjects.length;
+    const lastSelect = cont.querySelector('.project-select-row:last-child .project-select');
+    if (lastSelect && lastSelect.value !== '' && !allSelected) {
+      const newRow = document.createElement('div');
+      newRow.className = 'project-select-row';
+      const newSelect = document.createElement('select');
+      newSelect.name = 'id_projects';
+      newSelect.className = 'form-select project-select';
+      newSelect.innerHTML = '<option value="">Select project...</option>';
+      allProjects.forEach((p) => {
+        if (!selectedIds.includes(p.id)) {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name;
+          newSelect.appendChild(opt);
+        }
+      });
+      newSelect.addEventListener('change', () => rebuildEditSelects());
+      newRow.appendChild(newSelect);
+      cont.appendChild(newRow);
+    }
+  }
 </script>

@@ -82,6 +82,47 @@ exports.postLog = (req, res) => {
     });
 };
 
+exports.putLog = (req, res) => {
+  const activeUserId = 1;
+  const { id_log, completed, planned, blocker, blocker_id, blocker_status } = req.body;
+  let id_projects = req.body.id_projects;
+
+  if (!Array.isArray(id_projects)) id_projects = id_projects ? [id_projects] : [];
+
+  // Filter out empty values
+  id_projects = id_projects.filter((p) => p !== '');
+
+  Log.update(id_log, completed, planned)
+    .then(() => {
+      if (id_projects.length === 0) return;
+
+      return Project.fetchAllByEmployee(activeUserId).then(([projects]) => {
+        const projectsToLink = projects
+          .filter((p) => id_projects.includes(String(p.id_project)))
+          .map((p) => ({ id_project: p.id_project, id_team: p.id_team }));
+
+        if (projectsToLink.length === 0) return;
+        return Log.updateProjects(id_log, projectsToLink);
+      });
+    })
+    .then(() => {
+      if (blocker && blocker.trim() !== '') {
+        if (blocker_id) {
+          return Blocker.update(blocker_id, blocker, blocker_status || 'pending');
+        } else {
+          return Blocker.create(id_log, blocker);
+        }
+      } else if (blocker_id) {
+        return Blocker.deleteByLog(id_log);
+      }
+    })
+    .then(() => res.redirect('/employee/log'))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
+};
+
 exports.getAchievements = (req, res) => {
   res.render('employee/achievements', {
     currentPage: 'achievements',

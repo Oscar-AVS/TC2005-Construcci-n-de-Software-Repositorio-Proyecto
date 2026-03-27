@@ -53,4 +53,25 @@ module.exports = class Log {
       [values]
     );
   }
+
+  static update(id_log, completed, planned) {
+    return db.execute(
+      `UPDATE log SET completed = ?, planned = ? WHERE id_log = ?`,
+      [completed, planned, id_log]
+    );
+  }
+
+  static updateProjects(id_log, projects) {
+    return db.execute(
+      `DELETE FROM log_project WHERE id_log = ?`,
+      [id_log]
+    ).then(() => {
+      if (projects.length === 0) return;
+      const values = projects.map((p) => [id_log, p.id_project, p.id_team]);
+      return db.query(
+        `INSERT INTO log_project (id_log, id_project, id_team) VALUES ?`,
+        [values]
+      );
+    });
+  }
 };
