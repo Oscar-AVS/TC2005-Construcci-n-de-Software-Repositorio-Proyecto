@@ -1,3 +1,5 @@
+const db = require('../models/db');
+
 /**
  * Team Leader views controller.
  * Handles dashboard, personal log, team log, team members, team report, self-review and profile.
@@ -24,11 +26,19 @@ exports.getTeamLog = (req, res) => {
   });
 };
 
-exports.getTeamMembers = (req, res) => {
-  res.render('team-leader/team-members', {
-    currentPage: 'team-members',
-    role: 'team-leader',
-  });
+exports.getTeamMembers = async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM user');
+    console.log(rows);
+
+    res.render('team-leader/team-members', {
+      currentPage: 'team-members',
+      role: 'team-leader',
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
 };
 
 exports.getTeamReport = (req, res) => {
