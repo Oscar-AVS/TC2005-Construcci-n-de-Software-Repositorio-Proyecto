@@ -1,6 +1,5 @@
 <h1 id="pageTitle" class="page-title">Team Activity Log</h1>
 
-<!-- Filters -->
 <div class="report-card">
   <div class="report-card-header">
     <h2>Filter Entries</h2>
@@ -12,9 +11,6 @@
         <label class="form-label" for="filterMember">Team Member</label>
         <select id="filterMember" class="form-select">
           <option value="">All Members</option>
-          <option value="1">Francisco Arreola</option>
-          <option value="2">Lakshmi Martinez Jara</option>
-          <option value="3">Oscar Vilchis</option>
         </select>
       </div>
 
@@ -22,9 +18,6 @@
         <label class="form-label" for="filterProject">Project</label>
         <select id="filterProject" class="form-select">
           <option value="">All Projects</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
         </select>
       </div>
 
@@ -43,122 +36,66 @@
   </div>
 </div>
 
-<!-- Entries List -->
 <div class="report-card">
   <div class="report-card-header">
     <h2>Entries</h2>
-    <span class="item-count">3 entries</span>
+    <span class="item-count"><%= entries ? entries.length : 0 %> entries</span>
   </div>
 
   <div class="report-card-body">
     <div class="team-entries-list">
+      <% if (entries && entries.length > 0) { %>
+        <% entries.forEach(entry => { %>
+          <div class="team-entry-card <%= entry.blocker_description ? 'has-blocker' : '' %>">
+            <div class="entry-header">
+              <div class="entry-author">
+                <img
+                  src="<%= entry.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                  alt="<%= entry.full_name %>"
+                />
+                <div>
+                  <p class="author-name"><%= entry.full_name %></p>
+                  <p class="author-role">
+                    <%= entry.role === 'team-leader' ? 'Team Leader' : entry.role === 'project-manager' ? 'Project Manager' : entry.role === 'manager' ? 'Manager' : entry.role === 'admin' ? 'Administrator' : 'Employee' %>
+                  </p>
+                </div>
+              </div>
 
-      <!-- Entry 1 -->
-      <div class="team-entry-card">
-        <div class="entry-header">
-          <div class="entry-author">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-            <div>
-              <p class="author-name">Lakshmi Martinez Jara</p>
-              <p class="author-role">UI/UX Designer</p>
+              <div class="entry-meta">
+                <span class="entry-project"><%= entry.project_name %></span>
+                <span class="entry-date"><%= new Date(entry.created_at).toLocaleDateString('en-GB') %></span>
+              </div>
+            </div>
+
+            <div class="entry-body">
+              <div class="entry-section">
+                <div class="section-label completed">
+                  <i class="fa-solid fa-check"></i> Completed
+                </div>
+                <p><%= entry.completed %></p>
+              </div>
+
+              <div class="entry-section">
+                <div class="section-label planned">
+                  <i class="fa-solid fa-calendar"></i> Planned
+                </div>
+                <p><%= entry.planned %></p>
+              </div>
+
+              <% if (entry.blocker_description) { %>
+                <div class="entry-section">
+                  <div class="section-label blocker">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Blocker
+                  </div>
+                  <p><%= entry.blocker_description %></p>
+                </div>
+              <% } %>
             </div>
           </div>
-          <div class="entry-meta">
-            <span class="entry-project">Dashboard Redesign</span>
-            <span class="entry-date">18 Mar 2026</span>
-          </div>
-        </div>
-
-        <div class="entry-body">
-          <div class="entry-section">
-            <div class="section-label completed">
-              <i class="fa-solid fa-check"></i> Completed
-            </div>
-            <p>Designed team member management UI, Created wireframes for reports</p>
-          </div>
-
-          <div class="entry-section">
-            <div class="section-label planned">
-              <i class="fa-solid fa-calendar"></i> Planned
-            </div>
-            <p>Implement responsive layouts for dashboard</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Entry 2 -->
-      <div class="team-entry-card has-blocker">
-        <div class="entry-header">
-          <div class="entry-author">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-            <div>
-              <p class="author-name">Oscar Vilchis</p>
-              <p class="author-role">Backend Developer</p>
-            </div>
-          </div>
-          <div class="entry-meta">
-            <span class="entry-project">API Integration</span>
-            <span class="entry-date">18 Mar 2026</span>
-          </div>
-        </div>
-
-        <div class="entry-body">
-          <div class="entry-section">
-            <div class="section-label completed">
-              <i class="fa-solid fa-check"></i> Completed
-            </div>
-            <p>Set up MySQL database schema, Configured connection pooling</p>
-          </div>
-
-          <div class="entry-section">
-            <div class="section-label planned">
-              <i class="fa-solid fa-calendar"></i> Planned
-            </div>
-            <p>Implement user authentication with bcrypt</p>
-          </div>
-
-          <div class="entry-section">
-            <div class="section-label blocker">
-              <i class="fa-solid fa-triangle-exclamation"></i> Blocker
-            </div>
-            <p>Waiting for production server access</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Entry 3 -->
-      <div class="team-entry-card">
-        <div class="entry-header">
-          <div class="entry-author">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-            <div>
-              <p class="author-name">Francisco Arreola</p>
-              <p class="author-role">Full Stack Developer</p>
-            </div>
-          </div>
-          <div class="entry-meta">
-            <span class="entry-project">Internal Tools</span>
-            <span class="entry-date">17 Mar 2026</span>
-          </div>
-        </div>
-
-        <div class="entry-body">
-          <div class="entry-section">
-            <div class="section-label completed">
-              <i class="fa-solid fa-check"></i> Completed
-            </div>
-            <p>Built MVC structure, Created employee views and routes</p>
-          </div>
-
-          <div class="entry-section">
-            <div class="section-label planned">
-              <i class="fa-solid fa-calendar"></i> Planned
-            </div>
-            <p>Implement team leader module</p>
-          </div>
-        </div>
-      </div>
-
+        <% }) %>
+      <% } else { %>
+        <p>No entries found.</p>
+      <% } %>
     </div>
   </div>
 </div>

@@ -19,11 +19,43 @@ exports.getLog = (req, res) => {
   });
 };
 
-exports.getTeamLog = (req, res) => {
-  res.render('team-leader/team-log', {
-    currentPage: 'team-log',
-    role: 'team-leader',
-  });
+exports.getTeamLog = async (req, res) => {
+  try {
+    const teamId = 1;
+
+    const [entries] = await db.query(
+      `
+      SELECT
+        l.id_log,
+        l.completed,
+        l.planned,
+        l.created_at,
+        u.full_name,
+        u.email,
+        u.avatar,
+        u.role,
+        p.project_name,
+        b.description AS blocker_description
+      FROM log l
+      INNER JOIN user u ON l.id_user = u.id_user
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      INNER JOIN project p ON lp.id_project = p.id_project
+      LEFT JOIN blocker b ON l.id_log = b.id_log AND b.resolution_status = 'pending'
+      WHERE lp.id_team = ?
+      ORDER BY l.created_at DESC
+      `,
+      [teamId]
+    );
+
+    res.render('team-leader/team-log', {
+      currentPage: 'team-log',
+      role: 'team-leader',
+      entries,
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
 };
 
 exports.getTeamMembers = async (req, res) => {
