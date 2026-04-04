@@ -76,23 +76,24 @@
 
         <div class="report-card-body">
           <div class="blocker-list">
-            <div class="blocker-item">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-              <div class="blocker-content">
-                <p class="blocker-author">Oscar Vilchis</p>
-                <p class="blocker-text">Waiting for production server access</p>
-              </div>
-              <span class="blocker-date">Today</span>
-            </div>
-
-            <div class="blocker-item">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-              <div class="blocker-content">
-                <p class="blocker-author">Lakshmi Martinez Jara</p>
-                <p class="blocker-text">Pending API documentation from Slack</p>
-              </div>
-              <span class="blocker-date">Yesterday</span>
-            </div>
+            <% if (pendingBlockers && pendingBlockers.length > 0) { %>
+              <% pendingBlockers.forEach(blocker => { %>
+                <div class="blocker-item">
+                  <img
+                    src="<%= blocker.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                    alt="<%= blocker.full_name %>"
+                  />
+                  <div class="blocker-content">
+                    <p class="blocker-author"><%= blocker.full_name %></p>
+                    <p class="blocker-text"><%= blocker.description %></p>
+                    <p class="blocker-project"><%= blocker.project_name %></p>
+                  </div>
+                  <span class="blocker-date"><%= new Date(blocker.created_at).toLocaleDateString('en-GB') %></span>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p>No active blockers.</p>
+            <% } %>
           </div>
         </div>
       </div>

@@ -5,11 +5,41 @@ const db = require('../models/db');
  * Handles dashboard, personal log, team log, team members, team report, self-review and profile.
  */
 
-exports.getDashboard = (req, res) => {
-  res.render('team-leader/dashboard', {
-    currentPage: 'dashboard',
-    role: 'team-leader',
-  });
+exports.getDashboard = async (req, res) => {
+  try {
+    const teamId = 1;
+
+    const [pendingBlockers] = await db.query(
+      `
+      SELECT
+        b.id_blocker,
+        b.description,
+        b.resolution_status,
+        l.created_at,
+        u.full_name,
+        u.avatar,
+        p.project_name
+      FROM blocker b
+      INNER JOIN log l ON b.id_log = l.id_log
+      INNER JOIN user u ON l.id_user = u.id_user
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      INNER JOIN project p ON lp.id_project = p.id_project
+      WHERE lp.id_team = ?
+        AND b.resolution_status = 'pending'
+      ORDER BY l.created_at DESC
+      `,
+      [teamId]
+    );
+
+    res.render('team-leader/dashboard', {
+      currentPage: 'dashboard',
+      role: 'team-leader',
+      pendingBlockers,
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
 };
 
 exports.getLog = (req, res) => {
