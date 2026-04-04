@@ -83,12 +83,23 @@
                     src="<%= blocker.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
                     alt="<%= blocker.full_name %>"
                   />
+
                   <div class="blocker-content">
                     <p class="blocker-author"><%= blocker.full_name %></p>
                     <p class="blocker-text"><%= blocker.description %></p>
                     <p class="blocker-project"><%= blocker.project_name %></p>
                   </div>
-                  <span class="blocker-date"><%= new Date(blocker.created_at).toLocaleDateString('en-GB') %></span>
+
+                  <div style="display: flex; flex-direction: column; align-items: end; gap: 8px;">
+                    <span class="blocker-date"><%= new Date(blocker.created_at).toLocaleDateString('en-GB') %></span>
+
+                    <form action="/team-leader/blockers/resolve" method="POST">
+                      <input type="hidden" name="id_blocker" value="<%= blocker.id_blocker %>">
+                      <button class="btn-submit" type="submit" style="padding: 6px 12px; font-size: 14px;">
+                        Resolve
+                      </button>
+                    </form>
+                  </div>
                 </div>
               <% }) %>
             <% } else { %>

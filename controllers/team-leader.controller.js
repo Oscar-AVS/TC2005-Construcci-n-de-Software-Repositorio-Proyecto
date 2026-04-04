@@ -206,3 +206,19 @@ exports.removeTeamMember = async (req, res) => {
     res.send('Error DB');
   }
 };
+
+exports.resolveBlocker = async (req, res) => {
+  try {
+    const { id_blocker } = req.body;
+
+    await db.query(
+      'UPDATE blocker SET resolution_status = ? WHERE id_blocker = ?',
+      ['resolved', id_blocker]
+    );
+
+    res.redirect('/team-leader/dashboard');
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
+};

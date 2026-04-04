@@ -14,6 +14,7 @@ router.get('/team-log', teamLeaderController.getTeamLog);
 router.get('/team-members', teamLeaderController.getTeamMembers);
 router.post('/team-members/add', teamLeaderController.addTeamMember);
 router.post('/team-members/remove', teamLeaderController.removeTeamMember);
+router.post('/blockers/resolve', teamLeaderController.resolveBlocker);
 router.get('/team-report', teamLeaderController.getTeamReport);
 router.get('/self-review', teamLeaderController.getSelfReview);
 router.get('/profile', teamLeaderController.getProfile);
