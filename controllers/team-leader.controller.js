@@ -28,12 +28,30 @@ exports.getTeamLog = (req, res) => {
 
 exports.getTeamMembers = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM user');
-    console.log(rows);
+    const teamId = 1;
+
+    const [members] = await db.query(
+      `
+      SELECT 
+        u.id_user,
+        u.full_name,
+        u.email,
+        u.avatar,
+        u.role,
+        t.team_name
+      FROM user_team ut
+      INNER JOIN user u ON ut.id_user = u.id_user
+      INNER JOIN team t ON ut.id_team = t.id_team
+      WHERE ut.id_team = ?
+      `,
+      [teamId]
+    );
 
     res.render('team-leader/team-members', {
       currentPage: 'team-members',
       role: 'team-leader',
+      members,
+      teamName: members.length > 0 ? members[0].team_name : 'Team',
     });
   } catch (error) {
     console.error(error);
