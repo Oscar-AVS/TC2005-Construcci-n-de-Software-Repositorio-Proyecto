@@ -22,9 +22,9 @@ exports.getLog = (req, res) => {
 exports.getTeamLog = async (req, res) => {
   try {
     const teamId = 1;
+    const { from, to } = req.query;
 
-    const [entries] = await db.query(
-      `
+    let query = `
       SELECT
         l.id_log,
         l.completed,
@@ -42,15 +42,29 @@ exports.getTeamLog = async (req, res) => {
       INNER JOIN project p ON lp.id_project = p.id_project
       LEFT JOIN blocker b ON l.id_log = b.id_log AND b.resolution_status = 'pending'
       WHERE lp.id_team = ?
-      ORDER BY l.created_at DESC
-      `,
-      [teamId]
-    );
+    `;
+
+    const params = [teamId];
+
+    if (from) {
+      query += ' AND DATE(l.created_at) >= ?';
+      params.push(from);
+    }
+
+    if (to) {
+      query += ' AND DATE(l.created_at) <= ?';
+      params.push(to);
+    }
+
+    query += ' ORDER BY l.created_at DESC';
+
+    const [entries] = await db.query(query, params);
 
     res.render('team-leader/team-log', {
       currentPage: 'team-log',
       role: 'team-leader',
       entries,
+      filters: { from: from || '', to: to || '' },
     });
   } catch (error) {
     console.error(error);

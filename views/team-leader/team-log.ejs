@@ -6,33 +6,45 @@
   </div>
 
   <div class="report-card-body">
-    <div class="filter-row">
+    <form action="/team-leader/team-log" method="GET" class="filter-row">
       <div class="filter-group">
         <label class="form-label" for="filterMember">Team Member</label>
-        <select id="filterMember" class="form-select">
+        <select id="filterMember" class="form-select" disabled>
           <option value="">All Members</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterProject">Project</label>
-        <select id="filterProject" class="form-select">
+        <select id="filterProject" class="form-select" disabled>
           <option value="">All Projects</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterFrom">From</label>
-        <input type="date" id="filterFrom" class="form-input" />
+        <input
+          type="date"
+          id="filterFrom"
+          name="from"
+          class="form-input"
+          value="<%= filters && filters.from ? filters.from : '' %>"
+        />
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterTo">To</label>
-        <input type="date" id="filterTo" class="form-input" />
+        <input
+          type="date"
+          id="filterTo"
+          name="to"
+          class="form-input"
+          value="<%= filters && filters.to ? filters.to : '' %>"
+        />
       </div>
 
-      <button class="btn-submit" type="button">Filter</button>
-    </div>
+      <button class="btn-submit" type="submit">Filter</button>
+    </form>
   </div>
 </div>
 
