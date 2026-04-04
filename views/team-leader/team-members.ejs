@@ -4,19 +4,30 @@
   <div class="report-card-header">
     <h2><%= teamName %></h2>
 
-    <form action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 8px; align-items: center;">
-      <select name="id_user" required>
-        <option value="">Select user</option>
-        <% if (availableUsers && availableUsers.length > 0) { %>
-          <% availableUsers.forEach(user => { %>
-            <option value="<%= user.id_user %>"><%= user.full_name %> - <%= user.email %></option>
-          <% }) %>
-        <% } %>
-      </select>
+    <button class="btn-submit" type="button" id="toggleAddMemberPanel">
+      <i class="fa-solid fa-plus"></i> Add Member
+    </button>
+  </div>
 
-      <button class="btn-submit" type="submit">
-        <i class="fa-solid fa-plus"></i> Add Member
-      </button>
+  <div id="addMemberPanel" class="report-card" style="display: none; margin: 0 0 16px 0; padding: 16px;">
+    <form action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="id_user" style="font-size: 18px; font-weight: 700; color: #1f2a44;">Add new team member</label>        <select name="id_user" id="id_user" required style="min-width: 280px; padding: 10px 14px; border: 1px solid #dcdcdc; border-radius: 10px; font-size: 16px; font-weight: 600; color: #1f2a44; background-color: #fff;">
+          <option value="">Select user</option>
+          <% if (availableUsers && availableUsers.length > 0) { %>
+            <% availableUsers.forEach(user => { %>
+              <option value="<%= user.id_user %>"><%= user.full_name %> - <%= user.email %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: end;">
+        <button class="btn-submit" type="submit">
+          <i class="fa-solid fa-plus"></i> Confirm
+        </button>
+        <button class="btn-secondary" type="button" id="cancelAddMember">Cancel</button>
+      </div>
     </form>
   </div>
 
@@ -59,3 +70,24 @@
     <% } %>
   </div>
 </div>
+
+<script>
+  const toggleAddMemberPanel = document.getElementById('toggleAddMemberPanel');
+  const addMemberPanel = document.getElementById('addMemberPanel');
+  const cancelAddMember = document.getElementById('cancelAddMember');
+
+  if (toggleAddMemberPanel && addMemberPanel) {
+    toggleAddMemberPanel.addEventListener('click', () => {
+      addMemberPanel.style.display =
+        addMemberPanel.style.display === 'none' || addMemberPanel.style.display === ''
+          ? 'block'
+          : 'none';
+    });
+  }
+
+  if (cancelAddMember && addMemberPanel) {
+    cancelAddMember.addEventListener('click', () => {
+      addMemberPanel.style.display = 'none';
+    });
+  }
+</script>
