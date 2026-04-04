@@ -47,10 +47,27 @@ exports.getTeamMembers = async (req, res) => {
       [teamId]
     );
 
+    const [availableUsers] = await db.query(
+      `
+      SELECT 
+        u.id_user,
+        u.full_name,
+        u.email
+      FROM user u
+      WHERE u.id_user NOT IN (
+        SELECT ut.id_user
+        FROM user_team ut
+        WHERE ut.id_team = ?
+      )
+      `,
+      [teamId]
+    );
+
     res.render('team-leader/team-members', {
       currentPage: 'team-members',
       role: 'team-leader',
       members,
+      availableUsers,
       teamName: members.length > 0 ? members[0].team_name : 'Team',
     });
   } catch (error) {
@@ -78,4 +95,38 @@ exports.getProfile = (req, res) => {
     currentPage: 'profile',
     role: 'team-leader',
   });
+};
+
+exports.addTeamMember = async (req, res) => {
+  try {
+    const teamId = 1;
+    const { id_user } = req.body;
+
+    await db.query(
+      'INSERT INTO user_team (id_user, id_team) VALUES (?, ?)',
+      [id_user, teamId]
+    );
+
+    res.redirect('/team-leader/team-members');
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
+};
+
+exports.removeTeamMember = async (req, res) => {
+  try {
+    const teamId = 1;
+    const { id_user } = req.body;
+
+    await db.query(
+      'DELETE FROM user_team WHERE id_user = ? AND id_team = ?',
+      [id_user, teamId]
+    );
+
+    res.redirect('/team-leader/team-members');
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
 };
