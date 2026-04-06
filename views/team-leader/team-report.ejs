@@ -80,10 +80,14 @@
           <i class="fa-solid fa-trophy"></i>
           <h3>Achievements This Period</h3>
         </div>
+
         <ul class="report-list success">
           <% if (achievementsList && achievementsList.length > 0) { %>
             <% achievementsList.forEach(achievement => { %>
-              <li><strong><%= achievement.full_name %>:</strong> <%= achievement.description %></li>
+              <li>
+                <strong><%= achievement.full_name %>:</strong>
+                <%= achievement.description %>
+              </li>
             <% }) %>
           <% } else { %>
             <li>No approved achievements in this period.</li>
@@ -96,6 +100,7 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
           <h3>Current Blockers</h3>
         </div>
+
         <ul class="report-list blockers">
           <% if (blockersList && blockersList.length > 0) { %>
             <% blockersList.forEach(blocker => { %>
@@ -116,9 +121,11 @@
         <i class="fa-solid fa-chart-bar"></i>
         <h3>Member Activity</h3>
       </div>
+
       <div class="member-breakdown">
         <% if (memberActivity && memberActivity.length > 0) { %>
           <% const maxEntries = memberActivity[0].total_entries > 0 ? memberActivity[0].total_entries : 1; %>
+
           <% memberActivity.forEach(member => { %>
             <div class="breakdown-row">
               <div class="breakdown-member">
@@ -128,12 +135,15 @@
                 />
                 <span><%= member.full_name %></span>
               </div>
+
               <div class="breakdown-bar">
-                <div
-                  class="bar-fill"
-                  style="width: <%= (member.total_entries / maxEntries) * 100 %>%;"
-                ></div>
+                <progress
+                  class="activity-progress"
+                  value="<%= member.total_entries %>"
+                  max="<%= maxEntries %>"
+                ></progress>
               </div>
+
               <span class="breakdown-value"><%= member.total_entries %> entries</span>
             </div>
           <% }) %>
@@ -147,6 +157,7 @@
       <button class="btn-export-large" type="button">
         <i class="fa-solid fa-file-pdf"></i> PDF
       </button>
+
       <button class="btn-export-large" type="button">
         <i class="fa-solid fa-file-excel"></i> Excel
       </button>
