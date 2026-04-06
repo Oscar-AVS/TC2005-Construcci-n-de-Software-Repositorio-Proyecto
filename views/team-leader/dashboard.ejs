@@ -109,6 +109,58 @@
         </div>
       </div>
 
+            <!-- Pending Achievements -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <div class="header-with-icon success">
+            <i class="fa-solid fa-trophy"></i>
+            <h2>Pending Achievements</h2>
+          </div>
+        </div>
+
+        <div class="report-card-body">
+          <div class="blocker-list">
+            <% if (pendingAchievements && pendingAchievements.length > 0) { %>
+              <% pendingAchievements.forEach(achievement => { %>
+                <div class="blocker-item">
+                  <img
+                    src="<%= achievement.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                    alt="<%= achievement.full_name %>"
+                  />
+
+                  <div class="blocker-content">
+                    <p class="blocker-author"><%= achievement.full_name %></p>
+                    <p class="blocker-text"><%= achievement.description %></p>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; align-items: end; gap: 8px;">
+                    <span class="blocker-date"><%= new Date(achievement.created_at).toLocaleDateString('en-GB') %></span>
+
+                    <div style="display: flex; gap: 8px;">
+                      <form action="/team-leader/achievements/approve" method="POST">
+                        <input type="hidden" name="id_achievement" value="<%= achievement.id_achievement %>">
+                        <button class="btn-submit" type="submit" style="padding: 6px 12px; font-size: 14px;">
+                          Approve
+                        </button>
+                      </form>
+
+                      <form action="/team-leader/achievements/reject" method="POST">
+                        <input type="hidden" name="id_achievement" value="<%= achievement.id_achievement %>">
+                        <button class="btn-secondary" type="submit" style="padding: 6px 12px; font-size: 14px;">
+                          Reject
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p>No pending achievements.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
       <!-- Team Members Overview -->
       <div class="report-card">
         <div class="report-card-header">

@@ -31,10 +31,31 @@ exports.getDashboard = async (req, res) => {
       [teamId]
     );
 
+    const [pendingAchievements] = await db.query(
+      `
+      SELECT
+        a.id_achievement,
+        a.description,
+        a.created_at,
+        a.validation_status,
+        u.id_user,
+        u.full_name,
+        u.avatar
+      FROM achievement a
+      INNER JOIN user u ON a.id_user = u.id_user
+      INNER JOIN user_team ut ON u.id_user = ut.id_user
+      WHERE ut.id_team = ?
+        AND a.validation_status = 'pending'
+      ORDER BY a.created_at DESC
+      `,
+      [teamId]
+    );
+
     res.render('team-leader/dashboard', {
       currentPage: 'dashboard',
       role: 'team-leader',
       pendingBlockers,
+      pendingAchievements,
     });
   } catch (error) {
     console.error(error);
@@ -222,3 +243,50 @@ exports.resolveBlocker = async (req, res) => {
     res.send('Error DB');
   }
 };
+
+exports.approveAchievement = async (req, res) => {
+  try {
+    const leaderId = 1;
+    const { id_achievement } = req.body;
+
+    await db.query(
+      `
+      UPDATE achievement
+      SET validation_status = 'approved',
+          validated_by = ?,
+          validated_at = NOW()
+      WHERE id_achievement = ?
+      `,
+      [leaderId, id_achievement]
+    );
+
+    res.redirect('/team-leader/dashboard');
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
+};
+
+exports.rejectAchievement = async (req, res) => {
+  try {
+    const leaderId = 1;
+    const { id_achievement } = req.body;
+
+    await db.query(
+      `
+      UPDATE achievement
+      SET validation_status = 'rejected',
+          validated_by = ?,
+          validated_at = NOW()
+      WHERE id_achievement = ?
+      `,
+      [leaderId, id_achievement]
+    );
+
+    res.redirect('/team-leader/dashboard');
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
+};
+  
