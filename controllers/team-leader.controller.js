@@ -173,11 +173,128 @@ exports.getTeamMembers = async (req, res) => {
   }
 };
 
-exports.getTeamReport = (req, res) => {
-  res.render('team-leader/team-report', {
-    currentPage: 'team-report',
-    role: 'team-leader',
-  });
+exports.getTeamReport = async (req, res) => {
+  try {
+    const teamId = 1;
+    const { from, to } = req.query;
+
+    const reportFrom = from || '2026-01-01';
+    const reportTo = to || '2026-12-31';
+
+    const [teamMembers] = await db.query(
+      `
+      SELECT COUNT(*) AS total_members
+      FROM user_team
+      WHERE id_team = ?
+      `,
+      [teamId]
+    );
+
+    const [entriesResult] = await db.query(
+      `
+      SELECT COUNT(*) AS total_entries
+      FROM log l
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      WHERE lp.id_team = ?
+        AND DATE(l.created_at) BETWEEN ? AND ?
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    const [achievementsResult] = await db.query(
+      `
+      SELECT COUNT(*) AS total_achievements
+      FROM achievement a
+      INNER JOIN user_team ut ON a.id_user = ut.id_user
+      WHERE ut.id_team = ?
+        AND a.validation_status = 'approved'
+        AND DATE(a.created_at) BETWEEN ? AND ?
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    const [blockersResult] = await db.query(
+      `
+      SELECT COUNT(*) AS total_blockers
+      FROM blocker b
+      INNER JOIN log l ON b.id_log = l.id_log
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      WHERE lp.id_team = ?
+        AND b.resolution_status = 'pending'
+        AND DATE(l.created_at) BETWEEN ? AND ?
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    const [achievementsList] = await db.query(
+      `
+      SELECT
+        a.description,
+        u.full_name
+      FROM achievement a
+      INNER JOIN user u ON a.id_user = u.id_user
+      INNER JOIN user_team ut ON u.id_user = ut.id_user
+      WHERE ut.id_team = ?
+        AND a.validation_status = 'approved'
+        AND DATE(a.created_at) BETWEEN ? AND ?
+      ORDER BY a.created_at DESC
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    const [blockersList] = await db.query(
+      `
+      SELECT
+        b.description,
+        u.full_name
+      FROM blocker b
+      INNER JOIN log l ON b.id_log = l.id_log
+      INNER JOIN user u ON l.id_user = u.id_user
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      WHERE lp.id_team = ?
+        AND b.resolution_status = 'pending'
+        AND DATE(l.created_at) BETWEEN ? AND ?
+      ORDER BY l.created_at DESC
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    const [memberActivity] = await db.query(
+      `
+      SELECT
+        u.full_name,
+        u.avatar,
+        COUNT(l.id_log) AS total_entries
+      FROM user u
+      INNER JOIN user_team ut ON u.id_user = ut.id_user
+      LEFT JOIN log l ON u.id_user = l.id_user
+      LEFT JOIN log_project lp ON l.id_log = lp.id_log
+      WHERE ut.id_team = ?
+        AND (l.id_log IS NULL OR DATE(l.created_at) BETWEEN ? AND ?)
+      GROUP BY u.id_user, u.full_name, u.avatar
+      ORDER BY total_entries DESC
+      `,
+      [teamId, reportFrom, reportTo]
+    );
+
+    res.render('team-leader/team-report', {
+      currentPage: 'team-report',
+      role: 'team-leader',
+      filters: { from: reportFrom, to: reportTo },
+      summary: {
+        totalMembers: teamMembers[0].total_members,
+        totalEntries: entriesResult[0].total_entries,
+        totalAchievements: achievementsResult[0].total_achievements,
+        totalBlockers: blockersResult[0].total_blockers,
+      },
+      achievementsList,
+      blockersList,
+      memberActivity,
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error DB');
+  }
 };
 
 exports.getSelfReview = (req, res) => {
