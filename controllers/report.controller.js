@@ -1,5 +1,6 @@
+// controllers/report.controller.js
 const PDFDocument = require('pdfkit');
-const { getReportData } = require('../models/report.model');
+const { getReportData } = require('../models/Report.model');
 
 const HARDCODED_MANAGER = {
   Id_Usuario: 1,

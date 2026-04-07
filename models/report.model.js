@@ -1,3 +1,4 @@
+// models/Report.model.js
 const db = require('../util/database');
 
 const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
