@@ -173,6 +173,41 @@ exports.getTeamMembers = async (req, res) => {
   }
 };
 
+exports.searchAvailableUsers = async (req, res) => {
+  try {
+    const teamId = 1;
+    const search = (req.query.q || '').trim();
+
+    const [users] = await db.query(
+      `
+      SELECT 
+        u.id_user,
+        u.full_name,
+        u.email
+      FROM user u
+      WHERE u.id_user NOT IN (
+        SELECT ut.id_user
+        FROM user_team ut
+        WHERE ut.id_team = ?
+      )
+      AND (
+        u.full_name LIKE ?
+        OR u.email LIKE ?
+        OR u.username LIKE ?
+      )
+      ORDER BY u.full_name ASC
+      LIMIT 10
+      `,
+      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+    );
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error DB' });
+  }
+};
+
 exports.getTeamReport = async (req, res) => {
   try {
     const teamId = 1;
@@ -406,4 +441,3 @@ exports.rejectAchievement = async (req, res) => {
     res.send('Error DB');
   }
 };
-  
