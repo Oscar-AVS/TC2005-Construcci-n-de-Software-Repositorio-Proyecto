@@ -73,4 +73,10 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
   };
 };
 
-module.exports = { getReportData };
+
+const getAiSummaryData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
+  const data = await getReportData(idEquipo, idProyecto, fechaInicio, fechaFin);
+  return data;
+};
+
+module.exports = { getReportData, getAiSummaryData };
