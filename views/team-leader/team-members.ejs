@@ -1,4 +1,4 @@
-<h1 id="pageTitle" class="page-title">Team Members</h1>
+h1 id="pageTitle" class="page-title">Team Members</h1>
 
 <div class="report-card">
   <div class="report-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
@@ -63,30 +63,27 @@
         <div
           class="member-card"
           data-member-id="<%= member.id_user %>"
+          style="display: flex; align-items: center; justify-content: space-between; gap: 20px;"
         >
-          <div class="member-avatar">
-            <img
-              src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
-              alt="<%= member.full_name %>"
-            />
-          </div>
+          <div style="display: flex; align-items: center; gap: 18px;">
+            <div class="member-avatar">
+              <img
+                src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                alt="<%= member.full_name %>"
+              />
+            </div>
 
-          <div class="member-info">
-            <h3 class="member-name"><%= member.full_name %></h3>
-            <p class="member-role"><%= member.role === 'team-leader' ? 'Team Leader' : member.role === 'project-manager' ? 'Project Manager' : member.role === 'manager' ? 'Manager' : member.role === 'admin' ? 'Administrator' : 'Employee' %></p>
-            <p class="member-email"><%= member.email %></p>
-          </div>
-
-          <div class="member-stats">
-            <div class="stat-item">
-              <span class="stat-value">--</span>
-              <span class="stat-label">Entries this week</span>
+            <div class="member-info">
+              <h3 class="member-name"><%= member.full_name %></h3>
+              <p class="member-role"><%= member.role === 'team-leader' ? 'Team Leader' : member.role === 'project-manager' ? 'Project Manager' : member.role === 'manager' ? 'Manager' : member.role === 'admin' ? 'Administrator' : 'Employee' %></p>
+              <p class="member-email"><%= member.email %></p>
             </div>
           </div>
 
           <div class="member-actions">
-            <form action="/team-leader/team-members/remove" method="POST">
+            <form action="/team-leader/team-members/remove" method="POST" class="remove-member-form">
               <input type="hidden" name="id_user" value="<%= member.id_user %>">
+              <input type="hidden" name="member_name" value="<%= member.full_name %>">
               <button class="btn-icon btn-danger" type="submit" title="Remove from team">
                 <i class="fa-solid fa-user-minus"></i>
               </button>
@@ -100,6 +97,40 @@
   </div>
 </div>
 
+<div
+  id="removeMemberModal"
+  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
+>
+  <div
+    style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);"
+  >
+    <h3 style="margin: 0 0 10px 0; font-size: 22px; color: #1f2a44;">Remove team member</h3>
+    <p id="removeMemberText" style="margin: 0 0 20px 0; color: #5f6b85; line-height: 1.5;">
+      Are you sure you want to remove this member from the team?
+    </p>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button
+        type="button"
+        id="cancelRemoveMember"
+        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
+      >
+        <i class="fa-solid fa-xmark"></i>
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="confirmRemoveMember"
+        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
+      >
+        <i class="fa-solid fa-check"></i>
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   const toggleAddMemberPanel = document.getElementById('toggleAddMemberPanel');
   const addMemberPanel = document.getElementById('addMemberPanel');
@@ -108,6 +139,13 @@
   const userSelect = document.getElementById('id_user');
   const teamMemberFinder = document.getElementById('teamMemberFinder');
   const memberCards = document.querySelectorAll('.member-card');
+
+  const removeMemberModal = document.getElementById('removeMemberModal');
+  const removeMemberText = document.getElementById('removeMemberText');
+  const cancelRemoveMember = document.getElementById('cancelRemoveMember');
+  const confirmRemoveMember = document.getElementById('confirmRemoveMember');
+
+  let pendingRemoveForm = null;
 
   if (toggleAddMemberPanel && addMemberPanel) {
     toggleAddMemberPanel.addEventListener('click', () => {
@@ -175,7 +213,7 @@
             card.style.outline = query && shouldShow ? '2px solid #f25c2a' : 'none';
           });
 
-          const firstVisible = document.querySelector('.member-card[style*="outline"]');
+          const firstVisible = Array.from(memberCards).find(card => card.style.outline !== 'none' && card.style.display !== 'none');
           if (firstVisible) {
             firstVisible.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
@@ -183,6 +221,42 @@
           console.error('Error finding team members:', error);
         }
       }, 350);
+    });
+  }
+
+  document.querySelectorAll('.remove-member-form').forEach(form => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const memberName = form.querySelector('input[name="member_name"]').value;
+      pendingRemoveForm = form;
+
+      removeMemberText.textContent = `Are you sure you want to remove ${memberName} from the team?`;
+      removeMemberModal.style.display = 'flex';
+    });
+  });
+
+  if (cancelRemoveMember) {
+    cancelRemoveMember.addEventListener('click', () => {
+      pendingRemoveForm = null;
+      removeMemberModal.style.display = 'none';
+    });
+  }
+
+  if (confirmRemoveMember) {
+    confirmRemoveMember.addEventListener('click', () => {
+      if (pendingRemoveForm) {
+        pendingRemoveForm.submit();
+      }
+    });
+  }
+
+  if (removeMemberModal) {
+    removeMemberModal.addEventListener('click', (event) => {
+      if (event.target === removeMemberModal) {
+        pendingRemoveForm = null;
+        removeMemberModal.style.display = 'none';
+      }
     });
   }
 </script>
