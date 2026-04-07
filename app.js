@@ -6,8 +6,16 @@
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
+const db = require('./models/db');
 
 const app = express();
+db.query('SELECT DATABASE() AS db_name')
+  .then(([rows]) => {
+    console.log('Base conectada:', rows[0].db_name);
+  })
+  .catch((error) => {
+    console.error('Error de conexion a BD:', error.message);
+  });
 
 // View engine configuration
 app.set('view engine', 'ejs');

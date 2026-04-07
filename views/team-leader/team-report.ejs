@@ -1,42 +1,50 @@
 <h1 id="pageTitle" class="page-title">Team Report</h1>
 
-<!-- Generate Report -->
 <div class="report-card">
   <div class="report-card-header">
     <h2>Generate Report</h2>
   </div>
 
   <div class="report-card-body">
-    <div class="filter-row">
+    <form action="/team-leader/team-report" method="GET" class="filter-row">
       <div class="filter-group">
         <label class="form-label" for="reportFrom">From</label>
-        <input type="date" id="reportFrom" class="form-input" />
+        <input
+          type="date"
+          id="reportFrom"
+          name="from"
+          class="form-input"
+          value="<%= filters && filters.from ? filters.from : '' %>"
+        />
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="reportTo">To</label>
-        <input type="date" id="reportTo" class="form-input" />
+        <input
+          type="date"
+          id="reportTo"
+          name="to"
+          class="form-input"
+          value="<%= filters && filters.to ? filters.to : '' %>"
+        />
       </div>
 
-      <button class="btn-submit" type="button">Generate</button>
-    </div>
+      <button class="btn-submit" type="submit">Generate</button>
+    </form>
   </div>
 </div>
 
-<!-- Report Content -->
 <div class="report-card">
   <div class="report-card-header">
-    <h2>Mufasa Solutions — Weekly Summary</h2>
+    <h2>Team Weekly Summary</h2>
   </div>
 
   <div class="report-card-body">
-
-    <!-- Stats Summary -->
     <div class="report-stats-grid">
       <div class="report-stat-card">
         <i class="fa-solid fa-users"></i>
         <div class="report-stat-info">
-          <span class="report-stat-value">3</span>
+          <span class="report-stat-value"><%= summary.totalMembers %></span>
           <span class="report-stat-label">Team Members</span>
         </div>
       </div>
@@ -44,7 +52,7 @@
       <div class="report-stat-card">
         <i class="fa-solid fa-clipboard-list"></i>
         <div class="report-stat-info">
-          <span class="report-stat-value">37</span>
+          <span class="report-stat-value"><%= summary.totalEntries %></span>
           <span class="report-stat-label">Total Entries</span>
         </div>
       </div>
@@ -52,7 +60,7 @@
       <div class="report-stat-card">
         <i class="fa-solid fa-trophy"></i>
         <div class="report-stat-info">
-          <span class="report-stat-value">5</span>
+          <span class="report-stat-value"><%= summary.totalAchievements %></span>
           <span class="report-stat-label">Achievements</span>
         </div>
       </div>
@@ -60,101 +68,99 @@
       <div class="report-stat-card">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <div class="report-stat-info">
-          <span class="report-stat-value">2</span>
+          <span class="report-stat-value"><%= summary.totalBlockers %></span>
           <span class="report-stat-label">Active Blockers</span>
         </div>
       </div>
     </div>
 
-    <!-- Report Sections Grid -->
     <div class="report-sections-grid">
-
-      <!-- Achievements -->
       <div class="report-section-card">
         <div class="section-header">
           <i class="fa-solid fa-trophy"></i>
           <h3>Achievements This Period</h3>
         </div>
+
         <ul class="report-list success">
-          <li>Completed MVC architecture implementation</li>
-          <li>Deployed staging environment</li>
-          <li>Finished employee module with all views</li>
-          <li>Integrated Chart.js for activity visualization</li>
-          <li>Set up MySQL database schema</li>
+          <% if (achievementsList && achievementsList.length > 0) { %>
+            <% achievementsList.forEach(achievement => { %>
+              <li>
+                <strong><%= achievement.full_name %>:</strong>
+                <%= achievement.description %>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>No approved achievements in this period.</li>
+          <% } %>
         </ul>
       </div>
 
-      <!-- Blockers -->
       <div class="report-section-card warning">
         <div class="section-header">
           <i class="fa-solid fa-triangle-exclamation"></i>
           <h3>Current Blockers</h3>
         </div>
+
         <ul class="report-list blockers">
-          <li>
-            <span class="blocker-owner">Oscar Vilchis</span>
-            <span class="blocker-desc">Waiting for production server access</span>
-          </li>
-          <li>
-            <span class="blocker-owner">Lakshmi Martinez Jara</span>
-            <span class="blocker-desc">Pending API documentation from Slack</span>
-          </li>
+          <% if (blockersList && blockersList.length > 0) { %>
+            <% blockersList.forEach(blocker => { %>
+              <li>
+                <span class="blocker-owner"><%= blocker.full_name %></span>
+                <span class="blocker-desc"><%= blocker.description %></span>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>No active blockers in this period.</li>
+          <% } %>
         </ul>
       </div>
-
     </div>
 
-    <!-- Member Activity -->
     <div class="report-section-card full-width">
       <div class="section-header">
         <i class="fa-solid fa-chart-bar"></i>
         <h3>Member Activity</h3>
       </div>
+
       <div class="member-breakdown">
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-            <span>Francisco Arreola</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 40%;"></div>
-          </div>
-          <span class="breakdown-value">15 entries</span>
-        </div>
+        <% if (memberActivity && memberActivity.length > 0) { %>
+          <% const maxEntries = memberActivity[0].total_entries > 0 ? memberActivity[0].total_entries : 1; %>
 
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-            <span>Lakshmi Martinez Jara</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 32%;"></div>
-          </div>
-          <span class="breakdown-value">12 entries</span>
-        </div>
+          <% memberActivity.forEach(member => { %>
+            <div class="breakdown-row">
+              <div class="breakdown-member">
+                <img
+                  src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                  alt="<%= member.full_name %>"
+                />
+                <span><%= member.full_name %></span>
+              </div>
 
-        <div class="breakdown-row">
-          <div class="breakdown-member">
-            <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-            <span>Oscar Vilchis</span>
-          </div>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: 27%;"></div>
-          </div>
-          <span class="breakdown-value">10 entries</span>
-        </div>
+              <div class="breakdown-bar">
+                <progress
+                  class="activity-progress"
+                  value="<%= member.total_entries %>"
+                  max="<%= maxEntries %>"
+                ></progress>
+              </div>
+
+              <span class="breakdown-value"><%= member.total_entries %> entries</span>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>No member activity found in this period.</p>
+        <% } %>
       </div>
     </div>
 
-    <!-- Export Actions at Bottom Left -->
     <div class="action-row-left">
       <button class="btn-export-large" type="button">
         <i class="fa-solid fa-file-pdf"></i> PDF
       </button>
+
       <button class="btn-export-large" type="button">
         <i class="fa-solid fa-file-excel"></i> Excel
       </button>
     </div>
-
   </div>
 </div>
