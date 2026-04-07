@@ -21,7 +21,7 @@
   </div>
 
   <div id="addMemberPanel" class="report-card" style="display: none; margin: 0 0 16px 0; padding: 16px;">
-    <form action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <form id="addMemberForm" action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
       <div style="display: flex; flex-direction: column; gap: 6px; min-width: 320px;">
         <label for="memberSearch" style="font-size: 18px; font-weight: 700; color: #1f2a44;">Add new team member</label>
 
@@ -30,25 +30,21 @@
           id="memberSearch"
           class="form-input"
           placeholder="Search by name, email or username"
+          autocomplete="off"
           style="min-width: 280px;"
         />
 
-        <select
-          name="id_user"
-          id="id_user"
-          required
-          style="min-width: 280px; padding: 10px 14px; border: 1px solid #dcdcdc; border-radius: 10px; font-size: 16px; font-weight: 600; color: #1f2a44; background-color: #fff;"
-        >
-          <option value="">Select user</option>
-          <% if (availableUsers && availableUsers.length > 0) { %>
-            <% availableUsers.forEach(user => { %>
-              <option value="<%= user.id_user %>"><%= user.full_name %> - <%= user.email %></option>
-            <% }) %>
-          <% } %>
-        </select>
+        <input type="hidden" name="id_user" id="selectedUserId" required>
+
+        <div
+          id="memberSuggestions"
+            style="display: none; width: 100%; margin-top: 6px; background: #fff; border: 1px solid #dcdcdc; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden;"
+        ></div>
+
+        <small id="selectedUserLabel" style="color: #5f6b85; min-height: 18px;"></small>
       </div>
 
-      <div style="display: flex; gap: 8px; align-items: end;">
+      <div style="display: flex; gap: 8px; align-items: end; padding-top: 30px;">
         <button class="btn-submit" type="submit">
           <i class="fa-solid fa-plus"></i> Confirm
         </button>
@@ -135,8 +131,13 @@
   const toggleAddMemberPanel = document.getElementById('toggleAddMemberPanel');
   const addMemberPanel = document.getElementById('addMemberPanel');
   const cancelAddMember = document.getElementById('cancelAddMember');
+  const addMemberForm = document.getElementById('addMemberForm');
+
   const memberSearch = document.getElementById('memberSearch');
-  const userSelect = document.getElementById('id_user');
+  const memberSuggestions = document.getElementById('memberSuggestions');
+  const selectedUserId = document.getElementById('selectedUserId');
+  const selectedUserLabel = document.getElementById('selectedUserLabel');
+
   const teamMemberFinder = document.getElementById('teamMemberFinder');
   const memberCards = document.querySelectorAll('.member-card');
 
@@ -146,6 +147,8 @@
   const confirmRemoveMember = document.getElementById('confirmRemoveMember');
 
   let pendingRemoveForm = null;
+  let searchTimeout;
+  let finderTimeout;
 
   if (toggleAddMemberPanel && addMemberPanel) {
     toggleAddMemberPanel.addEventListener('click', () => {
@@ -159,38 +162,112 @@
   if (cancelAddMember && addMemberPanel) {
     cancelAddMember.addEventListener('click', () => {
       addMemberPanel.style.display = 'none';
+      memberSearch.value = '';
+      selectedUserId.value = '';
+      selectedUserLabel.textContent = '';
+      memberSuggestions.style.display = 'none';
+      memberSuggestions.innerHTML = '';
     });
   }
 
-  let searchTimeout;
+  function renderSuggestions(users) {
+    memberSuggestions.innerHTML = '';
 
-  if (memberSearch && userSelect) {
+    if (!users.length) {
+      memberSuggestions.innerHTML = `
+        <div style="padding: 12px 14px; color: #5f6b85; font-size: 14px;">
+          No matching users found
+        </div>
+      `;
+      memberSuggestions.style.display = 'block';
+      return;
+    }
+
+    users.forEach(user => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.style.width = '100%';
+      item.style.border = 'none';
+      item.style.background = '#fff';
+      item.style.padding = '12px 14px';
+      item.style.textAlign = 'left';
+      item.style.cursor = 'pointer';
+      item.style.display = 'flex';
+      item.style.flexDirection = 'column';
+      item.style.gap = '2px';
+      item.onmouseenter = () => item.style.background = '#f7f8fb';
+      item.onmouseleave = () => item.style.background = '#fff';
+
+      item.innerHTML = `
+        <span style="font-weight: 700; color: #1f2a44;">${user.full_name}</span>
+        <span style="font-size: 14px; color: #5f6b85;">${user.email}</span>
+      `;
+
+      item.addEventListener('click', () => {
+        memberSearch.value = user.full_name;
+        selectedUserId.value = user.id_user;
+        selectedUserLabel.textContent = `Selected: ${user.full_name} - ${user.email}`;
+        memberSuggestions.style.display = 'none';
+      });
+
+      memberSuggestions.appendChild(item);
+    });
+
+    memberSuggestions.style.display = 'block';
+  }
+
+  if (memberSearch) {
     memberSearch.addEventListener('input', () => {
       clearTimeout(searchTimeout);
+      selectedUserId.value = '';
+      selectedUserLabel.textContent = '';
 
       searchTimeout = setTimeout(async () => {
         const query = memberSearch.value.trim();
 
+        if (!query) {
+          memberSuggestions.style.display = 'none';
+          memberSuggestions.innerHTML = '';
+          return;
+        }
+
         try {
           const response = await fetch(`/team-leader/team-members/search?q=${encodeURIComponent(query)}`);
           const users = await response.json();
-
-          userSelect.innerHTML = '<option value="">Select user</option>';
-
-          users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id_user;
-            option.textContent = `${user.full_name} - ${user.email}`;
-            userSelect.appendChild(option);
-          });
+          renderSuggestions(users);
         } catch (error) {
           console.error('Error searching users:', error);
         }
-      }, 400);
+      }, 300);
+    });
+
+    memberSearch.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+      }
     });
   }
 
-  let finderTimeout;
+  if (addMemberForm) {
+    addMemberForm.addEventListener('submit', (event) => {
+      if (!selectedUserId.value) {
+        event.preventDefault();
+        selectedUserLabel.textContent = 'Please select a user from the suggestion list';
+        selectedUserLabel.style.color = '#e74c3c';
+      }
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    if (
+      memberSuggestions &&
+      memberSearch &&
+      !memberSuggestions.contains(event.target) &&
+      event.target !== memberSearch
+    ) {
+      memberSuggestions.style.display = 'none';
+    }
+  });
 
   if (teamMemberFinder) {
     teamMemberFinder.addEventListener('input', () => {
