@@ -208,6 +208,40 @@ exports.searchAvailableUsers = async (req, res) => {
   }
 };
 
+exports.findTeamMembers = async (req, res) => {
+  try {
+    const teamId = 1;
+    const search = (req.query.q || '').trim();
+
+    const [members] = await db.query(
+      `
+      SELECT
+        u.id_user,
+        u.full_name,
+        u.email,
+        u.avatar,
+        u.role
+      FROM user_team ut
+      INNER JOIN user u ON ut.id_user = u.id_user
+      WHERE ut.id_team = ?
+        AND (
+          u.full_name LIKE ?
+          OR u.email LIKE ?
+          OR u.username LIKE ?
+        )
+      ORDER BY u.full_name ASC
+      LIMIT 10
+      `,
+      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+    );
+
+    res.status(200).json(members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error DB' });
+  }
+};
+
 exports.getTeamReport = async (req, res) => {
   try {
     const teamId = 1;

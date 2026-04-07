@@ -13,6 +13,7 @@ router.get('/log', teamLeaderController.getLog);
 router.get('/team-log', teamLeaderController.getTeamLog);
 router.get('/team-members', teamLeaderController.getTeamMembers);
 router.get('/team-members/search', teamLeaderController.searchAvailableUsers);
+router.get('/team-members/find', teamLeaderController.findTeamMembers);
 router.post('/team-members/add', teamLeaderController.addTeamMember);
 router.post('/team-members/remove', teamLeaderController.removeTeamMember);
 router.post('/blockers/resolve', teamLeaderController.resolveBlocker);
