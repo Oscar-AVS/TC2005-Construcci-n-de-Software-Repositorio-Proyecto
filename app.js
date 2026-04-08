@@ -6,7 +6,7 @@
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
-const db = require('./models/db');
+const db = require('./util/database');
 
 const app = express();
 db.query('SELECT DATABASE() AS db_name')
