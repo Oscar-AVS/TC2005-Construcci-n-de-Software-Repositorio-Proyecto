@@ -110,7 +110,7 @@
                 class="btn-icon <%= user.is_active ? 'btn-danger' : '' %>"
                 type="button"
                 title="<%= user.is_active ? 'Deactivate' : 'Activate' %>"
-                onclick="toggleStatus(<%= user.id %>, <%= user.is_active %>)"
+                onclick="openToggleModal(<%= user.id %>, <%= user.is_active %>)"
                 id="toggle-btn-<%= user.id %>"
               >
                 <i
@@ -174,7 +174,106 @@
   </div>
 </div>
 
+<!-- Toggle Status Modal -->
+<div
+  id="toggleStatusModal"
+  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
+>
+  <div style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
+    <h3 style="margin: 0 0 10px 0; font-size: 22px; color: #1f2a44;" id="toggleModalTitle">Deactivate account</h3>
+    <p id="toggleModalText" style="margin: 0 0 20px 0; color: #5f6b85; line-height: 1.5;">Are you sure you want to deactivate this account?</p>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button
+        type="button"
+        id="cancelToggleBtn"
+        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
+      >
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+      <button
+        type="button"
+        id="confirmToggleBtn"
+        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
+      >
+        <i class="fa-solid fa-check"></i> Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
+  let pendingToggleUserId = null;
+  let pendingToggleStatus = null;
+
+  function openToggleModal(userId, currentStatus) {
+    pendingToggleUserId = userId;
+    pendingToggleStatus = currentStatus;
+
+    document.getElementById('toggleModalTitle').textContent = currentStatus ? 'Deactivate account' : 'Activate account';
+    document.getElementById('toggleModalText').textContent = currentStatus
+      ? 'Are you sure you want to deactivate this account?'
+      : 'Do you want to reactivate this account?';
+
+    document.getElementById('toggleStatusModal').style.display = 'flex';
+  }
+
+  document.getElementById('cancelToggleBtn').addEventListener('click', () => {
+    pendingToggleUserId = null;
+    pendingToggleStatus = null;
+    document.getElementById('toggleStatusModal').style.display = 'none';
+  });
+
+  document.getElementById('confirmToggleBtn').addEventListener('click', async () => {
+    document.getElementById('toggleStatusModal').style.display = 'none';
+
+    try {
+      const res = await fetch(`/admin/users/${pendingToggleUserId}/toggle-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (res.redirected || !res.ok) {
+        location.reload();
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert('Something went wrong. No changes were made.');
+        return;
+      }
+
+      const isNowActive = data.is_active === 1;
+
+      const badge = document.getElementById(`status-badge-${pendingToggleUserId}`);
+      badge.textContent = isNowActive ? 'Active' : 'Inactive';
+      badge.className = `status-badge ${isNowActive ? 'active' : 'inactive'}`;
+
+      const btn = document.getElementById(`toggle-btn-${pendingToggleUserId}`);
+      btn.title = isNowActive ? 'Deactivate' : 'Activate';
+      btn.className = `btn-icon ${isNowActive ? 'btn-danger' : ''}`;
+
+      const icon = document.getElementById(`toggle-icon-${pendingToggleUserId}`);
+      icon.className = `fa-solid ${isNowActive ? 'fa-user-slash' : 'fa-user-check'}`;
+
+      btn.setAttribute('onclick', `openToggleModal(${pendingToggleUserId}, ${isNowActive ? 1 : 0})`);
+
+    } catch (err) {
+      console.error('toggleStatus error:', err);
+      alert('Connection error. Please try again.');
+    }
+  });
+
+  document.getElementById('toggleStatusModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('toggleStatusModal')) {
+      pendingToggleUserId = null;
+      pendingToggleStatus = null;
+      document.getElementById('toggleStatusModal').style.display = 'none';
+    }
+  });
+
   function openEditModal(id, fullName, email, username, idRole) {
     document.getElementById('editUserId').value = id;
     document.getElementById('editFullName').value = fullName;
@@ -191,52 +290,4 @@
   document.getElementById('editUserModal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('editUserModal')) closeEditModal();
   });
-
-  async function toggleStatus(userId, currentStatus) {
-    const confirmed = confirm(
-      currentStatus
-        ? 'Are you sure you want to deactivate this account?'
-        : 'Do you want to reactivate this account?'
-    );
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch(`/admin/users/${userId}/toggle-status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      const data = await res.json();
-
-      if (res.status === 404) {
-        alert('User not found. Refreshing list...');
-        location.reload();
-        return;
-      }
-
-      if (!res.ok || !data.success) {
-        alert('Something went wrong. No changes were made.');
-        return;
-      }
-
-      const isNowActive = data.is_active === 1;
-
-      const badge = document.getElementById(`status-badge-${userId}`);
-      badge.textContent = isNowActive ? 'Active' : 'Inactive';
-      badge.className = `status-badge ${isNowActive ? 'active' : 'inactive'}`;
-
-      const btn = document.getElementById(`toggle-btn-${userId}`);
-      btn.title = isNowActive ? 'Deactivate' : 'Activate';
-      btn.className = `btn-icon ${isNowActive ? 'btn-danger' : ''}`;
-
-      const icon = document.getElementById(`toggle-icon-${userId}`);
-      icon.className = `fa-solid ${isNowActive ? 'fa-user-slash' : 'fa-user-check'}`;
-
-      btn.setAttribute('onclick', `toggleStatus(${userId}, ${isNowActive ? 1 : 0})`);
-
-    } catch (err) {
-      console.error('toggleStatus error:', err);
-      alert('Connection error. Please try again.');
-    }
-  }
 </script>
