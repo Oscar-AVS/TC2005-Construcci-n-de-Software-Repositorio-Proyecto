@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('../partials/head') %>
+  <body>
+    <div id="loginScreen" class="login-screen">
+      <div class="login-card">
+
+        <div class="login-brand">
+          <div class="brand-badge"><span>C</span></div>
+          <span class="brand-name">Change</span>
+        </div>
+
+        <h1 class="login-title">Create Account</h1>
+        <p class="login-sub">Fill in your details to get started</p>
+
+        <form class="login-form" action="/signup" method="POST">
+
+          <div class="lf-field">
+            <label class="lf-label" for="fullName">Full Name</label>
+            <div class="lf-input-wrap">
+              <i class="fa-regular fa-user lf-icon" aria-hidden="true"></i>
+              <input
+                id="fullName"
+                name="full_name"
+                type="text"
+                placeholder="Your full name"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="lf-field">
+            <label class="lf-label" for="email">Email</label>
+            <div class="lf-input-wrap">
+              <i class="fa-regular fa-envelope lf-icon" aria-hidden="true"></i>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="email@change.org"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="lf-field">
+            <label class="lf-label" for="signupUser">Username</label>
+            <div class="lf-input-wrap">
+              <i class="fa-solid fa-at lf-icon" aria-hidden="true"></i>
+              <input
+                id="signupUser"
+                name="username"
+                type="text"
+                placeholder="Your username"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="lf-field">
+            <label class="lf-label" for="signupPass">Password</label>
+            <div class="lf-input-wrap">
+              <i class="fa-solid fa-lock lf-icon" aria-hidden="true"></i>
+              <input
+                id="signupPass"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                id="togglePass"
+                class="lf-eye"
+                type="button"
+                tabindex="-1"
+                aria-label="Show password"
+              >
+                <i id="eyeIcon" class="fa-regular fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <p id="signupError" class="lf-error" aria-live="polite"><%= typeof error !== 'undefined' ? error : '' %></p>
+
+          <button id="signupBtn" class="btn-login" type="submit">
+            <span>Create Account</span>
+            <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+          </button>
+
+          <p style="text-align: center; margin-top: 16px; color: #5f6b85; font-size: 14px;">
+            Already have an account?
+            <a href="/login" style="color: #f25c2a; font-weight: 700;">Log in</a>
+          </p>
+
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const passwordInput = document.getElementById('signupPass');
+      const toggleBtn = document.getElementById('togglePass');
+      const eyeIcon = document.getElementById('eyeIcon');
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const isPassword = passwordInput.type === 'password';
+          passwordInput.type = isPassword ? 'text' : 'password';
+          eyeIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
+      }
+    </script>
+  </body>
+</html>

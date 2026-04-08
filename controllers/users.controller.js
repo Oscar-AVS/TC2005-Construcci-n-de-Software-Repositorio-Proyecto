@@ -81,3 +81,32 @@ exports.getLogout = (req, res) => {
     res.redirect('/login');
   });
 };
+
+exports.getSignup = (req, res) => {
+  res.render('auth/signup', {
+    layout: false,
+    error: '',
+  });
+};
+
+exports.postSignup = (req, res) => {
+  const { full_name, email, username, password } = req.body;
+
+  bcrypt.hash(password, 12)
+    .then((hashedPassword) => {
+      return User.create(full_name, email, username, hashedPassword);
+    })
+    .then(([result]) => {
+      return User.assignRole(result.insertId, 4);
+    })
+    .then(() => {
+      res.redirect('/login');
+    })
+    .catch((err) => {
+      console.log(err);
+      res.render('auth/signup', {
+        layout: false,
+        error: 'Username or email already exists.',
+      });
+    });
+};
