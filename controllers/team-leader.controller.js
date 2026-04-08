@@ -5,6 +5,10 @@ const db = require('../util/database');
  * Handles dashboard, personal log, team log, team members, team report, self-review and profile.
  */
 
+const Log = require('../models/log.model');
+const Blocker = require('../models/blocker.model');
+const Project = require('../models/project.model');
+
 exports.getDashboard = async (req, res) => {
   try {
     const teamId = 1;
@@ -64,10 +68,39 @@ exports.getDashboard = async (req, res) => {
 };
 
 exports.getLog = (req, res) => {
-  res.render('shared/log', {
-    currentPage: 'log',
-    role: 'team-leader',
-  });
+  const activeUserId = 1;
+  const filters = {
+    id_project: req.query.id_project || null,
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+
+  Promise.all([
+    Log.fetchAllByEmployee(activeUserId, filters),
+    Project.fetchAllByEmployee(activeUserId),
+  ])
+    .then(([[logs], [projects]]) => {
+      return Promise.all(
+        logs.map((log) =>
+          Blocker.fetchByLog(log.id_log).then(([blockers]) => ({
+            ...log,
+            blockers,
+          }))
+        )
+      ).then((logsWithBlockers) => {
+        res.render('shared/log', {
+          currentPage: 'log',
+          role: 'team-leader',
+          logs: logsWithBlockers,
+          projects,
+          filters,
+        });
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
 };
 
 exports.getTeamLog = async (req, res) => {
@@ -251,11 +284,7 @@ exports.getTeamReport = async (req, res) => {
     const reportTo = to || '2026-12-31';
 
     const [teamMembers] = await db.query(
-      `
-      SELECT COUNT(*) AS total_members
-      FROM user_team
-      WHERE id_team = ?
-      `,
+      `SELECT COUNT(*) AS total_members FROM user_team WHERE id_team = ?`,
       [teamId]
     );
 
@@ -297,9 +326,7 @@ exports.getTeamReport = async (req, res) => {
 
     const [achievementsList] = await db.query(
       `
-      SELECT
-        a.description,
-        u.full_name
+      SELECT a.description, u.full_name
       FROM achievement a
       INNER JOIN user u ON a.id_user = u.id_user
       INNER JOIN user_team ut ON u.id_user = ut.id_user
@@ -313,9 +340,7 @@ exports.getTeamReport = async (req, res) => {
 
     const [blockersList] = await db.query(
       `
-      SELECT
-        b.description,
-        u.full_name
+      SELECT b.description, u.full_name
       FROM blocker b
       INNER JOIN log l ON b.id_log = l.id_log
       INNER JOIN user u ON l.id_user = u.id_user
