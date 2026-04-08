@@ -34,4 +34,29 @@ module.exports = class User {
       [id_user]
     );
   }
+
+  static fetchAll() {
+    return db.execute(
+      `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active,
+        r.role_name AS role
+       FROM user u
+       LEFT JOIN user_role ur ON u.id_user = ur.id_user
+       LEFT JOIN role r ON ur.id_role = r.id_role
+       ORDER BY u.id_user DESC`
+    );
+  }
+
+  static create(full_name, email, username, password) {
+    return db.execute(
+      `INSERT INTO user (full_name, email, username, password) VALUES (?, ?, ?, ?)`,
+      [full_name, email, username, password]
+    );
+  }
+
+  static assignRole(id_user, id_role) {
+    return db.execute(
+      `INSERT INTO user_role (id_user, id_role) VALUES (?, ?)`,
+      [id_user, id_role]
+    );
+  }
 };

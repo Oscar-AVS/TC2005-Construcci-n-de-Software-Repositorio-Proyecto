@@ -7,42 +7,44 @@
     <h2>Add New User</h2>
   </div>
   <div class="report-card-body">
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="userName">Full Name</label>
-        <input type="text" id="userName" class="form-input" placeholder="Enter full name..." />
+    <form action="/admin/users/create" method="POST">
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="userName">Full Name</label>
+          <input type="text" id="userName" name="full_name" class="form-input" placeholder="Enter full name..." required />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="userEmail">Email</label>
+          <input type="email" id="userEmail" name="email" class="form-input" placeholder="email@change.org" required />
+        </div>
       </div>
-      <div class="form-field">
-        <label class="form-label" for="userEmail">Email</label>
-        <input type="email" id="userEmail" class="form-input" placeholder="email@change.org" />
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="userUsername">Username</label>
+          <input type="text" id="userUsername" name="username" class="form-input" placeholder="username" required />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="userPassword">Password</label>
+          <input type="password" id="userPassword" name="password" class="form-input" placeholder="••••••••" required />
+        </div>
       </div>
-    </div>
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="userRole">Role</label>
-        <select id="userRole" class="form-select">
-          <option value="">Select role...</option>
-          <option value="employee">Employee</option>
-          <option value="team-leader">Team Leader</option>
-          <option value="manager">Manager</option>
-          <option value="admin">Admin</option>
-        </select>
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="userRole">Role</label>
+          <select id="userRole" name="id_role" class="form-select" required>
+            <option value="">Select role...</option>
+            <% roles.forEach(r => { %>
+              <option value="<%= r.id_role %>"><%= r.role_name %></option>
+            <% }) %>
+          </select>
+        </div>
       </div>
-      <div class="form-field">
-        <label class="form-label" for="userTeam">Assign to Team</label>
-        <select id="userTeam" class="form-select">
-          <option value="">Select team...</option>
-          <option value="1">Mufasa Solutions</option>
-          <option value="2">Phoenix Team</option>
-          <option value="3">Delta Squad</option>
-        </select>
+      <div class="action-row">
+        <button class="btn-submit" type="submit">
+          <i class="fa-solid fa-user-plus"></i> Create User
+        </button>
       </div>
-    </div>
-    <div class="action-row">
-      <button class="btn-submit" type="button">
-        <i class="fa-solid fa-user-plus"></i> Create User
-      </button>
-    </div>
+    </form>
   </div>
 </div>
 
@@ -99,7 +101,6 @@
               <button class="btn-icon" type="button" title="Reset Password">
                 <i class="fa-solid fa-key"></i>
               </button>
-              <!-- Toggle status button -->
               <button
                 class="btn-icon <%= user.is_active ? 'btn-danger' : '' %>"
                 type="button"
@@ -122,20 +123,13 @@
 </div>
 
 <script>
-  /**
-   * Sends PATCH to toggle user status.
-   * Handles alternate flows: 6.1 (cancel), 4.1 (not found), 7.1 (server error).
-   */
   async function toggleStatus(userId, currentStatus) {
-
-    // el admin cancela
-    const action = currentStatus ? 'deactivate' : 'reactivate';
     const confirmed = confirm(
       currentStatus
         ? 'Are you sure you want to deactivate this account?'
         : 'Do you want to reactivate this account?'
     );
-    if (!confirmed) return; // no se realizan cambios
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/admin/users/${userId}/toggle-status`, {
@@ -145,20 +139,17 @@
 
       const data = await res.json();
 
-      // usuario no encontrado
       if (res.status === 404) {
         alert('User not found. Refreshing list...');
-        location.reload(); // regresa al listado
+        location.reload();
         return;
       }
 
-      // error al procesar
       if (!res.ok || !data.success) {
         alert('Something went wrong. No changes were made.');
-        return; // no se actualiza el estado
+        return;
       }
 
-      // confirmación visual sin reload
       const isNowActive = data.is_active === 1;
 
       const badge = document.getElementById(`status-badge-${userId}`);
@@ -175,7 +166,6 @@
       btn.setAttribute('onclick', `toggleStatus(${userId}, ${isNowActive ? 1 : 0})`);
 
     } catch (err) {
-      // error de red / conexión
       console.error('toggleStatus error:', err);
       alert('Connection error. Please try again.');
     }

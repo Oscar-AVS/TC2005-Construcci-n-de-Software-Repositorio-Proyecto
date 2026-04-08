@@ -3,7 +3,9 @@
  * Handles system administration: users, teams, roles, integrations and profile.
  */
 
+const User = require('../models/user.model');
 const db = require('../util/database');
+const bcrypt = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
   res.render('admin/dashboard', {
@@ -14,20 +16,13 @@ exports.getDashboard = (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const [users] = await db.query(
-      `SELECT
-        id_user AS id,
-        full_name,
-        email,
-        role,
-        is_active
-      FROM user
-      ORDER BY id_user DESC`
-    );
+    const [users] = await User.fetchAll();
+    const [roles] = await db.query('SELECT * FROM role ORDER BY id_role ASC');
     res.render('admin/users', {
       currentPage: 'users',
       role: 'admin',
       users,
+      roles,
     });
   } catch (err) {
     console.error('getUsers error:', err);
@@ -62,6 +57,20 @@ exports.toggleUserStatus = async (req, res) => {
   } catch (err) {
     console.error('toggleUserStatus error:', err);
     res.status(500).json({ success: false, message: 'Could not update user status' });
+  }
+};
+
+exports.createUser = async (req, res) => {
+  const { full_name, email, username, password, id_role } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const [result] = await User.create(full_name, email, username, hashedPassword);
+    await User.assignRole(result.insertId, id_role);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('createUser error:', err);
+    res.status(500).send('Error creating user');
   }
 };
 
