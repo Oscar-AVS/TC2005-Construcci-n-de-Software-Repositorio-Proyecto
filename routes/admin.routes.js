@@ -11,6 +11,7 @@ const adminController = require('../controllers/admin.controller');
 router.get('/dashboard', adminController.getDashboard);
 router.get('/users', adminController.getUsers);
 router.post('/users/create', adminController.createUser);
+router.post('/users/edit', adminController.editUser);
 router.patch('/users/:id/toggle-status', adminController.toggleUserStatus);
 router.get('/teams', adminController.getTeams);
 router.get('/roles', adminController.getRoles);

@@ -74,6 +74,19 @@ exports.createUser = async (req, res) => {
   }
 };
 
+exports.editUser = async (req, res) => {
+  const { id_user, full_name, email, username, id_role } = req.body;
+
+  try {
+    await User.update(id_user, full_name, email, username);
+    await User.updateRole(id_user, id_role);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('editUser error:', err);
+    res.status(500).send('Error updating user');
+  }
+};
+
 exports.getTeams = (req, res) => {
   res.render('admin/teams', {
     currentPage: 'teams',

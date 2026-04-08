@@ -38,7 +38,7 @@ module.exports = class User {
   static fetchAll() {
     return db.execute(
       `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active,
-        r.role_name AS role
+        r.role_name AS role, ur.id_role
        FROM user u
        LEFT JOIN user_role ur ON u.id_user = ur.id_user
        LEFT JOIN role r ON ur.id_role = r.id_role
@@ -57,6 +57,20 @@ module.exports = class User {
     return db.execute(
       `INSERT INTO user_role (id_user, id_role) VALUES (?, ?)`,
       [id_user, id_role]
+    );
+  }
+
+  static update(id_user, full_name, email, username) {
+    return db.execute(
+      `UPDATE user SET full_name = ?, email = ?, username = ? WHERE id_user = ?`,
+      [full_name, email, username, id_user]
+    );
+  }
+
+  static updateRole(id_user, id_role) {
+    return db.execute(
+      `UPDATE user_role SET id_role = ? WHERE id_user = ?`,
+      [id_role, id_user]
     );
   }
 };
