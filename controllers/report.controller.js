@@ -1,7 +1,7 @@
 // controllers/report.controller.js
 const PDFDocument = require('pdfkit');
 const { generateObject } = require('ai');
-const { openai } = require('@ai-sdk/openai');
+const { google } = require('@ai-sdk/google');
 const { z } = require('zod');
 const { getAiSummaryData } = require('../models/Report.model');
 const { getReportData } = require('../models/Report.model');
@@ -234,7 +234,7 @@ Keep each section concise and actionable.
   let summary;
   try {
     const result = await generateObject({
-      model: openai('gpt-4o-mini'),
+      model: google('gemini-2.0-flash'),
       schema: summarySchema,
       prompt,
     });

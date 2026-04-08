@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Oscar-AVS/TC2005-Construcci-n-de-Software-Repositorio-Proyecto#readme",
   "dependencies": {
+    "@ai-sdk/google": "^3.0.60",
     "@ai-sdk/openai": "^3.0.51",
     "ai": "^6.0.149",
     "bcrypt": "^6.0.0",
