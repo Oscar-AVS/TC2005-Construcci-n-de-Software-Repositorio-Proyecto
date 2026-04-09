@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/user.model');
+const Team = require('../models/team.model');
 const db = require('../util/database');
 const bcrypt = require('bcrypt');
 
@@ -87,11 +88,32 @@ exports.editUser = async (req, res) => {
   }
 };
 
-exports.getTeams = (req, res) => {
-  res.render('admin/teams', {
-    currentPage: 'teams',
-    role: 'admin',
-  });
+exports.getTeams = async (req, res) => {
+  try {
+    const [teams] = await Team.fetchAll();
+    const [users] = await User.fetchAll();
+    res.render('admin/teams', {
+      currentPage: 'teams',
+      role: 'admin',
+      teams,
+      users,
+    });
+  } catch (err) {
+    console.error('getTeams error:', err);
+    res.status(500).send('Error loading teams');
+  }
+};
+
+exports.createTeam = async (req, res) => {
+  const { team_name, description, id_leader } = req.body;
+
+  try {
+    await Team.create(team_name, description, id_leader);
+    res.redirect('/admin/teams');
+  } catch (err) {
+    console.error('createTeam error:', err);
+    res.status(500).send('Error creating team');
+  }
 };
 
 exports.getRoles = (req, res) => {
