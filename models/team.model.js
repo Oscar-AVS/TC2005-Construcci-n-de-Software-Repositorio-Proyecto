@@ -29,4 +29,10 @@ static update(id_team, team_name, description, id_leader) {
     [team_name, description, id_leader, id_team]
     );
 }
+static delete(id_team) {
+    return db.execute(
+    'DELETE FROM team WHERE id_team = ?',
+    [id_team]
+    );
+}
 };

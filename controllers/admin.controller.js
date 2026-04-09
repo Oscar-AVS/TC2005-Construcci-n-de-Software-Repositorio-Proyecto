@@ -128,6 +128,18 @@ exports.editTeam = async (req, res) => {
   }
 };
 
+exports.deleteTeam = async (req, res) => {
+  const { id_team } = req.body;
+
+  try {
+    await Team.delete(id_team);
+    res.redirect('/admin/teams');
+  } catch (err) {
+    console.error('deleteTeam error:', err);
+    res.status(500).send('Error deleting team');
+  }
+};
+
 exports.getRoles = (req, res) => {
   res.render('admin/roles', {
     currentPage: 'roles',
