@@ -15,6 +15,7 @@ router.post('/users/edit', adminController.editUser);
 router.patch('/users/:id/toggle-status', adminController.toggleUserStatus);
 router.get('/teams', adminController.getTeams);
 router.post('/teams/create', adminController.createTeam);
+router.post('/teams/edit', adminController.editTeam);
 router.get('/roles', adminController.getRoles);
 router.get('/integrations', adminController.getIntegrations);
 router.get('/profile', adminController.getProfile);

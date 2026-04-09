@@ -60,7 +60,12 @@
                 <p class="team-card-leader">Leader: <span><%= team.leader_name || '—' %></span></p>
               </div>
               <div class="team-card-actions">
-                <button class="btn-icon" type="button" title="Edit">
+                <button
+                  class="btn-icon"
+                  type="button"
+                  title="Edit"
+                  onclick="openEditTeamModal(<%= team.id_team %>, '<%= team.team_name %>', '<%= team.description || '' %>', <%= team.leader_id || 'null' %>)"
+                >
                   <i class="fa-solid fa-pen"></i>
                 </button>
                 <button class="btn-icon btn-danger" type="button" title="Delete">
@@ -82,3 +87,48 @@
     </div>
   </div>
 </div>
+
+<!-- Edit Team Modal -->
+<div
+  id="editTeamModal"
+  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
+>
+  <div style="background: #fff; width: min(480px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
+    <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit Team</h3>
+
+    <form action="/admin/teams/edit" method="POST">
+      <input type="hidden" name="id_team" id="editTeamId" />
+
+      <div class="form-field" style="margin-bottom: 12px;">
+        <label class="form-label" for="editTeamName">Team Name</label>
+        <input type="text" id="editTeamName" name="team_name" class="form-input" required />
+      </div>
+
+      <div class="form-field" style="margin-bottom: 12px;">
+        <label class="form-label" for="editTeamDescription">Description</label>
+        <input type="text" id="editTeamDescription" name="description" class="form-input" />
+      </div>
+
+      <div class="form-field" style="margin-bottom: 20px;">
+        <label class="form-label" for="editTeamLeader">Team Leader</label>
+        <select id="editTeamLeader" name="id_leader" class="form-select" required>
+          <option value="">Select team leader...</option>
+          <% users.forEach(u => { %>
+            <option value="<%= u.id %>"><%= u.full_name %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" onclick="closeEditTeamModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </button>
+        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-check"></i> Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/modules/teams.js"></script>

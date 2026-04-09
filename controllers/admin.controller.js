@@ -116,6 +116,18 @@ exports.createTeam = async (req, res) => {
   }
 };
 
+exports.editTeam = async (req, res) => {
+  const { id_team, team_name, description, id_leader } = req.body;
+
+  try {
+    await Team.update(id_team, team_name, description, id_leader);
+    res.redirect('/admin/teams');
+  } catch (err) {
+    console.error('editTeam error:', err);
+    res.status(500).send('Error updating team');
+  }
+};
+
 exports.getRoles = (req, res) => {
   res.render('admin/roles', {
     currentPage: 'roles',
