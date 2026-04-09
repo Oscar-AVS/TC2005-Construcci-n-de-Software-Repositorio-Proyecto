@@ -1,7 +1,8 @@
 // controllers/report.controller.js
 const PDFDocument = require('pdfkit');
-const { generateObject } = require('ai');
-const { google } = require('@ai-sdk/google');
+console.log('API KEY:', process.env.OPENAI_API_KEY);
+const { generateText, Output } = require('ai');
+const { openai } = require('@ai-sdk/openai');
 const { z } = require('zod');
 const { getAiSummaryData } = require('../models/Report.model');
 const { getReportData } = require('../models/Report.model');
@@ -152,12 +153,7 @@ const exportPDF = async (req, res) => {
   }
 };
 
-/**
- * Generates an AI-powered summary for a given team and period.
- * Uses OpenAI via AI SDK and Zod to enforce structured output.
- *
- * GET /manager/reports/ai-summary?idEquipo=&idProyecto=&fechaInicio=&fechaFin=
- */
+/* Generates an AI-powered summary for a given team and period. */
 const generateAiSummary = async (req, res) => {
   const { idEquipo, idProyecto, fechaInicio, fechaFin } = req.query;
 
@@ -233,14 +229,14 @@ Keep each section concise and actionable.
 
   let summary;
   try {
-    const result = await generateObject({
-      model: google('gemini-2.0-flash'),
-      schema: summarySchema,
-      prompt,
-    });
-    summary = result.object;
+   const { output } = await generateText({
+  model: openai('gpt-4o-mini'),
+  output: Output.object({ schema: summarySchema }),
+  prompt,
+});
+summary = output;
   } catch (err) {
-    console.error('Error calling OpenAI:', err);
+    console.error('Error calling AI model:', err);
     return res.status(500).json({ error: 'Error generating AI summary.' });
   }
 
