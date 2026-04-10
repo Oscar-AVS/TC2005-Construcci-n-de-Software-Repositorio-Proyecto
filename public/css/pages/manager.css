@@ -119,6 +119,10 @@
   gap: 8px;
 }
 
+.input-error {
+  border: 1px solid #ef4444 !important;
+  background-color: #fef2f2;
+}
 .form-textarea {
   width: 100%;
   min-height: 120px;

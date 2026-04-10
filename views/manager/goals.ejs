@@ -217,8 +217,13 @@
   });
 
   const submitGoal = async (saveMode) => {
-    clearFormMessage();
-    setButtonsDisabled(true);
+  clearFormMessage();
+
+  if (!validateForm(saveMode)) {
+    return;
+  }
+
+  setButtonsDisabled(true);
 
     try {
       const payload = getGoalPayload(saveMode);
@@ -259,4 +264,58 @@
   createGoalButton.addEventListener('click', () => {
     submitGoal('final');
   });
+
+  const markInvalid = (input) => {
+  input.classList.add('input-error');
+};
+
+const clearInvalid = (input) => {
+  input.classList.remove('input-error');
+};
+
+const validateForm = (mode) => {
+  let isValid = true;
+
+  // limpiar errores previos
+  [titleInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
+
+  // título siempre requerido
+  if (!titleInput.value.trim()) {
+    markInvalid(titleInput);
+    showFormMessage('Title is required.', 'error');
+    isValid = false;
+  }
+
+  if (mode === 'final') {
+    if (!priorityInput.value) {
+      markInvalid(priorityInput);
+      showFormMessage('Priority is required.', 'error');
+      isValid = false;
+    }
+
+    if (!statusInput.value) {
+      markInvalid(statusInput);
+      showFormMessage('Status is required.', 'error');
+      isValid = false;
+    }
+
+    if (!startDateInput.value || !endDateInput.value) {
+      markInvalid(startDateInput);
+      markInvalid(endDateInput);
+      showFormMessage('Start and End dates are required.', 'error');
+      isValid = false;
+    }
+
+    if (startDateInput.value && endDateInput.value) {
+      if (new Date(startDateInput.value) > new Date(endDateInput.value)) {
+        markInvalid(startDateInput);
+        markInvalid(endDateInput);
+        showFormMessage('Start date cannot be after End date.', 'error');
+        isValid = false;
+      }
+    }
+  }
+
+  return isValid;
+};
 </script>
