@@ -14,6 +14,7 @@ router.get('/dashboard', managerController.getDashboard);
 
 // Goals - CRUD for strategic goals
 router.get('/goals', managerController.getGoals);
+router.post('/goals', managerController.createGoal);
 
 // Highlights - important achievements management
 router.get('/highlights', managerController.getHighlights);
