@@ -81,4 +81,37 @@ module.exports = class Log {
       [id_log]
     );
   }
+
+  static countByWeek(id_user) {
+    return db.execute(
+      `SELECT WEEKDAY(created_at) AS weekday, COUNT(*) AS count
+       FROM log
+       WHERE id_user = ?
+       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+       GROUP BY WEEKDAY(created_at)`,
+      [id_user]
+    );
+  }
+
+  static fetchToday(id_user) {
+    return db.execute(
+      `SELECT id_log, completed, planned, created_at
+       FROM log
+       WHERE id_user = ?
+       AND DATE(created_at) = CURDATE()
+       ORDER BY created_at DESC`,
+      [id_user]
+    );
+  }
+  static fetchByWeek(id_user) {
+    return db.execute(
+      `SELECT id_log, completed, planned, created_at,
+              WEEKDAY(created_at) AS weekday
+       FROM log
+       WHERE id_user = ?
+       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+       ORDER BY created_at DESC`,
+      [id_user]
+    );
+  }
 };

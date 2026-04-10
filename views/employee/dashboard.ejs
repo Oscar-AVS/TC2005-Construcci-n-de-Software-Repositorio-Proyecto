@@ -1,6 +1,11 @@
 <h1 id="pageTitle" class="page-title">Employee Dashboard</h1>
 
-<!-- View Mode Toggle (directo, sin tabs) -->
+<script>
+  window.personalWeeklyData = <%- JSON.stringify(weeklyData) %>;
+  window.logsByDay = <%- JSON.stringify(logsByDay) %>;
+  window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
+</script>
+
 <div class="view-mode-toggle">
   <button type="button" class="view-mode-btn active" data-view="personal">
     <i class="fa-solid fa-user"></i> Personal
@@ -10,19 +15,16 @@
   </button>
 </div>
 
-<!-- =============================================
-     PERSONAL VIEW
-     ============================================= -->
+<!-- PERSONAL VIEW -->
 <div class="activity-view active" id="view-personal">
 
-  <!-- Personal Stats -->
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-icon stat-icon-accent" aria-hidden="true">
         <i class="fa-solid fa-circle-check"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value" id="statCompletedPersonal">2</p>
+        <p class="stat-value"><%= completedToday %></p>
         <p class="stat-label">Completed today</p>
       </div>
     </div>
@@ -31,8 +33,8 @@
         <i class="fa-solid fa-list-check"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value" id="statPendingPersonal">2</p>
-        <p class="stat-label">Pending</p>
+        <p class="stat-value"><%= weeklyTotal %></p>
+        <p class="stat-label">Logs this week</p>
       </div>
     </div>
     <div class="stat-card">
@@ -40,19 +42,18 @@
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">1</p>
+        <p class="stat-value"><%= activeBlockers %></p>
         <p class="stat-label">Active blockers</p>
       </div>
     </div>
   </div>
 
-  <!-- Personal Activity Chart -->
   <div class="media-row single-chart-row">
     <div class="media-card chart-card">
       <div class="media-card-header">
         <div>
           <p class="media-card-title">Weekly Activity</p>
-          <p class="media-card-sub">Click a bar to see that day's tasks</p>
+          <p class="media-card-sub" id="chartSubtitle">Logs submitted per day this week — click a bar to filter</p>
         </div>
       </div>
       <div class="chart-area">
@@ -61,38 +62,46 @@
     </div>
   </div>
 
-  <!-- Today's Activities -->
   <div class="report-card">
     <div class="report-card-header">
-      <h2 id="personalActivitiesTitle">Today's Activities</h2>
-      <span class="report-date" id="personalActivitiesDate">19 Mar 2026</span>
+      <h2 id="activitiesTitle">Today's Activities</h2>
+      <span class="report-date" id="activitiesDate">
+        <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+      </span>
     </div>
 
     <div class="report-card-body">
       <div class="activities-summary">
         <span class="summary-item">
-          <span class="summary-count" id="personalCompletedCount">2</span> completed
+          <span class="summary-count" id="loggedCount"><%= completedToday %></span> logged
         </span>
         <span class="summary-divider">•</span>
         <span class="summary-item">
-          <span class="summary-count" id="personalPendingCount">2</span> pending
+          <span class="summary-count"><%= activeBlockers %></span> active blockers
         </span>
       </div>
 
       <ul class="activity-list" id="personalActivityList">
-        <!-- Activities rendered by JS -->
+        <% if (todayLogs.length > 0) { %>
+          <% todayLogs.forEach(log => { %>
+            <li class="activity-item">
+              <span class="activity-text"><%= log.completed %></span>
+            </li>
+          <% }) %>
+        <% } else { %>
+          <li class="activity-item">
+            <span class="activity-text" style="color: var(--text-muted);">No activities logged today.</span>
+          </li>
+        <% } %>
       </ul>
     </div>
   </div>
 
 </div>
 
-<!-- =============================================
-     ORGANIZATION VIEW
-     ============================================= -->
+<!-- ORGANIZATION VIEW -->
 <div class="activity-view" id="view-organization">
 
-  <!-- Organization Stats -->
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-icon stat-icon-blue" aria-hidden="true">
@@ -123,13 +132,12 @@
     </div>
   </div>
 
-  <!-- Organization Activity Chart -->
   <div class="media-row single-chart-row">
     <div class="media-card chart-card">
       <div class="media-card-header">
         <div>
           <p class="media-card-title">Organization Activity</p>
-          <p class="media-card-sub">Click a bar to see that day's team activities</p>
+          <p class="media-card-sub">Organization-wide activities per day</p>
         </div>
       </div>
       <div class="chart-area">
@@ -138,12 +146,10 @@
     </div>
   </div>
 
-  <!-- Team Activity Feed -->
   <div class="report-card">
     <div class="report-card-header">
       <div class="header-title-group">
         <h2 id="orgFeedTitle">Team Activity Feed</h2>
-        <span class="report-date" id="orgFeedDate" style="display: none;"></span>
       </div>
       <select id="teamFilter" class="team-filter-select">
         <option value="">All Teams</option>
@@ -152,11 +158,8 @@
         <option value="delta">Delta Squad</option>
       </select>
     </div>
-
     <div class="report-card-body">
-      <div class="team-activity-feed" id="teamActivityFeed">
-        <!-- Rendered by JS -->
-      </div>
+      <div class="team-activity-feed" id="teamActivityFeed"></div>
     </div>
   </div>
 

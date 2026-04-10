@@ -1,255 +1,172 @@
 /**
  * Weekly activity chart module.
- * Handles Chart.js initialization, click events, and view switching.
+ * Handles Chart.js initialization for personal and organization charts.
  */
 
 const ChartModule = (() => {
-  let barChart = null;
-  let currentView = 'personal';
-  let selectedDayIndex = null;
-
   const byId = (id) => document.getElementById(id);
 
-  // Sample data - will be replaced with real data from backend
-  const personalData = [2, 4, 4, 7, 5, 1, 8];
-  const organizationData = [12, 18, 15, 22, 19, 8, 25];
+  const organizationData = [12, 18, 15, 22, 19];
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-  // Day names for display
-  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  let personalChart = null;
+  let selectedDay = null;
 
-  // Get date for a day index (relative to current week)
-  const getDateForDay = (dayIndex) => {
+  const buildBarColors = (data, selected) =>
+    data.map((_, i) => {
+      if (selected !== null) return i === selected ? '#f05a28' : '#f4c5b3';
+      const today = Math.min(window.todayWeekday, 4);
+      return i === today ? '#f05a28' : '#f4c5b3';
+    });
+
+  const renderActivities = (dayIndex) => {
+    const list = byId('personalActivityList');
+    const title = byId('activitiesTitle');
+    const date = byId('activitiesDate');
+    const count = byId('loggedCount');
+
+    if (!list) return;
+
+    const logs = (window.logsByDay && window.logsByDay[dayIndex]) || [];
+
     const today = new Date();
     const currentDay = today.getDay();
     const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(today);
     monday.setDate(today.getDate() + mondayOffset);
-    
     const targetDate = new Date(monday);
     targetDate.setDate(monday.getDate() + dayIndex);
-    
-    return targetDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
+    const dateStr = targetDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  const buildBarColors = (data, selectedIndex = null) =>
-    data.map((_, index) => {
-      if (selectedIndex !== null && index === selectedIndex) {
-        return '#f05a28'; // Selected day - accent color
-      }
-      if (index === data.length - 1 && selectedIndex === null) {
-        return '#f05a28'; // Last day (today) when nothing selected
-      }
-      return '#f4c5b3'; // Default color
-    });
+    if (title) title.textContent = `${dayNames[dayIndex]}'s Activities`;
+    if (date) date.textContent = dateStr;
+    if (count) count.textContent = logs.length;
 
-  const updateSelectedDayIndicator = (dayIndex) => {
-    const indicator = byId('selectedDayIndicator');
-    const dayText = byId('selectedDayText');
-    
-    if (dayIndex !== null) {
-      dayText.textContent = `${dayNames[dayIndex]}, ${getDateForDay(dayIndex)}`;
-      indicator.style.display = 'flex';
-    } else {
-      indicator.style.display = 'none';
-    }
-  };
-
-  const updateActivitiesDate = (dayIndex) => {
-    const activitiesDate = byId('activitiesDate');
-    const activitiesTitle = byId('activitiesTitle');
-    const orgActivitiesDate = byId('orgActivitiesDate');
-    const orgActivitiesTitle = byId('orgActivitiesTitle');
-    
-    if (dayIndex !== null) {
-      const dateStr = getDateForDay(dayIndex);
-      if (activitiesDate) activitiesDate.textContent = dateStr;
-      if (activitiesTitle) activitiesTitle.textContent = `${dayNames[dayIndex]}'s Activities`;
-      if (orgActivitiesDate) orgActivitiesDate.textContent = dateStr;
-      if (orgActivitiesTitle) orgActivitiesTitle.textContent = `Organization Activity - ${dayNames[dayIndex]}`;
-    } else {
-      const today = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-      if (activitiesDate) activitiesDate.textContent = today;
-      if (activitiesTitle) activitiesTitle.textContent = "Today's Activities";
-      if (orgActivitiesDate) orgActivitiesDate.textContent = today;
-      if (orgActivitiesTitle) orgActivitiesTitle.textContent = 'Organization Activity';
-    }
+    list.innerHTML = logs.length > 0
+      ? logs.map((log) => `
+          <li class="activity-item">
+            <span class="activity-text">${log.completed}</span>
+          </li>
+        `).join('')
+      : `<li class="activity-item">
+           <span class="activity-text" style="color: var(--text-muted);">No activities logged on ${dayNames[dayIndex]}.</span>
+         </li>`;
   };
 
   const handleBarClick = (event, elements) => {
-    if (elements.length === 0) return;
-    
+    if (!elements || !elements.length) return;
+
     const clickedIndex = elements[0].index;
-    
-    // Toggle selection if clicking same bar
-    if (selectedDayIndex === clickedIndex) {
-      selectedDayIndex = null;
+
+    if (selectedDay === clickedIndex) {
+      selectedDay = null;
+      const today = Math.min(window.todayWeekday, 4);
+      renderActivities(today);
+      const title = byId('activitiesTitle');
+      const date = byId('activitiesDate');
+      if (title) title.textContent = "Today's Activities";
+      if (date) date.textContent = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
     } else {
-      selectedDayIndex = clickedIndex;
+      selectedDay = clickedIndex;
+      renderActivities(clickedIndex);
     }
-    
-    // Update chart colors
-    const data = currentView === 'personal' ? personalData : organizationData;
-    barChart.data.datasets[0].backgroundColor = buildBarColors(data, selectedDayIndex);
-    barChart.update();
-    
-    // Update UI
-    updateSelectedDayIndicator(selectedDayIndex);
-    updateActivitiesDate(selectedDayIndex);
+
+    personalChart.data.datasets[0].backgroundColor = buildBarColors(personalChart.data.datasets[0].data, selectedDay);
+    personalChart.update();
   };
 
-  const switchView = (view) => {
-    currentView = view;
-    selectedDayIndex = null;
-    
-    const data = view === 'personal' ? personalData : organizationData;
-    const subtitle = byId('chartSubtitle');
-    const personalSection = byId('personalActivities');
-    const orgSection = byId('organizationActivities');
-    
-    // Update chart
-    barChart.data.datasets[0].data = data;
-    barChart.data.datasets[0].backgroundColor = buildBarColors(data);
-    barChart.options.scales.y.max = view === 'personal' ? 10 : 30;
-    barChart.update();
-    
-    // Update subtitle
-    if (subtitle) {
-      subtitle.textContent = view === 'personal' 
-        ? 'Tasks completed per day' 
-        : 'Organization-wide activities per day';
-    }
-    
-    // Toggle sections visibility
-    if (personalSection && orgSection) {
-      personalSection.style.display = view === 'personal' ? 'block' : 'none';
-      orgSection.style.display = view === 'organization' ? 'block' : 'none';
-    }
-    
-    // Reset indicators
-    updateSelectedDayIndicator(null);
-    updateActivitiesDate(null);
-  };
+  const init = () => {
+    const personalData = (window.personalWeeklyData || [0, 0, 0, 0, 0]).slice(0, 5);
+    const personalMax = Math.max(...personalData, 4);
+    const orgMax = Math.max(...organizationData, 10);
 
-  const initEventListeners = () => {
-    // View mode dropdown
-    const viewSelect = byId('viewModeSelect');
-    if (viewSelect) {
-      viewSelect.addEventListener('change', (e) => switchView(e.target.value));
-    }
-    
-    // Clear day selection button
-    const clearBtn = byId('clearDaySelection');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        selectedDayIndex = null;
-        const data = currentView === 'personal' ? personalData : organizationData;
-        barChart.data.datasets[0].backgroundColor = buildBarColors(data);
-        barChart.update();
-        updateSelectedDayIndicator(null);
-        updateActivitiesDate(null);
-      });
-    }
-    
-    // Team filter for organization view
-    const teamFilter = byId('teamFilter');
-    if (teamFilter) {
-      teamFilter.addEventListener('change', (e) => {
-        const selectedTeam = e.target.value;
-        const groups = document.querySelectorAll('.team-activity-group');
-        
-        groups.forEach(group => {
-          if (!selectedTeam || group.dataset.team === selectedTeam) {
-            group.style.display = 'block';
-          } else {
-            group.style.display = 'none';
-          }
-        });
-      });
-    }
-  };
-
-  const init = (weeklyData = personalData) => {
-    const canvas = byId('activityChart');
-
-    if (!canvas) {
-      console.warn('ChartModule: Canvas #activityChart not found');
-      return;
-    }
-
-    if (typeof Chart === 'undefined') {
-      console.warn('ChartModule: Chart.js not loaded');
-      return;
-    }
-
-    if (barChart) {
-      barChart.destroy();
-    }
-
-    barChart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: dayLabels,
-        datasets: [
-          {
-            data: weeklyData,
-            backgroundColor: buildBarColors(weeklyData),
+    const personalCanvas = byId('personalActivityChart');
+    if (personalCanvas && typeof Chart !== 'undefined') {
+      personalChart = new Chart(personalCanvas, {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            data: personalData,
+            backgroundColor: buildBarColors(personalData, null),
             borderRadius: 8,
             borderSkipped: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          onClick: handleBarClick,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (context) => dayNames[context[0].dataIndex],
+                label: (context) => `${context.raw} log${context.raw !== 1 ? 's' : ''}`,
+              },
+            },
           },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        onClick: handleBarClick,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: (context) => dayNames[context[0].dataIndex],
-              label: (context) => `${context.raw} ${currentView === 'personal' ? 'tasks' : 'activities'}`,
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#9ca3af', font: { family: 'DM Sans', size: 12 } },
+            },
+            y: {
+              beginAtZero: true,
+              max: personalMax,
+              border: { display: false },
+              ticks: { stepSize: 1, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
+              grid: { color: '#f1f2f4' },
             },
           },
         },
-        scales: {
-          x: {
-            grid: { display: false },
-            border: { display: false },
-            ticks: {
-              color: '#9ca3af',
-              font: { family: 'DM Sans', size: 12 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            max: 10,
-            border: { display: false },
-            ticks: {
-              stepSize: 2,
-              color: '#9ca3af',
-              font: { family: 'DM Sans', size: 11 },
-            },
-            grid: { color: '#f1f2f4' },
-          },
-        },
-        interaction: {
-          intersect: true,
-          mode: 'index',
-        },
-      },
-    });
+      });
+    }
 
-    initEventListeners();
+    const orgCanvas = byId('orgActivityChart');
+    if (orgCanvas && typeof Chart !== 'undefined') {
+      new Chart(orgCanvas, {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            data: organizationData,
+            backgroundColor: buildBarColors(organizationData, null),
+            borderRadius: 8,
+            borderSkipped: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => `${context.raw} activities`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#9ca3af', font: { family: 'DM Sans', size: 12 } },
+            },
+            y: {
+              beginAtZero: true,
+              max: orgMax,
+              border: { display: false },
+              ticks: { stepSize: 2, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
+              grid: { color: '#f1f2f4' },
+            },
+          },
+        },
+      });
+    }
   };
 
-  const update = (weeklyData) => {
-    if (!barChart) return;
-
-    barChart.data.datasets[0].data = [...weeklyData];
-    barChart.data.datasets[0].backgroundColor = buildBarColors(weeklyData, selectedDayIndex);
-    barChart.update();
-  };
-
-  return { init, update, switchView };
+  return { init };
 })();
