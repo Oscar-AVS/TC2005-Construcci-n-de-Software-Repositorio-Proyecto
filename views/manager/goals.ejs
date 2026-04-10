@@ -101,66 +101,162 @@
 </div>
 
 <!-- Goals List -->
-<div class="goals-list">
-  <% if (goals.length === 0) { %>
-    <div class="empty-state">
-      <p>No goals have been created yet.</p>
-    </div>
-  <% } %>
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Goals</h2>
+    <span class="item-count"><%= goals.length %> goal<%= goals.length === 1 ? '' : 's' %></span>
+  </div>
 
-  <% goals.forEach((goal) => { %>
-    <div class="goal-card <%= goal.status %>">
-      <div class="goal-icon">
-        <i class="fa-solid fa-bullseye"></i>
-      </div>
-
-      <div class="goal-content">
-        <div class="goal-header">
-          <h3 class="goal-title">
-            <%= goal.title %>
-            <% if (goal.is_draft) { %>
-              <span class="draft-badge">Draft</span>
-            <% } %>
-          </h3>
-
-          <span class="goal-status <%= goal.status %>">
-            <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
-          </span>
+  <div class="report-card-body">
+    <div class="goals-list">
+      <% if (goals.length === 0) { %>
+        <div class="empty-state">
+          <p>No goals have been created yet.</p>
         </div>
+      <% } %>
 
-        <p class="goal-desc">
-          <%= goal.description || 'No description provided.' %>
-        </p>
+      <% goals.forEach((goal) => { %>
+        <div class="goal-card <%= goal.status %>">
+          <div class="goal-icon">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
 
-        <div class="goal-meta">
-          <span class="goal-meta-item">
-            <i class="fa-solid fa-flag"></i>
-            Priority: <%= goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) %>
-          </span>
+          <div class="goal-content">
+            <div class="goal-header">
+              <h3 class="goal-title">
+                <%= goal.title %>
+                <% if (goal.is_draft) { %>
+                  <span class="draft-badge">Draft</span>
+                <% } %>
+              </h3>
 
-          <span class="goal-meta-item">
-            <i class="fa-solid fa-calendar-days"></i>
-            Start:
-            <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
-          </span>
+              <span class="goal-status <%= goal.status %>">
+                <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
+              </span>
+            </div>
 
-          <span class="goal-meta-item">
-            <i class="fa-solid fa-calendar-check"></i>
-            End:
-            <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
-          </span>
+            <p class="goal-desc">
+              <%= goal.description || 'No description provided.' %>
+            </p>
+
+            <div class="goal-meta">
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-flag"></i>
+                Priority:
+                <%= goal.priority ? goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) : 'Not set' %>
+              </span>
+
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-calendar-days"></i>
+                Start:
+                <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
+              </span>
+
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-calendar-check"></i>
+                End:
+                <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="goal-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div class="goal-actions">
-        <button class="btn-icon" type="button" title="Edit">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-icon btn-danger" type="button" title="Delete">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
+      <% }); %>
     </div>
-  <% }); %>
   </div>
 </div>
+
+<script>
+  const goalForm = document.getElementById('goalForm');
+  const goalFormMessage = document.getElementById('goalFormMessage');
+  const saveDraftButton = document.getElementById('saveDraftButton');
+  const createGoalButton = document.getElementById('createGoalButton');
+
+  const titleInput = document.getElementById('title');
+  const descriptionInput = document.getElementById('description');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  const priorityInput = document.getElementById('priority');
+  const statusInput = document.getElementById('status');
+
+  const showFormMessage = (message, type) => {
+    goalFormMessage.textContent = message;
+    goalFormMessage.className = `form-message ${type}`;
+  };
+
+  const clearFormMessage = () => {
+    goalFormMessage.textContent = '';
+    goalFormMessage.className = 'form-message';
+  };
+
+  const setButtonsDisabled = (disabled) => {
+    saveDraftButton.disabled = disabled;
+    createGoalButton.disabled = disabled;
+  };
+
+  const resetGoalForm = () => {
+    goalForm.reset();
+  };
+
+  const getGoalPayload = (saveMode) => ({
+    title: titleInput.value.trim(),
+    description: descriptionInput.value.trim(),
+    start_date: startDateInput.value,
+    end_date: endDateInput.value,
+    priority: priorityInput.value,
+    status: statusInput.value,
+    save_mode: saveMode,
+  });
+
+  const submitGoal = async (saveMode) => {
+    clearFormMessage();
+    setButtonsDisabled(true);
+
+    try {
+      const payload = getGoalPayload(saveMode);
+
+      const response = await fetch('/manager/goals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showFormMessage(data.message || 'Something went wrong.', 'error');
+        setButtonsDisabled(false);
+        return;
+      }
+
+      showFormMessage(data.message || 'Operation completed successfully.', 'success');
+      resetGoalForm();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      console.log(err);
+      showFormMessage('Unexpected error while sending the form.', 'error');
+      setButtonsDisabled(false);
+    }
+  };
+
+  saveDraftButton.addEventListener('click', () => {
+    submitGoal('draft');
+  });
+
+  createGoalButton.addEventListener('click', () => {
+    submitGoal('final');
+  });
+</script>
