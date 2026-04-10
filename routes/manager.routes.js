@@ -21,7 +21,7 @@ router.get('/highlights', managerController.getHighlights);
 // History - contribution history with advanced filters
 router.get('/history', managerController.getHistory);
 
-// Reports - PDF/Excel export and AI summaries
+// Reports - PDF export and AI summaries
 router.get('/reports', managerController.getReports);
 
 // Personal log - uses shared view
