@@ -3,6 +3,7 @@
  * Configures Express, views and routes.
  */
 
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');

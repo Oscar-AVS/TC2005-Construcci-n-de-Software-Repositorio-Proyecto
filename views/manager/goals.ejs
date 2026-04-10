@@ -8,193 +8,255 @@
   </div>
 
   <div class="report-card-body">
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="goalTitle">Goal Title</label>
-        <input type="text" id="goalTitle" class="form-input" placeholder="Enter goal title..." />
+    <form id="goalForm" class="goal-form">
+      <div id="goalFormMessage" class="form-message"></div>
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="title">Goal Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-input"
+            placeholder="Enter goal title..."
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="priority">Priority</label>
+          <select id="priority" name="priority" class="form-select">
+            <option value="">Select priority...</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="goalProject">Link to Project</label>
-        <select id="goalProject" class="form-select">
-          <option value="">Select a project...</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <label class="form-label" for="goalDesc">Description</label>
-      <textarea id="goalDesc" rows="3" placeholder="Describe the goal and expected outcomes..."></textarea>
-    </div>
-
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="goalDue">Due Date</label>
-        <input type="date" id="goalDue" class="form-input" />
+        <label class="form-label" for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          class="form-textarea"
+          placeholder="Describe the goal and expected outcomes..."
+        ></textarea>
       </div>
 
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="startDate">Start Date</label>
+          <input
+            type="date"
+            id="startDate"
+            name="start_date"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="endDate">End Date</label>
+          <input
+            type="date"
+            id="endDate"
+            name="end_date"
+            class="form-input"
+          />
+        </div>
+      </div>
+
       <div class="form-field">
-        <label class="form-label" for="goalStatus">Status</label>
-        <select id="goalStatus" class="form-select">
-          <option value="pending">Pending</option>
-          <option value="in-progress">In Progress</option>
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">Select status...</option>
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
           <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
-    </div>
 
-    <div class="action-row">
-      <button class="btn-draft" type="button">Save as Draft</button>
-      <button class="btn-submit" type="button">Create Goal</button>
-    </div>
+      <div class="action-row">
+        <button
+          id="saveDraftButton"
+          class="btn-draft"
+          type="button"
+        >
+          Save as Draft
+        </button>
+
+        <button
+          id="createGoalButton"
+          class="btn-submit"
+          type="button"
+        >
+          Create Goal
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Goals List -->
 <div class="report-card">
   <div class="report-card-header">
-    <h2>Active Goals</h2>
-    <span class="item-count">5 goals</span>
+    <h2>Goals</h2>
+    <span class="item-count"><%= goals.length %> goal<%= goals.length === 1 ? '' : 's' %></span>
   </div>
 
   <div class="report-card-body">
     <div class="goals-list">
+      <% if (goals.length === 0) { %>
+        <div class="empty-state">
+          <p>No goals have been created yet.</p>
+        </div>
+      <% } %>
 
-      <!-- Goal 1 -->
-      <div class="goal-card in-progress">
-        <div class="goal-icon">
-          <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="goal-content">
-          <div class="goal-header">
-            <h3 class="goal-title">Increase platform uptime to 99.9%</h3>
-            <span class="goal-status in-progress">In Progress</span>
+      <% goals.forEach((goal) => { %>
+        <div class="goal-card <%= goal.status %>">
+          <div class="goal-icon">
+            <i class="fa-solid fa-bullseye"></i>
           </div>
-          <p class="goal-desc">Implement redundancy measures and improve monitoring to achieve 99.9% uptime SLA for all production services.</p>
-          <div class="goal-meta">
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-folder"></i> API Integration
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-calendar"></i> Due: Apr 30, 2026
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-chart-line"></i> 75% complete
-            </span>
-          </div>
-        </div>
-        <div class="goal-actions">
-          <button class="btn-icon" type="button" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon btn-danger" type="button" title="Delete">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
 
-      <!-- Goal 2 -->
-      <div class="goal-card in-progress">
-        <div class="goal-icon">
-          <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="goal-content">
-          <div class="goal-header">
-            <h3 class="goal-title">Launch mobile app v2.0</h3>
-            <span class="goal-status in-progress">In Progress</span>
-          </div>
-          <p class="goal-desc">Complete redesign and development of mobile application with new features including offline support and push notifications.</p>
-          <div class="goal-meta">
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-folder"></i> Dashboard Redesign
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-calendar"></i> Due: May 15, 2026
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-chart-line"></i> 45% complete
-            </span>
-          </div>
-        </div>
-        <div class="goal-actions">
-          <button class="btn-icon" type="button" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon btn-danger" type="button" title="Delete">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
+          <div class="goal-content">
+            <div class="goal-header">
+              <h3 class="goal-title">
+                <%= goal.title %>
+                <% if (goal.is_draft) { %>
+                  <span class="draft-badge">Draft</span>
+                <% } %>
+              </h3>
 
-      <!-- Goal 3 -->
-      <div class="goal-card pending">
-        <div class="goal-icon">
-          <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="goal-content">
-          <div class="goal-header">
-            <h3 class="goal-title">Reduce API response time by 30%</h3>
-            <span class="goal-status pending">Pending</span>
-          </div>
-          <p class="goal-desc">Optimize database queries and implement caching layer to significantly improve API performance across all endpoints.</p>
-          <div class="goal-meta">
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-folder"></i> Internal Tools
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-calendar"></i> Due: Jun 01, 2026
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-chart-line"></i> 20% complete
-            </span>
-          </div>
-        </div>
-        <div class="goal-actions">
-          <button class="btn-icon" type="button" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon btn-danger" type="button" title="Delete">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
+              <span class="goal-status <%= goal.status %>">
+                <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
+              </span>
+            </div>
 
-      <!-- Goal 4 -->
-      <div class="goal-card completed">
-        <div class="goal-icon">
-          <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="goal-content">
-          <div class="goal-header">
-            <h3 class="goal-title">Complete Q1 security audit</h3>
-            <span class="goal-status completed">Completed</span>
-          </div>
-          <p class="goal-desc">Conduct comprehensive security audit of all systems and address identified vulnerabilities.</p>
-          <div class="goal-meta">
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-folder"></i> Internal Tools
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-calendar"></i> Completed: Mar 15, 2026
-            </span>
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-chart-line"></i> 100% complete
-            </span>
-          </div>
-        </div>
-        <div class="goal-actions">
-          <button class="btn-icon" type="button" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon btn-danger" type="button" title="Delete">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
+            <p class="goal-desc">
+              <%= goal.description || 'No description provided.' %>
+            </p>
 
+            <div class="goal-meta">
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-flag"></i>
+                Priority:
+                <%= goal.priority ? goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) : 'Not set' %>
+              </span>
+
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-calendar-days"></i>
+                Start:
+                <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
+              </span>
+
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-calendar-check"></i>
+                End:
+                <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="goal-actions">
+            <button class="btn-icon" type="button" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" type="button" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      <% }); %>
     </div>
   </div>
 </div>
+
+<script>
+  const goalForm = document.getElementById('goalForm');
+  const goalFormMessage = document.getElementById('goalFormMessage');
+  const saveDraftButton = document.getElementById('saveDraftButton');
+  const createGoalButton = document.getElementById('createGoalButton');
+
+  const titleInput = document.getElementById('title');
+  const descriptionInput = document.getElementById('description');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  const priorityInput = document.getElementById('priority');
+  const statusInput = document.getElementById('status');
+
+  const showFormMessage = (message, type) => {
+    goalFormMessage.textContent = message;
+    goalFormMessage.className = `form-message ${type}`;
+  };
+
+  const clearFormMessage = () => {
+    goalFormMessage.textContent = '';
+    goalFormMessage.className = 'form-message';
+  };
+
+  const setButtonsDisabled = (disabled) => {
+    saveDraftButton.disabled = disabled;
+    createGoalButton.disabled = disabled;
+  };
+
+  const resetGoalForm = () => {
+    goalForm.reset();
+  };
+
+  const getGoalPayload = (saveMode) => ({
+    title: titleInput.value.trim(),
+    description: descriptionInput.value.trim(),
+    start_date: startDateInput.value,
+    end_date: endDateInput.value,
+    priority: priorityInput.value,
+    status: statusInput.value,
+    save_mode: saveMode,
+  });
+
+  const submitGoal = async (saveMode) => {
+    clearFormMessage();
+    setButtonsDisabled(true);
+
+    try {
+      const payload = getGoalPayload(saveMode);
+
+      const response = await fetch('/manager/goals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showFormMessage(data.message || 'Something went wrong.', 'error');
+        setButtonsDisabled(false);
+        return;
+      }
+
+      showFormMessage(data.message || 'Operation completed successfully.', 'success');
+      resetGoalForm();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      console.log(err);
+      showFormMessage('Unexpected error while sending the form.', 'error');
+      setButtonsDisabled(false);
+    }
+  };
+
+  saveDraftButton.addEventListener('click', () => {
+    submitGoal('draft');
+  });
+
+  createGoalButton.addEventListener('click', () => {
+    submitGoal('final');
+  });
+</script>

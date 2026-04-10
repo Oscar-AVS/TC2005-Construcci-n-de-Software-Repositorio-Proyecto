@@ -41,16 +41,34 @@
       <i class="fa-solid fa-wand-magic-sparkles"></i>
       <span>AI-Powered Summary</span>
     </div>
-    <button class="btn-generate-ai" type="button">
+    <button class="btn-generate-ai" type="button" onclick="generateSummary()">
       <i class="fa-solid fa-sparkles"></i>
       Generate Summary
     </button>
   </div>
 
-  <div class="ai-summary-body">
-    <div class="ai-summary-placeholder">
+  <div class="ai-summary-body" id="aiSummaryBody">
+    <!-- Placeholder (default state) -->
+    <div class="ai-summary-placeholder" id="aiPlaceholder">
       <i class="fa-solid fa-robot"></i>
       <p>Click "Generate Summary" to create an AI-powered analysis of your team's activity, achievements, and areas for improvement.</p>
+    </div>
+
+    <!-- Loading state -->
+    <div class="ai-summary-placeholder" id="aiLoading" style="display:none;">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Generating summary, please wait...</p>
+    </div>
+
+    <!-- Result -->
+    <div id="aiResult" style="display:none;">
+      <p id="aiOverall"></p>
+      <h4>Highlights</h4>
+      <ul id="aiHighlights"></ul>
+      <h4>Risks</h4>
+      <ul id="aiRisks"></ul>
+      <h4>Recommendations</h4>
+      <ul id="aiRecommendations"></ul>
     </div>
   </div>
 </div>
@@ -104,9 +122,6 @@
       <button class="btn-export-large" type="button" onclick="exportPDF()">
         <i class="fa-solid fa-file-pdf"></i> Export PDF
       </button>
-      <button class="btn-export-large" type="button">
-        <i class="fa-solid fa-file-excel"></i> Export Excel
-      </button>
     </div>
 
     <!-- Success Message -->
@@ -115,12 +130,82 @@
     </p>
 
     <script>
-      function exportPDF() {
-        const idEquipo    = document.getElementById('reportTeam').value;
+      async function generateSummary() {
+        const idEquipo = document.getElementById('reportTeam').value;
         const fechaInicio = document.getElementById('reportFrom').value;
-        const fechaFin    = document.getElementById('reportTo').value;
+        const fechaFin = document.getElementById('reportTo').value;
+        const idProyecto = '1';
 
-        const idProyecto = '1'; // still hardcoded
+        if (!idEquipo) {
+          alert('Please select a team.');
+          return;
+        }
+        if (!fechaInicio || !fechaFin) {
+          alert('Please select a valid period (From and To).');
+          return;
+        }
+        if (fechaInicio > fechaFin) {
+          alert('Start date cannot be later than end date.');
+          return;
+        }
+
+        document.getElementById('aiPlaceholder').style.display = 'none';
+        document.getElementById('aiResult').style.display = 'none';
+        document.getElementById('aiLoading').style.display = 'flex';
+
+        try {
+          const url = `/manager/reports/ai-summary?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (!response.ok) {
+            alert(data.error || 'Error generating summary.');
+            document.getElementById('aiLoading').style.display = 'none';
+            document.getElementById('aiPlaceholder').style.display = 'flex';
+            return;
+          }
+
+          document.getElementById('aiOverall').textContent = data.summary.overallAssessment;
+
+          const highlightsList = document.getElementById('aiHighlights');
+          highlightsList.innerHTML = '';
+          data.summary.highlights.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            highlightsList.appendChild(li);
+          });
+
+          const risksList = document.getElementById('aiRisks');
+          risksList.innerHTML = '';
+          data.summary.risks.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            risksList.appendChild(li);
+          });
+
+          const recommendationsList = document.getElementById('aiRecommendations');
+          recommendationsList.innerHTML = '';
+          data.summary.recommendations.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            recommendationsList.appendChild(li);
+          });
+
+          document.getElementById('aiLoading').style.display = 'none';
+          document.getElementById('aiResult').style.display = 'block';
+        } catch (err) {
+          console.error('Error generating summary:', err);
+          alert('Unexpected error. Please try again.');
+          document.getElementById('aiLoading').style.display = 'none';
+          document.getElementById('aiPlaceholder').style.display = 'flex';
+        }
+      }
+
+      function exportPDF() {
+        const idEquipo = document.getElementById('reportTeam').value;
+        const fechaInicio = document.getElementById('reportFrom').value;
+        const fechaFin = document.getElementById('reportTo').value;
+        const idProyecto = '1';
 
         if (!idEquipo) {
           alert('Please select a team.');
