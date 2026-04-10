@@ -58,7 +58,8 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
   const [goals] = await db.query(
     `SELECT g.*
      FROM goal g
-     WHERE g.id_project = ?`,
+     INNER JOIN goal_project gp ON g.id_goal = gp.id_goal
+     WHERE gp.id_project = ?`,
     [idProyecto]
   );
 
