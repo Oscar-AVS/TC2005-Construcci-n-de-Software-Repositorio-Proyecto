@@ -117,7 +117,6 @@ exports.getTeamLog = async (req, res) => {
         u.full_name,
         u.email,
         u.avatar,
-        u.role,
         p.project_name,
         b.description AS blocker_description
       FROM log l
@@ -167,7 +166,6 @@ exports.getTeamMembers = async (req, res) => {
         u.full_name,
         u.email,
         u.avatar,
-        u.role,
         t.team_name
       FROM user_team ut
       INNER JOIN user u ON ut.id_user = u.id_user
@@ -252,8 +250,7 @@ exports.findTeamMembers = async (req, res) => {
         u.id_user,
         u.full_name,
         u.email,
-        u.avatar,
-        u.role
+        u.avatar
       FROM user_team ut
       INNER JOIN user u ON ut.id_user = u.id_user
       WHERE ut.id_team = ?
