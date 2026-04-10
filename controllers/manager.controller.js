@@ -3,10 +3,12 @@
  * Handles dashboard, goals, highlights, history, reports, log, self-review and profile.
  */
 
+
 const Log = require('../models/log.model');
 const Blocker = require('../models/blocker.model');
 const Project = require('../models/project.model');
 const User = require('../models/user.model');
+const Goal = require('../models/goal.model');
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -16,10 +18,20 @@ exports.getDashboard = (req, res) => {
 };
 
 exports.getGoals = (req, res) => {
-  res.render('manager/goals', {
-    currentPage: 'goals',
-    role: 'manager',
-  });
+  const activeUserId = 1;
+
+  Goal.fetchAllByManager(activeUserId)
+    .then(([goals]) => {
+      res.render('manager/goals', {
+        currentPage: 'goals',
+        role: 'manager',
+        goals,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
 };
 
 exports.getHighlights = (req, res) => {
