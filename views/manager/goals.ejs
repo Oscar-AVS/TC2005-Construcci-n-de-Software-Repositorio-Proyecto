@@ -8,48 +8,95 @@
   </div>
 
   <div class="report-card-body">
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="goalTitle">Goal Title</label>
-        <input type="text" id="goalTitle" class="form-input" placeholder="Enter goal title..." />
+    <form id="goalForm" class="goal-form">
+      <div id="goalFormMessage" class="form-message"></div>
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="title">Goal Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-input"
+            placeholder="Enter goal title..."
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="priority">Priority</label>
+          <select id="priority" name="priority" class="form-select">
+            <option value="">Select priority...</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="goalProject">Link to Project</label>
-        <select id="goalProject" class="form-select">
-          <option value="">Select a project...</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <label class="form-label" for="goalDesc">Description</label>
-      <textarea id="goalDesc" rows="3" placeholder="Describe the goal and expected outcomes..."></textarea>
-    </div>
-
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="goalDue">Due Date</label>
-        <input type="date" id="goalDue" class="form-input" />
+        <label class="form-label" for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          class="form-textarea"
+          placeholder="Describe the goal and expected outcomes..."
+        ></textarea>
       </div>
 
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="startDate">Start Date</label>
+          <input
+            type="date"
+            id="startDate"
+            name="start_date"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="endDate">End Date</label>
+          <input
+            type="date"
+            id="endDate"
+            name="end_date"
+            class="form-input"
+          />
+        </div>
+      </div>
+
       <div class="form-field">
-        <label class="form-label" for="goalStatus">Status</label>
-        <select id="goalStatus" class="form-select">
-          <option value="pending">Pending</option>
-          <option value="in-progress">In Progress</option>
+        <label class="form-label" for="status">Status</label>
+        <select id="status" name="status" class="form-select">
+          <option value="">Select status...</option>
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
           <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
-    </div>
 
-    <div class="action-row">
-      <button class="btn-draft" type="button">Save as Draft</button>
-      <button class="btn-submit" type="button">Create Goal</button>
-    </div>
+      <div class="action-row">
+        <button
+          id="saveDraftButton"
+          class="btn-draft"
+          type="button"
+        >
+          Save as Draft
+        </button>
+
+        <button
+          id="createGoalButton"
+          class="btn-submit"
+          type="button"
+        >
+          Create Goal
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 

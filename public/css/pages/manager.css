@@ -101,6 +101,73 @@
 /* ----------------------------------------
    GOALS
    ---------------------------------------- */
+.goal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.form-message {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-message.success {
+  display: block;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.form-message.error {
+  display: block;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
 
 /* Goals list */
 .goals-list {
@@ -127,12 +194,16 @@
   border-left-color: var(--green);
 }
 
-.goal-card.in-progress {
+.goal-card.active {
   border-left-color: var(--blue);
 }
 
-.goal-card.pending {
+.goal-card.paused {
   border-left-color: var(--yellow);
+}
+
+.goal-card.cancelled {
+  border-left-color: #ef4444; /* rojo */
 }
 
 .goal-icon {
@@ -167,6 +238,16 @@
   color: var(--text-primary);
 }
 
+.draft-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
 .goal-status {
   padding: 4px 10px;
   border-radius: 999px;
@@ -180,14 +261,19 @@
   color: #166534;
 }
 
-.goal-status.in-progress {
+.goal-status.active {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-.goal-status.pending {
+.goal-status.paused {
   background: #fef3c7;
   color: #92400e;
+}
+
+.goal-status.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .goal-desc {
