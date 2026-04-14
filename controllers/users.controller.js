@@ -7,9 +7,13 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user.model');
 
 exports.getLogin = (req, res) => {
+  const error = req.query.error === 'access_denied'
+    ? 'You do not have permission to access that page. Please log in with the correct account.'
+    : '';
+
   res.render('auth/login', {
     layout: false,
-    error: '',
+    error,
     csrfToken: req.csrfToken(),
   });
 };

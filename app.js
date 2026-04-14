@@ -41,6 +41,7 @@ app.use(session({
 const csrfProtection = csrf();
 
 const isAuth = require('./util/is-auth');
+const { requireRole } = require('./util/is-auth');
 const usersRoutes = require('./routes/users.routes');
 const employeeRoutes = require('./routes/employee.routes');
 const teamLeaderRoutes = require('./routes/team-leader.routes');
@@ -51,12 +52,12 @@ const reportRoutes = require('./routes/report.routes');
 
 app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', csrfProtection, usersRoutes);
-app.use('/employee', isAuth, csrfProtection, employeeRoutes);
-app.use('/team-leader', isAuth, csrfProtection, teamLeaderRoutes);
-app.use('/manager', isAuth, csrfProtection, managerRoutes);
-app.use('/admin', isAuth, csrfProtection, adminRoutes);
-app.use('/project-manager', isAuth, csrfProtection, projectManagerRoutes);
-app.use('/manager/reports', isAuth, csrfProtection, reportRoutes);
+app.use('/employee', isAuth, requireRole('employee'), csrfProtection, employeeRoutes);
+app.use('/team-leader', isAuth, requireRole('team-leader'), csrfProtection, teamLeaderRoutes);
+app.use('/manager', isAuth, requireRole('manager'), csrfProtection, managerRoutes);
+app.use('/admin', isAuth, requireRole('admin'), csrfProtection, adminRoutes);
+app.use('/project-manager', isAuth, requireRole('project-manager'), csrfProtection, projectManagerRoutes);
+app.use('/manager/reports', isAuth, requireRole('manager'), csrfProtection, reportRoutes);
 
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
