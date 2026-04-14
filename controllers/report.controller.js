@@ -1,6 +1,5 @@
 // controllers/report.controller.js
 const PDFDocument = require('pdfkit');
-console.log('API KEY:', process.env.OPENAI_API_KEY);
 const { generateText, Output } = require('ai');
 const { openai } = require('@ai-sdk/openai');
 const { z } = require('zod');
@@ -125,64 +124,71 @@ const exportPDF = async (req, res) => {
         doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#FFF4ED', '#E84C1E');
 
     doc.fillColor('#E84C1E')
-      .fontSize(22)
+      .fontSize(20)
       .text('Weekly Report', 60, 50, { align: 'center', width: 475 });
 
     doc.fillColor('#444444')
-      .fontSize(11)
+      .fontSize(10)
       .text('Change.org Team Performance Report', 60, 80, { align: 'center', width: 475 });
 
-    doc.fillColor('#000000')
-      .fontSize(10)
-      .text(`Team: ${data.equipo.team_name}`, 60, 105)
-      .text(`Project: ${data.proyecto.project_name}`, 220, 105)
-      .text(`Period: ${fechaInicio} — ${fechaFin}`, 380, 105);
+    doc.fillColor('#000000').fontSize(10);
+    doc.text(`Team: ${data.equipo.team_name}`, 60, 105, { width: 140 });
+    doc.text(`Project: ${data.proyecto.project_name}`, 220, 105, { width: 140 });
+    doc.text(`Period: ${fechaInicio} — ${fechaFin}`, 380, 105, { width: 140 });
 
-    doc.moveDown(4.5);
-    doc.moveDown();
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E84C1E');
-    doc.moveDown();
+    doc.y = 150;
+    doc.moveDown(1.2);
 
-        doc.fontSize(15).fillColor('#E84C1E').text('AI Executive Summary');
-    doc.moveDown(0.4);
+    doc.fontSize(15).fillColor('#E84C1E').text('AI Executive Summary', { align: 'center' });
+      doc.moveDown(0.6);
 
-    doc.roundedRect(50, doc.y, 495, 90, 8).fillAndStroke('#FFF4ED', '#F4B183');
-    doc.fillColor('#333333')
-      .fontSize(10)
-      .text(aiSummary.overallAssessment, 65, doc.y - 82, {
-        width: 465,
-        align: 'justify',
-      });
+      const summaryBoxY = doc.y;
 
-    doc.moveDown(5.5);
+      doc
+        .roundedRect(50, summaryBoxY, 495, 85, 8)
+        .fillAndStroke('#FFF8F3', '#F1C6A8');
+
+      doc
+        .fillColor('#333333')
+        .fontSize(10)
+        .text(aiSummary.overallAssessment, 65, summaryBoxY + 15, {
+          width: 465,
+          align: 'justify',
+        });
+
+      doc.y = summaryBoxY + 105;
 
     doc.fontSize(12).fillColor('#E84C1E').text('Key Highlights');
-    doc.moveDown(0.3);
+    doc.moveDown(0.25);
     doc.fontSize(10).fillColor('#000000');
     aiSummary.highlights.forEach((item) => {
-      doc.text(`• ${item}`);
+      doc.text(`• ${item}`, { width: 470 });
     });
-    doc.moveDown();
+    doc.moveDown(0.6);
 
     doc.fontSize(12).fillColor('#E84C1E').text('Critical Risks');
-    doc.moveDown(0.3);
+    doc.moveDown(0.25);
     doc.fontSize(10).fillColor('#000000');
     aiSummary.risks.forEach((item) => {
-      doc.text(`• ${item}`);
+      doc.text(`• ${item}`, { width: 470 });
     });
-    doc.moveDown();
+    doc.moveDown(0.6);
 
     doc.fontSize(12).fillColor('#E84C1E').text('Recommendations');
-    doc.moveDown(0.3);
+    doc.moveDown(0.25);
     doc.fontSize(10).fillColor('#000000');
     aiSummary.recommendations.forEach((item) => {
-      doc.text(`• ${item}`);
+      doc.text(`• ${item}`, { width: 470 });
     });
-    doc.moveDown();
+    doc.moveDown(0.8);
 
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E84C1E');
+    doc.moveDown(0.8);
+
     doc.moveDown();
 
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
     doc.fontSize(13).fillColor('#E84C1E').text('General Metrics');
     doc.moveDown(0.4);
 
@@ -192,6 +198,9 @@ const exportPDF = async (req, res) => {
     doc.text(`Total achievements recorded: ${data.logros.length}`);
     doc.text(`Total active blockers: ${data.bloqueos.length}`);
     doc.text(`Total project goals: ${data.metas.length}`);
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
     doc.moveDown();
 
     doc.fontSize(13).fillColor('#E84C1E').text('Team Members');
@@ -205,6 +214,8 @@ const exportPDF = async (req, res) => {
       });
     }
     doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
 
     doc.fontSize(13).fillColor('#E84C1E').text('Achievements');
     doc.moveDown(0.3);
@@ -213,10 +224,16 @@ const exportPDF = async (req, res) => {
       doc.text('No achievements recorded in this period.');
     } else {
       data.logros.forEach((l) => {
-        doc.text(`• [${l.created_at}] ${l.full_name}: ${l.description}`);
+        doc.text(`• [${new Date(l.created_at).toLocaleDateString('en-US')}] ${l.full_name}: ${l.description}`, {
+        width: 470,
+        });
+
       });
     }
     doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
 
     doc.fontSize(13).fillColor('#E84C1E').text('Current Blockers');
     doc.moveDown(0.3);
@@ -229,6 +246,9 @@ const exportPDF = async (req, res) => {
       });
     }
     doc.moveDown(); 
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
 
     doc.fontSize(13).fillColor('#E84C1E').text('Project Goals');
     doc.moveDown(0.3);
@@ -246,6 +266,8 @@ const exportPDF = async (req, res) => {
     }
     doc.moveDown();
 
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
     doc.fontSize(13).fillColor('#E84C1E').text('Log Entries');
     doc.moveDown(0.3);
     doc.fontSize(10).fillColor('#000000');
