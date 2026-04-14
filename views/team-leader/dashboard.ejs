@@ -94,6 +94,7 @@
                     <span class="blocker-date"><%= new Date(blocker.created_at).toLocaleDateString('en-GB') %></span>
 
                     <form action="/team-leader/blockers/resolve" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                       <input type="hidden" name="id_blocker" value="<%= blocker.id_blocker %>">
                       <button class="btn-submit" type="submit" style="padding: 6px 12px; font-size: 14px;">
                         Resolve
@@ -138,6 +139,7 @@
 
                     <div style="display: flex; gap: 8px;">
                       <form action="/team-leader/achievements/approve" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                         <input type="hidden" name="id_achievement" value="<%= achievement.id_achievement %>">
                         <button class="btn-submit" type="submit" style="padding: 6px 12px; font-size: 14px;">
                           Approve
@@ -145,6 +147,7 @@
                       </form>
 
                       <form action="/team-leader/achievements/reject" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                         <input type="hidden" name="id_achievement" value="<%= achievement.id_achievement %>">
                         <button class="btn-secondary" type="submit" style="padding: 6px 12px; font-size: 14px;">
                           Reject

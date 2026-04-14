@@ -22,6 +22,7 @@
 
   <div id="addMemberPanel" class="report-card" style="display: none; margin: 0 0 16px 0; padding: 16px;">
     <form id="addMemberForm" action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div style="display: flex; flex-direction: column; gap: 6px; min-width: 320px;">
         <label for="memberSearch" style="font-size: 18px; font-weight: 700; color: #1f2a44;">Add new team member</label>
 
@@ -78,6 +79,7 @@
 
           <div class="member-actions">
             <form action="/team-leader/team-members/remove" method="POST" class="remove-member-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id_user" value="<%= member.id_user %>">
               <input type="hidden" name="member_name" value="<%= member.full_name %>">
               <button class="btn-icon btn-danger" type="submit" title="Remove from team">

@@ -1,3 +1,4 @@
+<meta name="csrf-token" content="<%= csrfToken %>" />
 <!-- Manager Goals View -->
 <h1 id="pageTitle" class="page-title">Goals</h1>
 
@@ -80,31 +81,16 @@
       </div>
 
       <div class="action-row">
-  <button
-    id="cancelEditButton"
-    class="btn-draft"
-    type="button"
-    style="display: none;"
-  >
-    Cancel Edit
-  </button>
-
-  <button
-    id="saveDraftButton"
-    class="btn-draft"
-    type="button"
-  >
-    Save as Draft
-  </button>
-
-  <button
-    id="createGoalButton"
-    class="btn-submit"
-    type="button"
-  >
-    Create Goal
-  </button>
-</div>
+        <button id="cancelEditButton" class="btn-draft" type="button" style="display: none;">
+          Cancel Edit
+        </button>
+        <button id="saveDraftButton" class="btn-draft" type="button">
+          Save as Draft
+        </button>
+        <button id="createGoalButton" class="btn-submit" type="button">
+          Create Goal
+        </button>
+      </div>
     </form>
   </div>
 </div>
@@ -190,15 +176,16 @@
 
 <script>
   const goalForm = document.getElementById('goalForm');
-    const goalFormMessage = document.getElementById('goalFormMessage');
-    const goalFormTitle = document.getElementById('goalFormTitle');
-    const saveDraftButton = document.getElementById('saveDraftButton');
-    const createGoalButton = document.getElementById('createGoalButton');
-    const cancelEditButton = document.getElementById('cancelEditButton');
-    const editGoalButtons = document.querySelectorAll('.edit-goal-button');
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  const goalFormMessage = document.getElementById('goalFormMessage');
+  const goalFormTitle = document.getElementById('goalFormTitle');
+  const saveDraftButton = document.getElementById('saveDraftButton');
+  const createGoalButton = document.getElementById('createGoalButton');
+  const cancelEditButton = document.getElementById('cancelEditButton');
+  const editGoalButtons = document.querySelectorAll('.edit-goal-button');
 
-    let isEditMode = false;
-    let editingGoalId = null;
+  let isEditMode = false;
+  let editingGoalId = null;
 
   const titleInput = document.getElementById('title');
   const descriptionInput = document.getElementById('description');
@@ -227,40 +214,37 @@
   };
 
   const enableEditMode = (goal) => {
-  isEditMode = true;
-  editingGoalId = goal.id_goal;
+    isEditMode = true;
+    editingGoalId = goal.id_goal;
 
-  goalFormTitle.textContent = 'Edit Goal';
-  createGoalButton.textContent = 'Save Changes';
-  saveDraftButton.style.display = 'none';
-  cancelEditButton.style.display = 'inline-flex';
+    goalFormTitle.textContent = 'Edit Goal';
+    createGoalButton.textContent = 'Save Changes';
+    saveDraftButton.style.display = 'none';
+    cancelEditButton.style.display = 'inline-flex';
 
-  titleInput.value = goal.title || '';
-  descriptionInput.value = goal.description || '';
-  startDateInput.value = goal.start_date ? goal.start_date.split('T')[0] : '';
-  endDateInput.value = goal.end_date ? goal.end_date.split('T')[0] : '';
-  priorityInput.value = goal.priority || '';
-  statusInput.value = goal.status || '';
+    titleInput.value = goal.title || '';
+    descriptionInput.value = goal.description || '';
+    startDateInput.value = goal.start_date ? goal.start_date.split('T')[0] : '';
+    endDateInput.value = goal.end_date ? goal.end_date.split('T')[0] : '';
+    priorityInput.value = goal.priority || '';
+    statusInput.value = goal.status || '';
 
-  clearFormMessage();
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  });
-};
+    clearFormMessage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-const disableEditMode = () => {
-  isEditMode = false;
-  editingGoalId = null;
+  const disableEditMode = () => {
+    isEditMode = false;
+    editingGoalId = null;
 
-  goalFormTitle.textContent = 'Create New Goal';
-  createGoalButton.textContent = 'Create Goal';
-  saveDraftButton.style.display = 'inline-flex';
-  cancelEditButton.style.display = 'none';
+    goalFormTitle.textContent = 'Create New Goal';
+    createGoalButton.textContent = 'Create Goal';
+    saveDraftButton.style.display = 'inline-flex';
+    cancelEditButton.style.display = 'none';
 
-  resetGoalForm();
-  clearFormMessage();
-};
+    resetGoalForm();
+    clearFormMessage();
+  };
 
   const getGoalPayload = (saveMode) => ({
     title: titleInput.value.trim(),
@@ -272,34 +256,33 @@ const disableEditMode = () => {
     save_mode: saveMode,
   });
 
-  
-const loadGoalForEdit = async (goalId) => {
-  clearFormMessage();
+  const loadGoalForEdit = async (goalId) => {
+    clearFormMessage();
 
-  try {
-    const response = await fetch(`/manager/goals/${goalId}`);
-    const data = await response.json();
+    try {
+      const response = await fetch(`/manager/goals/${goalId}`);
+      const data = await response.json();
 
-    if (!response.ok) {
-      showFormMessage(data.message || 'Could not load goal.', 'error');
+      if (!response.ok) {
+        showFormMessage(data.message || 'Could not load goal.', 'error');
+        return;
+      }
+
+      enableEditMode(data.goal);
+    } catch (err) {
+      console.log(err);
+      showFormMessage('Unexpected error while loading the goal.', 'error');
+    }
+  };
+
+  const submitGoal = async (saveMode) => {
+    clearFormMessage();
+
+    if (!validateForm(saveMode)) {
       return;
     }
 
-    enableEditMode(data.goal);
-  } catch (err) {
-    console.log(err);
-    showFormMessage('Unexpected error while loading the goal.', 'error');
-  }
-};
-
-  const submitGoal = async (saveMode) => {
-  clearFormMessage();
-
-  if (!validateForm(saveMode)) {
-    return;
-  }
-
-  setButtonsDisabled(true);
+    setButtonsDisabled(true);
 
     try {
       const payload = getGoalPayload(saveMode);
@@ -308,6 +291,7 @@ const loadGoalForEdit = async (goalId) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
         body: JSON.stringify(payload),
       });
@@ -342,65 +326,65 @@ const loadGoalForEdit = async (goalId) => {
   });
 
   editGoalButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    const goalId = button.dataset.goalId;
-    loadGoalForEdit(goalId);
+    button.addEventListener('click', () => {
+      const goalId = button.dataset.goalId;
+      loadGoalForEdit(goalId);
+    });
   });
-});
 
-cancelEditButton.addEventListener('click', () => {
-  disableEditMode();
-});
+  cancelEditButton.addEventListener('click', () => {
+    disableEditMode();
+  });
 
   const markInvalid = (input) => {
-  input.classList.add('input-error');
-};
+    input.classList.add('input-error');
+  };
 
-const clearInvalid = (input) => {
-  input.classList.remove('input-error');
-};
+  const clearInvalid = (input) => {
+    input.classList.remove('input-error');
+  };
 
-const validateForm = (mode) => {
-  let isValid = true;
+  const validateForm = (mode) => {
+    let isValid = true;
 
-  [titleInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
+    [titleInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
 
-  if (!titleInput.value.trim()) {
-    markInvalid(titleInput);
-    showFormMessage('Title is required.', 'error');
-    isValid = false;
-  }
-
-  if (mode === 'final') {
-    if (!priorityInput.value) {
-      markInvalid(priorityInput);
-      showFormMessage('Priority is required.', 'error');
+    if (!titleInput.value.trim()) {
+      markInvalid(titleInput);
+      showFormMessage('Title is required.', 'error');
       isValid = false;
     }
 
-    if (!statusInput.value) {
-      markInvalid(statusInput);
-      showFormMessage('Status is required.', 'error');
-      isValid = false;
-    }
-
-    if (!startDateInput.value || !endDateInput.value) {
-      markInvalid(startDateInput);
-      markInvalid(endDateInput);
-      showFormMessage('Start and End dates are required.', 'error');
-      isValid = false;
-    }
-
-    if (startDateInput.value && endDateInput.value) {
-      if (new Date(startDateInput.value) > new Date(endDateInput.value)) {
-        markInvalid(startDateInput);
-        markInvalid(endDateInput);
-        showFormMessage('Start date cannot be after End date.', 'error');
+    if (mode === 'final') {
+      if (!priorityInput.value) {
+        markInvalid(priorityInput);
+        showFormMessage('Priority is required.', 'error');
         isValid = false;
       }
-    }
-  }
 
-  return isValid;
-};
+      if (!statusInput.value) {
+        markInvalid(statusInput);
+        showFormMessage('Status is required.', 'error');
+        isValid = false;
+      }
+
+      if (!startDateInput.value || !endDateInput.value) {
+        markInvalid(startDateInput);
+        markInvalid(endDateInput);
+        showFormMessage('Start and End dates are required.', 'error');
+        isValid = false;
+      }
+
+      if (startDateInput.value && endDateInput.value) {
+        if (new Date(startDateInput.value) > new Date(endDateInput.value)) {
+          markInvalid(startDateInput);
+          markInvalid(endDateInput);
+          showFormMessage('Start date cannot be after End date.', 'error');
+          isValid = false;
+        }
+      }
+    }
+
+    return isValid;
+  };
 </script>

@@ -11,7 +11,7 @@ const Project = require('../models/project.model');
 
 exports.getDashboard = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
 
     const [pendingBlockers] = await db.query(
       `
@@ -60,6 +60,7 @@ exports.getDashboard = async (req, res) => {
       role: 'team-leader',
       pendingBlockers,
       pendingAchievements,
+      csrfToken: req.csrfToken(),
     });
   } catch (error) {
     console.error(error);
@@ -68,7 +69,7 @@ exports.getDashboard = async (req, res) => {
 };
 
 exports.getLog = (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
@@ -94,6 +95,7 @@ exports.getLog = (req, res) => {
           logs: logsWithBlockers,
           projects,
           filters,
+          csrfToken: req.csrfToken(),
         });
       });
     })
@@ -105,7 +107,7 @@ exports.getLog = (req, res) => {
 
 exports.getTeamLog = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const { from, to } = req.query;
 
     let query = `
@@ -157,7 +159,7 @@ exports.getTeamLog = async (req, res) => {
 
 exports.getTeamMembers = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
 
     const [members] = await db.query(
       `
@@ -197,6 +199,7 @@ exports.getTeamMembers = async (req, res) => {
       members,
       availableUsers,
       teamName: members.length > 0 ? members[0].team_name : 'Team',
+      csrfToken: req.csrfToken(),
     });
   } catch (error) {
     console.error(error);
@@ -206,7 +209,7 @@ exports.getTeamMembers = async (req, res) => {
 
 exports.searchAvailableUsers = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const search = (req.query.q || '').trim();
 
     const [users] = await db.query(
@@ -241,7 +244,7 @@ exports.searchAvailableUsers = async (req, res) => {
 
 exports.findTeamMembers = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const search = (req.query.q || '').trim();
 
     const [members] = await db.query(
@@ -274,7 +277,7 @@ exports.findTeamMembers = async (req, res) => {
 
 exports.getTeamReport = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const { from, to } = req.query;
 
     const reportFrom = from || '2026-01-01';
@@ -404,7 +407,7 @@ exports.getProfile = (req, res) => {
 
 exports.addTeamMember = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const { id_user } = req.body;
 
     await db.query(
@@ -421,7 +424,7 @@ exports.addTeamMember = async (req, res) => {
 
 exports.removeTeamMember = async (req, res) => {
   try {
-    const teamId = 1;
+    const teamId = req.session.teamId;
     const { id_user } = req.body;
 
     await db.query(
@@ -454,7 +457,7 @@ exports.resolveBlocker = async (req, res) => {
 
 exports.approveAchievement = async (req, res) => {
   try {
-    const leaderId = 1;
+    const leaderId = req.session.userId;
     const { id_achievement } = req.body;
 
     await db.query(
@@ -477,7 +480,7 @@ exports.approveAchievement = async (req, res) => {
 
 exports.rejectAchievement = async (req, res) => {
   try {
-    const leaderId = 1;
+    const leaderId = req.session.userId;
     const { id_achievement } = req.body;
 
     await db.query(

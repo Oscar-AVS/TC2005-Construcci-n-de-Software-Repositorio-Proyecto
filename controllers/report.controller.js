@@ -6,12 +6,6 @@ const { z } = require('zod');
 const { getAiSummaryData } = require('../models/Report.model');
 const { getReportData } = require('../models/Report.model');
 
-const HARDCODED_MANAGER = {
-  Id_Usuario: 1,
-  Nombre_Completo: 'Francisco Rafael Arreola Corona',
-  rol: 'manager'
-};
-
 async function buildAiSummary(data, fechaInicio, fechaFin) {
   const logsText = data.bitacoras
     .map((b) => `- [${new Date(b.created_at).toLocaleDateString('en-US')}] ${b.full_name}: completed "${b.completed}" / planned "${b.planned}"`)
@@ -74,7 +68,6 @@ Keep each section concise and actionable.
   return output;
 }
 
-
 const exportPDF = async (req, res) => {
   const { idEquipo, idProyecto, fechaInicio, fechaFin } = req.query;
 
@@ -97,7 +90,8 @@ const exportPDF = async (req, res) => {
       error: 'No data available to generate the report.'
     });
   }
-    let aiSummary;
+
+  let aiSummary;
   try {
     aiSummary = await buildAiSummary(data, fechaInicio, fechaFin);
   } catch (err) {
@@ -121,7 +115,7 @@ const exportPDF = async (req, res) => {
 
     doc.pipe(res);
 
-        doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#FFF4ED', '#E84C1E');
+    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#FFF4ED', '#E84C1E');
 
     doc.fillColor('#E84C1E')
       .fontSize(20)
@@ -140,23 +134,20 @@ const exportPDF = async (req, res) => {
     doc.moveDown(1.2);
 
     doc.fontSize(15).fillColor('#E84C1E').text('AI Executive Summary', { align: 'center' });
-      doc.moveDown(0.6);
+    doc.moveDown(0.6);
 
-      const summaryBoxY = doc.y;
+    const summaryBoxY = doc.y;
 
-      doc
-        .roundedRect(50, summaryBoxY, 495, 85, 8)
-        .fillAndStroke('#FFF8F3', '#F1C6A8');
+    doc.roundedRect(50, summaryBoxY, 495, 85, 8).fillAndStroke('#FFF8F3', '#F1C6A8');
 
-      doc
-        .fillColor('#333333')
-        .fontSize(10)
-        .text(aiSummary.overallAssessment, 65, summaryBoxY + 15, {
-          width: 465,
-          align: 'justify',
-        });
+    doc.fillColor('#333333')
+      .fontSize(10)
+      .text(aiSummary.overallAssessment, 65, summaryBoxY + 15, {
+        width: 465,
+        align: 'justify',
+      });
 
-      doc.y = summaryBoxY + 105;
+    doc.y = summaryBoxY + 105;
 
     doc.fontSize(12).fillColor('#E84C1E').text('Key Highlights');
     doc.moveDown(0.25);
@@ -184,7 +175,6 @@ const exportPDF = async (req, res) => {
 
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E84C1E');
     doc.moveDown(0.8);
-
     doc.moveDown();
 
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
@@ -225,15 +215,13 @@ const exportPDF = async (req, res) => {
     } else {
       data.logros.forEach((l) => {
         doc.text(`• [${new Date(l.created_at).toLocaleDateString('en-US')}] ${l.full_name}: ${l.description}`, {
-        width: 470,
+          width: 470,
         });
-
       });
     }
     doc.moveDown();
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
     doc.moveDown();
-
 
     doc.fontSize(13).fillColor('#E84C1E').text('Current Blockers');
     doc.moveDown(0.3);
@@ -245,10 +233,9 @@ const exportPDF = async (req, res) => {
         doc.text(`• ${b.full_name} — ${b.description} [${b.resolution_status || 'No status'}]`);
       });
     }
-    doc.moveDown(); 
+    doc.moveDown();
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
     doc.moveDown();
-
 
     doc.fontSize(13).fillColor('#E84C1E').text('Project Goals');
     doc.moveDown(0.3);
@@ -293,7 +280,6 @@ const exportPDF = async (req, res) => {
     doc.fontSize(9).fillColor('#999999').text(`Report generated on ${new Date().toLocaleDateString('en-US')}`, { align: 'center' });
 
     doc.end();
-
   } catch (err) {
     console.error('Error generating PDF:', err);
     if (!res.headersSent) {
@@ -302,7 +288,6 @@ const exportPDF = async (req, res) => {
   }
 };
 
-/* Generates an AI-powered summary for a given team and period. */
 const generateAiSummary = async (req, res) => {
   const { idEquipo, idProyecto, fechaInicio, fechaFin } = req.query;
 
@@ -336,9 +321,10 @@ const generateAiSummary = async (req, res) => {
     team: data.equipo.team_name,
     project: data.proyecto.project_name,
     period: { from: fechaInicio, to: fechaFin },
-    generatedBy: HARDCODED_MANAGER.Nombre_Completo,
+    generatedBy: req.session.fullName,
     generatedAt: new Date().toISOString(),
     summary,
   });
 };
+
 module.exports = { exportPDF, generateAiSummary };

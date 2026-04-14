@@ -1,10 +1,7 @@
 /**
  * Project Manager Controller
- * Handles all PM-related view rendering
- * RF covered: Project CRUD, scheduling, team assignment, activity tracking, reports
  */
 
-// GET /project-manager/dashboard
 exports.getDashboard = (req, res) => {
   res.render('project-manager/dashboard', {
     title: 'PM Dashboard',
@@ -13,7 +10,6 @@ exports.getDashboard = (req, res) => {
   });
 };
 
-// GET /project-manager/projects
 exports.getProjects = (req, res) => {
   res.render('project-manager/projects', {
     title: 'Projects',
@@ -22,7 +18,6 @@ exports.getProjects = (req, res) => {
   });
 };
 
-// GET /project-manager/project/:id
 exports.getProjectDetail = (req, res) => {
   res.render('project-manager/project-detail', {
     title: 'Project Detail',
@@ -31,7 +26,6 @@ exports.getProjectDetail = (req, res) => {
   });
 };
 
-// GET /project-manager/reports
 exports.getReports = (req, res) => {
   res.render('project-manager/reports', {
     title: 'Reports',
@@ -40,16 +34,18 @@ exports.getReports = (req, res) => {
   });
 };
 
-// GET /project-manager/log (personal log - uses shared view)
 exports.getLog = (req, res) => {
   res.render('shared/log', {
     title: 'My Log',
     role: 'project-manager',
     currentPage: 'log',
+    logs: [],
+    projects: [],
+    filters: {},
+    csrfToken: req.csrfToken(),
   });
 };
 
-// GET /project-manager/self-review (uses shared view)
 exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     title: 'Self Review',
@@ -58,7 +54,6 @@ exports.getSelfReview = (req, res) => {
   });
 };
 
-// GET /project-manager/profile (uses shared view)
 exports.getProfile = (req, res) => {
   res.render('shared/profile', {
     title: 'Profile',

@@ -73,4 +73,11 @@ module.exports = class User {
       [id_role, id_user]
     );
   }
+  
+  static fetchTeamByLeader(id_user) {
+    return db.execute(
+      'SELECT id_team FROM team WHERE id_leader = ?',
+      [id_user]
+    );
+  }
 };

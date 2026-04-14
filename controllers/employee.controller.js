@@ -9,7 +9,7 @@ const Log = require('../models/log.model.js');
 const Blocker = require('../models/blocker.model.js');
 
 exports.getDashboard = async (req, res) => {
-  const activeUserId = 3;
+  const activeUserId = req.session.userId;
 
   try {
     const [weekRows] = await Log.countByWeek(activeUserId);
@@ -19,9 +19,7 @@ exports.getDashboard = async (req, res) => {
 
     const weeklyData = [0, 0, 0, 0, 0];
     weekRows.forEach((row) => {
-      if (row.weekday <= 4) {
-        weeklyData[row.weekday] = Number(row.count);
-      }
+      if (row.weekday <= 4) weeklyData[row.weekday] = Number(row.count);
     });
 
     const logsByDay = [[], [], [], [], []];
@@ -52,7 +50,7 @@ exports.getDashboard = async (req, res) => {
 };
 
 exports.getLog = (req, res) => {
-  const activeUserId = 3;
+  const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
@@ -78,6 +76,7 @@ exports.getLog = (req, res) => {
           logs: logsWithBlockers,
           projects,
           filters,
+          csrfToken: req.csrfToken(),
         });
       });
     })
@@ -88,7 +87,7 @@ exports.getLog = (req, res) => {
 };
 
 exports.postLog = (req, res) => {
-  const activeUserId = 3;
+  const activeUserId = req.session.userId;
   const { completed, planned, blocker } = req.body;
   let id_projects = req.body.id_projects;
 
@@ -119,7 +118,7 @@ exports.postLog = (req, res) => {
 };
 
 exports.putLog = (req, res) => {
-  const activeUserId = 3;
+  const activeUserId = req.session.userId;
   const { id_log, completed, planned, blocker, blocker_id, blocker_status } = req.body;
   let id_projects = req.body.id_projects;
 
@@ -183,7 +182,7 @@ exports.getSelfReview = (req, res) => {
 };
 
 exports.getProjects = (req, res) => {
-  const activeUserId = 3;
+  const activeUserId = req.session.userId;
 
   Project.fetchAllByEmployee(activeUserId)
     .then(([rows]) => {
@@ -200,7 +199,7 @@ exports.getProjects = (req, res) => {
 };
 
 exports.getProfile = (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
 
   User.fetchOne(activeUserId)
     .then(([rows]) => {

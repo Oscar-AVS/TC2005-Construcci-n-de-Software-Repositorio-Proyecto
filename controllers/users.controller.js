@@ -10,6 +10,7 @@ exports.getLogin = (req, res) => {
   res.render('auth/login', {
     layout: false,
     error: '',
+    csrfToken: req.csrfToken(),
   });
 };
 
@@ -45,24 +46,16 @@ exports.postLogin = (req, res) => {
               req.session.username = user.username;
               req.session.fullName = user.full_name;
               req.session.role = role;
-              req.session.privileges = privileges;
+              req.session.privileges = privileges.map((p) => p.privilege_name);
 
-              req.session.save((err) => {
-                if (err) {
-                  console.log(err);
-                  return res.status(500).send('Session error');
-                }
+              if (role === 'team-leader') {
+                return User.fetchTeamByLeader(user.id_user).then(([teams]) => {
+                  req.session.teamId = teams.length > 0 ? teams[0].id_team : null;
+                  return saveAndRedirect(req, res, role);
+                });
+              }
 
-                const dashboardRoutes = {
-                  admin: '/admin/dashboard',
-                  manager: '/manager/dashboard',
-                  'team-leader': '/team-leader/dashboard',
-                  'project-manager': '/project-manager/dashboard',
-                  employee: '/employee/dashboard',
-                };
-
-                res.redirect(dashboardRoutes[role] || '/employee/dashboard');
-              });
+              return saveAndRedirect(req, res, role);
             });
           });
       });
@@ -72,6 +65,27 @@ exports.postLogin = (req, res) => {
       res.status(500).send('Internal Server Error');
     });
 };
+
+function saveAndRedirect(req, res, role) {
+  const dashboardRoutes = {
+    admin: '/admin/dashboard',
+    manager: '/manager/dashboard',
+    'team-leader': '/team-leader/dashboard',
+    'project-manager': '/project-manager/dashboard',
+    employee: '/employee/dashboard',
+  };
+
+  return new Promise((resolve, reject) => {
+    req.session.save((err) => {
+      if (err) {
+        console.log(err);
+        return reject(err);
+      }
+      res.redirect(dashboardRoutes[role] || '/employee/dashboard');
+      resolve();
+    });
+  });
+}
 
 exports.getLogout = (req, res) => {
   req.session.destroy((err) => {
@@ -86,6 +100,7 @@ exports.getSignup = (req, res) => {
   res.render('auth/signup', {
     layout: false,
     error: '',
+    csrfToken: req.csrfToken(),
   });
 };
 

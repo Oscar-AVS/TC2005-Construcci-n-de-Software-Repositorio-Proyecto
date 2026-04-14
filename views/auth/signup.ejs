@@ -14,18 +14,13 @@
         <p class="login-sub">Fill in your details to get started</p>
 
         <form class="login-form" action="/signup" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
           <div class="lf-field">
             <label class="lf-label" for="fullName">Full Name</label>
             <div class="lf-input-wrap">
               <i class="fa-regular fa-user lf-icon" aria-hidden="true"></i>
-              <input
-                id="fullName"
-                name="full_name"
-                type="text"
-                placeholder="Your full name"
-                required
-              />
+              <input id="fullName" name="full_name" type="text" placeholder="Your full name" required />
             </div>
           </div>
 
@@ -33,13 +28,7 @@
             <label class="lf-label" for="email">Email</label>
             <div class="lf-input-wrap">
               <i class="fa-regular fa-envelope lf-icon" aria-hidden="true"></i>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="email@change.org"
-                required
-              />
+              <input id="email" name="email" type="email" placeholder="email@change.org" required />
             </div>
           </div>
 
@@ -47,13 +36,7 @@
             <label class="lf-label" for="signupUser">Username</label>
             <div class="lf-input-wrap">
               <i class="fa-solid fa-at lf-icon" aria-hidden="true"></i>
-              <input
-                id="signupUser"
-                name="username"
-                type="text"
-                placeholder="Your username"
-                required
-              />
+              <input id="signupUser" name="username" type="text" placeholder="Your username" required />
             </div>
           </div>
 
@@ -68,13 +51,7 @@
                 placeholder="••••••••"
                 required
               />
-              <button
-                id="togglePass"
-                class="lf-eye"
-                type="button"
-                tabindex="-1"
-                aria-label="Show password"
-              >
+              <button id="togglePass" class="lf-eye" type="button" tabindex="-1" aria-label="Show password">
                 <i id="eyeIcon" class="fa-regular fa-eye" aria-hidden="true"></i>
               </button>
             </div>

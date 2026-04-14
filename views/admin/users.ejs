@@ -1,4 +1,5 @@
 <!-- Admin Users View -->
+<meta name="csrf-token" content="<%= csrfToken %>" />
 <h1 id="pageTitle" class="page-title">Users Management</h1>
 
 <!-- Add User Card -->
@@ -8,6 +9,7 @@
   </div>
   <div class="report-card-body">
     <form action="/admin/users/create" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div class="form-row-grid">
         <div class="form-field">
           <label class="form-label" for="userName">Full Name</label>
@@ -71,36 +73,23 @@
         <tr id="user-row-<%= user.id %>">
           <td>
             <div class="user-cell">
-              <img
-                src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg"
-                alt="<%= user.full_name %>"
-              />
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="<%= user.full_name %>" />
               <div class="user-cell-info">
                 <span class="user-cell-name"><%= user.full_name %></span>
                 <span class="user-cell-email"><%= user.email %></span>
               </div>
             </div>
           </td>
-          <td>
-            <span class="role-badge <%= user.role %>"><%= user.role %></span>
-          </td>
+          <td><span class="role-badge <%= user.role %>"><%= user.role %></span></td>
           <td><%= user.team || '—' %></td>
           <td>
-            <span
-              id="status-badge-<%= user.id %>"
-              class="status-badge <%= user.is_active ? 'active' : 'inactive' %>"
-            >
+            <span id="status-badge-<%= user.id %>" class="status-badge <%= user.is_active ? 'active' : 'inactive' %>">
               <%= user.is_active ? 'Active' : 'Inactive' %>
             </span>
           </td>
           <td>
             <div class="table-actions">
-              <button
-                class="btn-icon"
-                type="button"
-                title="Edit"
-                onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', '<%= user.username %>', <%= user.id_role %>)"
-              >
+              <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', '<%= user.username %>', <%= user.id_role %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
               <button class="btn-icon" type="button" title="Reset Password">
@@ -113,10 +102,7 @@
                 onclick="openToggleModal(<%= user.id %>, <%= user.is_active %>)"
                 id="toggle-btn-<%= user.id %>"
               >
-                <i
-                  id="toggle-icon-<%= user.id %>"
-                  class="fa-solid <%= user.is_active ? 'fa-user-slash' : 'fa-user-check' %>"
-                ></i>
+                <i id="toggle-icon-<%= user.id %>" class="fa-solid <%= user.is_active ? 'fa-user-slash' : 'fa-user-check' %>"></i>
               </button>
             </div>
           </td>
@@ -128,14 +114,12 @@
 </div>
 
 <!-- Edit User Modal -->
-<div
-  id="editUserModal"
-  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
->
+<div id="editUserModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;">
   <div style="background: #fff; width: min(480px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
     <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit User</h3>
 
     <form action="/admin/users/edit" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="id_user" id="editUserId" />
 
       <div class="form-field" style="margin-bottom: 12px;">
@@ -175,27 +159,16 @@
 </div>
 
 <!-- Toggle Status Modal -->
-<div
-  id="toggleStatusModal"
-  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
->
+<div id="toggleStatusModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;">
   <div style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
     <h3 style="margin: 0 0 10px 0; font-size: 22px; color: #1f2a44;" id="toggleModalTitle">Deactivate account</h3>
     <p id="toggleModalText" style="margin: 0 0 20px 0; color: #5f6b85; line-height: 1.5;">Are you sure you want to deactivate this account?</p>
 
     <div style="display: flex; justify-content: flex-end; gap: 10px;">
-      <button
-        type="button"
-        id="cancelToggleBtn"
-        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
-      >
+      <button type="button" id="cancelToggleBtn" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
         <i class="fa-solid fa-xmark"></i> Cancel
       </button>
-      <button
-        type="button"
-        id="confirmToggleBtn"
-        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
-      >
+      <button type="button" id="confirmToggleBtn" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
         <i class="fa-solid fa-check"></i> Confirm
       </button>
     </div>
@@ -203,18 +176,17 @@
 </div>
 
 <script>
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   let pendingToggleUserId = null;
   let pendingToggleStatus = null;
 
   function openToggleModal(userId, currentStatus) {
     pendingToggleUserId = userId;
     pendingToggleStatus = currentStatus;
-
     document.getElementById('toggleModalTitle').textContent = currentStatus ? 'Deactivate account' : 'Activate account';
     document.getElementById('toggleModalText').textContent = currentStatus
       ? 'Are you sure you want to deactivate this account?'
       : 'Do you want to reactivate this account?';
-
     document.getElementById('toggleStatusModal').style.display = 'flex';
   }
 
@@ -230,7 +202,10 @@
     try {
       const res = await fetch(`/admin/users/${pendingToggleUserId}/toggle-status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
       });
 
       if (res.redirected || !res.ok) {
@@ -259,7 +234,6 @@
       icon.className = `fa-solid ${isNowActive ? 'fa-user-slash' : 'fa-user-check'}`;
 
       btn.setAttribute('onclick', `openToggleModal(${pendingToggleUserId}, ${isNowActive ? 1 : 0})`);
-
     } catch (err) {
       console.error('toggleStatus error:', err);
       alert('Connection error. Please try again.');

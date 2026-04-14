@@ -24,6 +24,7 @@ exports.getUsers = async (req, res) => {
       role: 'admin',
       users,
       roles,
+      csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error('getUsers error:', err);
@@ -54,7 +55,6 @@ exports.toggleUserStatus = async (req, res) => {
     );
 
     res.json({ success: true, is_active: newStatus });
-
   } catch (err) {
     console.error('toggleUserStatus error:', err);
     res.status(500).json({ success: false, message: 'Could not update user status' });
@@ -97,6 +97,7 @@ exports.getTeams = async (req, res) => {
       role: 'admin',
       teams,
       users,
+      csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error('getTeams error:', err);

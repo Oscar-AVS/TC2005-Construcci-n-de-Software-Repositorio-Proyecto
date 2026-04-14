@@ -3,7 +3,6 @@
  * Handles dashboard, goals, highlights, history, reports, log, self-review and profile.
  */
 
-
 const Log = require('../models/log.model');
 const Blocker = require('../models/blocker.model');
 const Project = require('../models/project.model');
@@ -18,7 +17,7 @@ exports.getDashboard = (req, res) => {
 };
 
 exports.getGoals = (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
 
   Goal.fetchAllByManager(activeUserId)
     .then(([goals]) => {
@@ -26,6 +25,7 @@ exports.getGoals = (req, res) => {
         currentPage: 'goals',
         role: 'manager',
         goals,
+        csrfToken: req.csrfToken(),
       });
     })
     .catch((err) => {
@@ -35,7 +35,7 @@ exports.getGoals = (req, res) => {
 };
 
 exports.createGoal = async (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
 
   const {
     title,
@@ -70,16 +70,7 @@ exports.createGoal = async (req, res) => {
         });
       }
     } else {
-      if (
-        !title ||
-        !title.trim() ||
-        !description ||
-        !description.trim() ||
-        !startDate ||
-        !endDate ||
-        !priority ||
-        !status
-      ) {
+      if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
         await Goal.createAuditLog({
           idUser: activeUserId,
           action: 'create',
@@ -96,70 +87,25 @@ exports.createGoal = async (req, res) => {
       }
 
       if (!validPriorities.includes(priority)) {
-        await Goal.createAuditLog({
-          idUser: activeUserId,
-          action: 'create',
-          entityType: 'goal',
-          entityId: null,
-          success: 0,
-          detail: 'Goal creation failed: invalid priority value.',
-        });
-
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid priority value.',
-        });
+        return res.status(400).json({ success: false, message: 'Invalid priority value.' });
       }
 
       if (!validStatuses.includes(status)) {
-        await Goal.createAuditLog({
-          idUser: activeUserId,
-          action: 'create',
-          entityType: 'goal',
-          entityId: null,
-          success: 0,
-          detail: 'Goal creation failed: invalid status value.',
-        });
-
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid status value.',
-        });
+        return res.status(400).json({ success: false, message: 'Invalid status value.' });
       }
 
       if (new Date(startDate) > new Date(endDate)) {
-        await Goal.createAuditLog({
-          idUser: activeUserId,
-          action: 'create',
-          entityType: 'goal',
-          entityId: null,
-          success: 0,
-          detail: 'Goal creation failed: start date is later than end date.',
-        });
-
-        return res.status(400).json({
-          success: false,
-          message: 'Start date cannot be later than end date.',
-        });
+        return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
       }
     }
 
-    const normalizedDescription = description && description.trim()
-      ? description.trim()
-      : null;
-
-    const normalizedStartDate = startDate || null;
-    const normalizedEndDate = endDate || null;
-    const normalizedPriority = priority || 'medium';
-    const normalizedStatus = status || 'active';
-
     const [result] = await Goal.create({
       title: title.trim(),
-      description: normalizedDescription,
-      startDate: normalizedStartDate,
-      endDate: normalizedEndDate,
-      priority: normalizedPriority,
-      status: normalizedStatus,
+      description: description && description.trim() ? description.trim() : null,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      priority: priority || 'medium',
+      status: status || 'active',
       isDraft,
       idUser: activeUserId,
     });
@@ -170,20 +116,15 @@ exports.createGoal = async (req, res) => {
       entityType: 'goal',
       entityId: result.insertId,
       success: 1,
-      detail: isDraft
-        ? 'Goal draft saved successfully.'
-        : 'Goal created successfully.',
+      detail: isDraft ? 'Goal draft saved successfully.' : 'Goal created successfully.',
     });
 
     return res.status(201).json({
       success: true,
-      message: isDraft
-        ? 'Draft saved successfully.'
-        : 'Goal created successfully.',
+      message: isDraft ? 'Draft saved successfully.' : 'Goal created successfully.',
     });
   } catch (err) {
     console.log(err);
-
     try {
       await Goal.createAuditLog({
         idUser: activeUserId,
@@ -196,16 +137,12 @@ exports.createGoal = async (req, res) => {
     } catch (auditErr) {
       console.log(auditErr);
     }
-
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-    });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
 exports.updateGoal = async (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
   const { id } = req.params;
 
   const {
@@ -221,76 +158,28 @@ exports.updateGoal = async (req, res) => {
   const validStatuses = ['active', 'paused', 'completed', 'cancelled'];
 
   try {
-    // 1. Validar campos obligatorios
-    if (
-      !title ||
-      !title.trim() ||
-      !description ||
-      !description.trim() ||
-      !startDate ||
-      !endDate ||
-      !priority ||
-      !status
-    ) {
-      await Goal.createAuditLog({
-        idUser: activeUserId,
-        action: 'update',
-        entityType: 'goal',
-        entityId: id,
-        success: 0,
-        detail: 'Goal update failed: missing required fields.',
-      });
-
-      return res.status(400).json({
-        success: false,
-        message: 'Please complete all required fields.',
-      });
+    if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
+      return res.status(400).json({ success: false, message: 'Please complete all required fields.' });
     }
 
-    // 2. Validar prioridad
     if (!validPriorities.includes(priority)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid priority value.',
-      });
+      return res.status(400).json({ success: false, message: 'Invalid priority value.' });
     }
 
-    // 3. Validar status
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status value.',
-      });
+      return res.status(400).json({ success: false, message: 'Invalid status value.' });
     }
 
-    // 4. Validar fechas
     if (new Date(startDate) > new Date(endDate)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Start date cannot be later than end date.',
-      });
+      return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
     }
 
-    // 5. Verificar que la meta exista
     const [existingRows] = await Goal.fetchOneById(id, activeUserId);
 
     if (existingRows.length === 0) {
-      await Goal.createAuditLog({
-        idUser: activeUserId,
-        action: 'update',
-        entityType: 'goal',
-        entityId: id,
-        success: 0,
-        detail: 'Goal update failed: goal not found.',
-      });
-
-      return res.status(404).json({
-        success: false,
-        message: 'Goal not found.',
-      });
+      return res.status(404).json({ success: false, message: 'Goal not found.' });
     }
 
-    // 6. Actualizar meta
     const [result] = await Goal.update({
       idGoal: id,
       title: title.trim(),
@@ -303,13 +192,9 @@ exports.updateGoal = async (req, res) => {
     });
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Goal could not be updated.',
-      });
+      return res.status(400).json({ success: false, message: 'Goal could not be updated.' });
     }
 
-    // 7. Registrar éxito en bitácora
     await Goal.createAuditLog({
       idUser: activeUserId,
       action: 'update',
@@ -319,76 +204,28 @@ exports.updateGoal = async (req, res) => {
       detail: 'Goal updated successfully.',
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Goal updated successfully.',
-    });
+    return res.status(200).json({ success: true, message: 'Goal updated successfully.' });
   } catch (err) {
     console.log(err);
-
-    await Goal.createAuditLog({
-      idUser: activeUserId,
-      action: 'update',
-      entityType: 'goal',
-      entityId: id,
-      success: 0,
-      detail: `Technical error while updating goal: ${err.message}`,
-    });
-
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-    });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
 exports.getGoalById = async (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
   const { id } = req.params;
 
   try {
     const [rows] = await Goal.fetchOneById(id, activeUserId);
 
     if (rows.length === 0) {
-      await Goal.createAuditLog({
-        idUser: activeUserId,
-        action: 'update',
-        entityType: 'goal',
-        entityId: id,
-        success: 0,
-        detail: 'Goal edit failed: goal not found.',
-      });
-
-      return res.status(404).json({
-        success: false,
-        message: 'Goal not found.',
-      });
+      return res.status(404).json({ success: false, message: 'Goal not found.' });
     }
 
-    return res.status(200).json({
-      success: true,
-      goal: rows[0],
-    });
+    return res.status(200).json({ success: true, goal: rows[0] });
   } catch (err) {
     console.log(err);
-
-    try {
-      await Goal.createAuditLog({
-        idUser: activeUserId,
-        action: 'update',
-        entityType: 'goal',
-        entityId: id,
-        success: 0,
-        detail: `Technical error while loading goal for edit: ${err.message}`,
-      });
-    } catch (auditErr) {
-      console.log(auditErr);
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-    });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
@@ -410,11 +247,12 @@ exports.getReports = (req, res) => {
   res.render('manager/reports', {
     currentPage: 'reports',
     role: 'manager',
+    csrfToken: req.csrfToken(),
   });
 };
 
 exports.getLog = (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
@@ -440,6 +278,7 @@ exports.getLog = (req, res) => {
           logs: logsWithBlockers,
           projects,
           filters,
+          csrfToken: req.csrfToken(),
         });
       });
     })
@@ -457,7 +296,7 @@ exports.getSelfReview = (req, res) => {
 };
 
 exports.getProfile = (req, res) => {
-  const activeUserId = 1;
+  const activeUserId = req.session.userId;
 
   User.fetchOne(activeUserId)
     .then(([rows]) => {
