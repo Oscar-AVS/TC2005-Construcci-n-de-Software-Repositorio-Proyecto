@@ -13,6 +13,68 @@ const HARDCODED_MANAGER = {
   rol: 'manager'
 };
 
+async function buildAiSummary(data, fechaInicio, fechaFin) {
+  const logsText = data.bitacoras
+    .map((b) => `- [${new Date(b.created_at).toLocaleDateString('en-US')}] ${b.full_name}: completed "${b.completed}" / planned "${b.planned}"`)
+    .join('\n') || 'No log entries.';
+
+  const achievementsText = data.logros
+    .map((l) => `- [${l.created_at}] ${l.full_name}: ${l.description}`)
+    .join('\n') || 'No achievements.';
+
+  const blockersText = data.bloqueos
+    .map((b) => `- ${b.full_name}: ${b.description} [${b.resolution_status || 'unresolved'}]`)
+    .join('\n') || 'No blockers.';
+
+  const goalsText = data.metas
+    .map((g) => `- ${g.goal_name}: ${g.description || 'no description'}`)
+    .join('\n') || 'No goals defined.';
+
+  const prompt = `
+You are a senior product manager assistant at Change.org.
+Analyze the following team data and generate a concise executive summary.
+
+TEAM: ${data.equipo.team_name}
+PROJECT: ${data.proyecto.project_name}
+PERIOD: ${fechaInicio} to ${fechaFin}
+MEMBERS: ${data.miembros.map((m) => m.full_name).join(', ') || 'none'}
+
+LOG ENTRIES:
+${logsText}
+
+ACHIEVEMENTS:
+${achievementsText}
+
+BLOCKERS:
+${blockersText}
+
+PROJECT GOALS:
+${goalsText}
+
+Generate a structured summary with:
+1. A one-paragraph overall assessment of the team progress
+2. Exactly 3 highlights from this period
+3. The most critical risks or blockers found
+4. Between 2 and 3 concrete recommendations for the manager
+Keep each section concise and actionable.
+  `.trim();
+
+  const summarySchema = z.object({
+    overallAssessment: z.string().describe('One paragraph summary of overall team progress'),
+    highlights: z.array(z.string()).length(3).describe('Top 3 highlights of the period'),
+    risks: z.array(z.string()).describe('Critical risks or unresolved blockers'),
+    recommendations: z.array(z.string()).min(2).max(3).describe('Actionable recommendations for the manager'),
+  });
+
+  const { output } = await generateText({
+    model: openai('gpt-4o-mini'),
+    output: Output.object({ schema: summarySchema }),
+    prompt,
+  });
+
+  return output;
+}
+
 const exportPDF = async (req, res) => {
   const { idEquipo, idProyecto, fechaInicio, fechaFin } = req.query;
 
@@ -175,66 +237,9 @@ const generateAiSummary = async (req, res) => {
     return res.status(404).json({ error: 'No data available to generate the summary.' });
   }
 
-  const logsText = data.bitacoras
-    .map((b) => `- [${new Date(b.created_at).toLocaleDateString('en-US')}] ${b.full_name}: completed "${b.completed}" / planned "${b.planned}"`)
-    .join('\n') || 'No log entries.';
-
-  const achievementsText = data.logros
-    .map((l) => `- [${l.created_at}] ${l.full_name}: ${l.description}`)
-    .join('\n') || 'No achievements.';
-
-  const blockersText = data.bloqueos
-    .map((b) => `- ${b.full_name}: ${b.description} [${b.resolution_status || 'unresolved'}]`)
-    .join('\n') || 'No blockers.';
-
-  const goalsText = data.metas
-    .map((g) => `- ${g.goal_name}: ${g.description || 'no description'}`)
-    .join('\n') || 'No goals defined.';
-
-  const prompt = `
-You are a senior product manager assistant at Change.org.
-Analyze the following team data and generate a concise executive summary.
-
-TEAM: ${data.equipo.team_name}
-PROJECT: ${data.proyecto.project_name}
-PERIOD: ${fechaInicio} to ${fechaFin}
-MEMBERS: ${data.miembros.map((m) => m.full_name).join(', ') || 'none'}
-
-LOG ENTRIES:
-${logsText}
-
-ACHIEVEMENTS:
-${achievementsText}
-
-BLOCKERS:
-${blockersText}
-
-PROJECT GOALS:
-${goalsText}
-
-Generate a structured summary with:
-1. A one-paragraph overall assessment of the team progress
-2. Exactly 3 highlights from this period
-3. The most critical risks or blockers found
-4. Between 2 and 3 concrete recommendations for the manager
-Keep each section concise and actionable.
-  `.trim();
-
-  const summarySchema = z.object({
-    overallAssessment: z.string().describe('One paragraph summary of overall team progress'),
-    highlights: z.array(z.string()).length(3).describe('Top 3 highlights of the period'),
-    risks: z.array(z.string()).describe('Critical risks or unresolved blockers'),
-    recommendations: z.array(z.string()).min(2).max(3).describe('Actionable recommendations for the manager'),
-  });
-
   let summary;
   try {
-   const { output } = await generateText({
-  model: openai('gpt-4o-mini'),
-  output: Output.object({ schema: summarySchema }),
-  prompt,
-});
-summary = output;
+    summary = await buildAiSummary(data, fechaInicio, fechaFin);
   } catch (err) {
     console.error('Error calling AI model:', err);
     return res.status(500).json({ error: 'Error generating AI summary.' });
