@@ -204,6 +204,144 @@ exports.createGoal = async (req, res) => {
   }
 };
 
+exports.updateGoal = async (req, res) => {
+  const activeUserId = 1;
+  const { id } = req.params;
+
+  const {
+    title,
+    description,
+    start_date: startDate,
+    end_date: endDate,
+    priority,
+    status,
+  } = req.body;
+
+  const validPriorities = ['low', 'medium', 'high', 'critical'];
+  const validStatuses = ['active', 'paused', 'completed', 'cancelled'];
+
+  try {
+    // 1. Validar campos obligatorios
+    if (
+      !title ||
+      !title.trim() ||
+      !description ||
+      !description.trim() ||
+      !startDate ||
+      !endDate ||
+      !priority ||
+      !status
+    ) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: 'Goal update failed: missing required fields.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
+    }
+
+    // 2. Validar prioridad
+    if (!validPriorities.includes(priority)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid priority value.',
+      });
+    }
+
+    // 3. Validar status
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value.',
+      });
+    }
+
+    // 4. Validar fechas
+    if (new Date(startDate) > new Date(endDate)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Start date cannot be later than end date.',
+      });
+    }
+
+    // 5. Verificar que la meta exista
+    const [existingRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: 'Goal update failed: goal not found.',
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    // 6. Actualizar meta
+    const [result] = await Goal.update({
+      idGoal: id,
+      title: title.trim(),
+      description: description.trim(),
+      startDate,
+      endDate,
+      priority,
+      status,
+      idUser: activeUserId,
+    });
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Goal could not be updated.',
+      });
+    }
+
+    // 7. Registrar éxito en bitácora
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'update',
+      entityType: 'goal',
+      entityId: id,
+      success: 1,
+      detail: 'Goal updated successfully.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Goal updated successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'update',
+      entityType: 'goal',
+      entityId: id,
+      success: 0,
+      detail: `Technical error while updating goal: ${err.message}`,
+    });
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 exports.getGoalById = async (req, res) => {
   const activeUserId = 1;
   const { id } = req.params;

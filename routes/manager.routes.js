@@ -16,7 +16,7 @@ router.get('/dashboard', managerController.getDashboard);
 router.get('/goals', managerController.getGoals);
 router.post('/goals', managerController.createGoal);
 router.get('/goals/:id', managerController.getGoalById);
-//router.put('/goals/:id', managerController.updateGoal);
+router.put('/goals/:id', managerController.updateGoal);
 
 // Highlights - important achievements management
 router.get('/highlights', managerController.getHighlights);

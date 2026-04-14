@@ -4,7 +4,7 @@
 <!-- Add Goal Card -->
 <div class="report-card">
   <div class="report-card-header">
-    <h2>Create New Goal</h2>
+   <h2 id="goalFormTitle">Create New Goal</h2>
   </div>
 
   <div class="report-card-body">
@@ -80,22 +80,31 @@
       </div>
 
       <div class="action-row">
-        <button
-          id="saveDraftButton"
-          class="btn-draft"
-          type="button"
-        >
-          Save as Draft
-        </button>
+  <button
+    id="cancelEditButton"
+    class="btn-draft"
+    type="button"
+    style="display: none;"
+  >
+    Cancel Edit
+  </button>
 
-        <button
-          id="createGoalButton"
-          class="btn-submit"
-          type="button"
-        >
-          Create Goal
-        </button>
-      </div>
+  <button
+    id="saveDraftButton"
+    class="btn-draft"
+    type="button"
+  >
+    Save as Draft
+  </button>
+
+  <button
+    id="createGoalButton"
+    class="btn-submit"
+    type="button"
+  >
+    Create Goal
+  </button>
+</div>
     </form>
   </div>
 </div>
@@ -161,7 +170,12 @@
           </div>
 
           <div class="goal-actions">
-            <button class="btn-icon" type="button" title="Edit">
+            <button
+              class="btn-icon edit-goal-button"
+              type="button"
+              title="Edit"
+              data-goal-id="<%= goal.id_goal %>"
+            >
               <i class="fa-solid fa-pen"></i>
             </button>
             <button class="btn-icon btn-danger" type="button" title="Delete">
@@ -176,9 +190,15 @@
 
 <script>
   const goalForm = document.getElementById('goalForm');
-  const goalFormMessage = document.getElementById('goalFormMessage');
-  const saveDraftButton = document.getElementById('saveDraftButton');
-  const createGoalButton = document.getElementById('createGoalButton');
+    const goalFormMessage = document.getElementById('goalFormMessage');
+    const goalFormTitle = document.getElementById('goalFormTitle');
+    const saveDraftButton = document.getElementById('saveDraftButton');
+    const createGoalButton = document.getElementById('createGoalButton');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+    const editGoalButtons = document.querySelectorAll('.edit-goal-button');
+
+    let isEditMode = false;
+    let editingGoalId = null;
 
   const titleInput = document.getElementById('title');
   const descriptionInput = document.getElementById('description');
@@ -206,6 +226,42 @@
     goalForm.reset();
   };
 
+  const enableEditMode = (goal) => {
+  isEditMode = true;
+  editingGoalId = goal.id_goal;
+
+  goalFormTitle.textContent = 'Edit Goal';
+  createGoalButton.textContent = 'Save Changes';
+  saveDraftButton.style.display = 'none';
+  cancelEditButton.style.display = 'inline-flex';
+
+  titleInput.value = goal.title || '';
+  descriptionInput.value = goal.description || '';
+  startDateInput.value = goal.start_date ? goal.start_date.split('T')[0] : '';
+  endDateInput.value = goal.end_date ? goal.end_date.split('T')[0] : '';
+  priorityInput.value = goal.priority || '';
+  statusInput.value = goal.status || '';
+
+  clearFormMessage();
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+};
+
+const disableEditMode = () => {
+  isEditMode = false;
+  editingGoalId = null;
+
+  goalFormTitle.textContent = 'Create New Goal';
+  createGoalButton.textContent = 'Create Goal';
+  saveDraftButton.style.display = 'inline-flex';
+  cancelEditButton.style.display = 'none';
+
+  resetGoalForm();
+  clearFormMessage();
+};
+
   const getGoalPayload = (saveMode) => ({
     title: titleInput.value.trim(),
     description: descriptionInput.value.trim(),
@@ -215,6 +271,26 @@
     status: statusInput.value,
     save_mode: saveMode,
   });
+
+  
+const loadGoalForEdit = async (goalId) => {
+  clearFormMessage();
+
+  try {
+    const response = await fetch(`/manager/goals/${goalId}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      showFormMessage(data.message || 'Could not load goal.', 'error');
+      return;
+    }
+
+    enableEditMode(data.goal);
+  } catch (err) {
+    console.log(err);
+    showFormMessage('Unexpected error while loading the goal.', 'error');
+  }
+};
 
   const submitGoal = async (saveMode) => {
   clearFormMessage();
@@ -265,6 +341,17 @@
     submitGoal('final');
   });
 
+  editGoalButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const goalId = button.dataset.goalId;
+    loadGoalForEdit(goalId);
+  });
+});
+
+cancelEditButton.addEventListener('click', () => {
+  disableEditMode();
+});
+
   const markInvalid = (input) => {
   input.classList.add('input-error');
 };
@@ -276,10 +363,8 @@ const clearInvalid = (input) => {
 const validateForm = (mode) => {
   let isValid = true;
 
-  // limpiar errores previos
   [titleInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
 
-  // título siempre requerido
   if (!titleInput.value.trim()) {
     markInvalid(titleInput);
     showFormMessage('Title is required.', 'error');
