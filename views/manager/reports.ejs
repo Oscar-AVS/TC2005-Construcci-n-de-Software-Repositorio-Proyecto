@@ -22,30 +22,31 @@
       <div class="filter-group">
         <label class="form-label" for="reportTeam">Team</label>
         <select id="reportTeam" class="form-select">
-          <option value="">All Teams</option>
+          <option value="">Select a Team</option>
           <option value="1">Mufasa Solutions</option>
           <option value="2">Phoenix Team</option>
           <option value="3">Delta Squad</option>
         </select>
       </div>
 
-      <button class="btn-submit" type="button">Generate</button>
+     <!-- AI Summary Section -->
+
+    <button class="btn-generate-ai" type="button" onclick="generateSummary()">
+      <i class="fa-solid fa-sparkles"></i>
+      Generate Summary & Report
+    </button>
     </div>
   </div>
 </div>
 
-<!-- AI Summary Section -->
-<div class="ai-summary-card">
+    <div class="ai-summary-card">
   <div class="ai-summary-header">
     <div class="ai-summary-title">
       <i class="fa-solid fa-wand-magic-sparkles"></i>
       <span>AI-Powered Summary</span>
     </div>
-    <button class="btn-generate-ai" type="button" onclick="generateSummary()">
-      <i class="fa-solid fa-sparkles"></i>
-      Generate Summary
-    </button>
   </div>
+
 
   <div class="ai-summary-body" id="aiSummaryBody">
     <!-- Placeholder (default state) -->
@@ -73,49 +74,8 @@
   </div>
 </div>
 
-<!-- Report Preview -->
-<div class="report-card">
-  <div class="report-card-header">
-    <h2>Engineering Department — Weekly Summary</h2>
-    <span class="report-date">Mar 11 - Mar 18, 2026</span>
-  </div>
+<div id="reportMessage" class="report-message" style="display:none;"></div>
 
-  <div class="report-card-body">
-
-    <!-- Stats Summary -->
-    <div class="report-stats-grid">
-      <div class="report-stat-card">
-        <i class="fa-solid fa-users"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">12</span>
-          <span class="report-stat-label">Team Members</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">156</span>
-          <span class="report-stat-label">Total Entries</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-trophy"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">23</span>
-          <span class="report-stat-label">Achievements</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-bullseye"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">3</span>
-          <span class="report-stat-label">Goals Completed</span>
-        </div>
-      </div>
-    </div>
 
     <!-- Export Actions -->
     <div class="action-row-left">
@@ -124,12 +84,45 @@
       </button>
     </div>
 
-    <!-- Success Message -->
-    <p id="msg-confirmation" style="display:none; color:green; margin-top:10px;">
-      ✅ Report generated successfully
-    </p>
 
     <script>
+        function showReportMessage(message, type = 'info') {
+          const messageBox = document.getElementById('reportMessage');
+          messageBox.textContent = message;
+          messageBox.className = `report-message ${type}`;
+          messageBox.style.display = 'block';
+        }
+
+        function hideReportMessage() {
+          const messageBox = document.getElementById('reportMessage');
+          messageBox.textContent = '';
+          messageBox.className = 'report-message';
+          messageBox.style.display = 'none';
+        }
+
+        function generateReport() {
+        const idEquipo = document.getElementById('reportTeam').value;
+        const fechaInicio = document.getElementById('reportFrom').value;
+        const fechaFin = document.getElementById('reportTo').value;
+
+        if (!idEquipo) {
+          showReportMessage('Please select a team.', 'error');
+          return;
+        }
+
+        if (!fechaInicio || !fechaFin) {
+          showReportMessage('Please select a valid period (From and To).', 'error');
+          return;
+        }
+
+        if (fechaInicio > fechaFin) {
+          showReportMessage('Start date cannot be later than end date.', 'error');
+          return;
+        }
+
+        showReportMessage('Report generated successfully. Ready to export.', 'success');
+      }
+
       async function generateSummary() {
         const idEquipo = document.getElementById('reportTeam').value;
         const fechaInicio = document.getElementById('reportFrom').value;
@@ -137,17 +130,19 @@
         const idProyecto = '1';
 
         if (!idEquipo) {
-          alert('Please select a team.');
+          showReportMessage('Please select a team.', 'error');
           return;
         }
         if (!fechaInicio || !fechaFin) {
-          alert('Please select a valid period (From and To).');
+          showReportMessage('Please select a valid period (From and To).', 'error');
           return;
         }
         if (fechaInicio > fechaFin) {
-          alert('Start date cannot be later than end date.');
+          showReportMessage('Start date cannot be later than end date.', 'error');
           return;
         }
+
+        hideReportMessage();
 
         document.getElementById('aiPlaceholder').style.display = 'none';
         document.getElementById('aiResult').style.display = 'none';
@@ -159,7 +154,7 @@
           const data = await response.json();
 
           if (!response.ok) {
-            alert(data.error || 'Error generating summary.');
+            showReportMessage(data.error || 'Error generating summary.', 'error');
             document.getElementById('aiLoading').style.display = 'none';
             document.getElementById('aiPlaceholder').style.display = 'flex';
             return;
@@ -192,42 +187,51 @@
           });
 
           document.getElementById('aiLoading').style.display = 'none';
+          showReportMessage('AI summary generated successfully.', 'success');
           document.getElementById('aiResult').style.display = 'block';
         } catch (err) {
           console.error('Error generating summary:', err);
-          alert('Unexpected error. Please try again.');
+          showReportMessage('Unexpected error. Please try again.', 'error');
           document.getElementById('aiLoading').style.display = 'none';
           document.getElementById('aiPlaceholder').style.display = 'flex';
         }
       }
 
       function exportPDF() {
-        const idEquipo = document.getElementById('reportTeam').value;
-        const fechaInicio = document.getElementById('reportFrom').value;
-        const fechaFin = document.getElementById('reportTo').value;
-        const idProyecto = '1';
+          const idEquipo = document.getElementById('reportTeam').value;
+          const fechaInicio = document.getElementById('reportFrom').value;
+          const fechaFin = document.getElementById('reportTo').value;
+          const idProyecto = '1';
 
-        if (!idEquipo) {
-          alert('Please select a team.');
-          return;
-        }
-        if (!fechaInicio || !fechaFin) {
-          alert('Please select a valid period (From and To).');
-          return;
-        }
-        if (fechaInicio > fechaFin) {
-          alert('Start date cannot be later than end date.');
-          return;
-        }
+          if (!idEquipo) {
+            showReportMessage('Please select a team.', 'error');
+            return;
+          }
 
-        const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+          if (!fechaInicio || !fechaFin) {
+            showReportMessage('Please select a valid period (From and To).', 'error');
+            return;
+          }
 
-        window.location.href = url;
+          if (fechaInicio > fechaFin) {
+            showReportMessage('Start date cannot be later than end date.', 'error');
+            return;
+          }
 
-        const msg = document.getElementById('msg-confirmation');
-        msg.style.display = 'block';
-        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+          showReportMessage('Exporting PDF report...', 'info');
+
+          const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+          window.location.href = url;
+        }     
+
+
+      document.addEventListener('DOMContentLoaded', () => {
+      const generateButton = document.getElementById('generateReportBtn');
+
+      if (generateButton) {
+        generateButton.addEventListener('click', generateReport);
       }
+    });
     </script>
 
   </div>

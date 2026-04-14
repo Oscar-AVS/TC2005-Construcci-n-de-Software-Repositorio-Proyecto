@@ -2,18 +2,205 @@
 
 <!-- Dashboard Tabs -->
 <div class="dashboard-tabs">
-  <button type="button" class="dashboard-tab active" data-tab="manager-dashboard">
+
+  <button type="button" class="dashboard-tab active" data-tab="priority-summary">
+    <i class="fa-solid fa-star"></i> Overview Summary
+  </button>
+
+  <button type="button" class="dashboard-tab" data-tab="manager-dashboard">
     <i class="fa-solid fa-chart-pie"></i> Manager Dashboard
   </button>
+  
   <button type="button" class="dashboard-tab" data-tab="activity">
     <i class="fa-solid fa-chart-line"></i> Activity
   </button>
 </div>
 
 <!-- =============================================
+     TAB 0: Overview Summary
+     ============================================= -->
+<div class="tab-content active" id="tab-priority-summary">
+
+  <!-- Priority Stats -->
+  <div class="manager-stats-row">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-accent" aria-hidden="true">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">156</p>
+        <p class="stat-label">Total Entries</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green" aria-hidden="true">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">23</p>
+        <p class="stat-label">Achievements</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value">5</p>
+        <p class="stat-label">Blockers</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- Left Column -->
+    <div class="dashboard-column">
+
+      <!-- Quick Actions -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Quick Actions</h2>
+        </div>
+
+        <div class="report-card-body">
+          <div class="quick-actions">
+            <a href="/manager/reports" class="quick-action-btn">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>AI Summary</span>
+            </a>
+            <a href="/manager/goals" class="quick-action-btn">
+              <i class="fa-solid fa-plus"></i>
+              <span>New Goal</span>
+            </a>
+            <a href="/manager/highlights" class="quick-action-btn">
+              <i class="fa-solid fa-star"></i>
+              <span>Add Highlight</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Highlights -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <div class="header-with-icon">
+            <i class="fa-solid fa-star" style="color: var(--yellow);"></i>
+            <h2>Top Highlights</h2>
+          </div>
+          <a href="/manager/highlights" class="link-action">View All →</a>
+        </div>
+
+        <div class="report-card-body">
+          <div class="activity-feed">
+            <div class="feed-item">
+              <div class="feed-icon accent">
+                <i class="fa-solid fa-rocket"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text">Launched new authentication system</p>
+                <p class="feed-meta">API Integration • Today</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon green">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text">Completed Q1 security audit</p>
+                <p class="feed-meta">Internal Tools • Yesterday</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="dashboard-column">
+
+      <!-- Critical Goals -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <div class="header-with-icon">
+            <i class="fa-solid fa-bullseye" style="color: var(--accent);"></i>
+            <h2>Critical Goals</h2>
+          </div>
+          <a href="/manager/goals" class="link-action">Manage →</a>
+        </div>
+
+        <div class="report-card-body">
+          <div class="activity-feed">
+            <div class="feed-item">
+              <div class="feed-icon accent">
+                <i class="fa-solid fa-bullseye"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text">Increase platform uptime to 99.9%</p>
+                <p class="feed-meta">Due: Apr 30 • 75% complete</p>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon accent">
+                <i class="fa-solid fa-bullseye"></i>
+              </div>
+              <div class="feed-content">
+                <p class="feed-text">Launch mobile app v2.0</p>
+                <p class="feed-meta">Due: May 15 • 45% complete</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Blockers -->
+      <div class="report-card blockers-card">
+        <div class="report-card-header">
+          <div class="header-with-icon warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h2>Critical Blockers</h2>
+          </div>
+          <span class="item-count">5 blockers</span>
+        </div>
+
+        <div class="report-card-body">
+          <div class="blocker-list">
+            <div class="blocker-item">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
+              <div class="blocker-content">
+                <p class="blocker-author">Oscar Vilchis</p>
+                <p class="blocker-text">Waiting for production server access</p>
+              </div>
+              <span class="blocker-date">Today</span>
+            </div>
+
+            <div class="blocker-item">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez" />
+              <div class="blocker-content">
+                <p class="blocker-author">Lakshmi Martinez</p>
+                <p class="blocker-text">Pending API documentation from Slack</p>
+              </div>
+              <span class="blocker-date">Yesterday</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =============================================
      TAB 1: MANAGER DASHBOARD
      ============================================= -->
-<div class="tab-content active" id="tab-manager-dashboard">
+<div class="tab-content" id="tab-manager-dashboard">
 
   <!-- Period Comparison Stats -->
   <div class="manager-stats-row">
