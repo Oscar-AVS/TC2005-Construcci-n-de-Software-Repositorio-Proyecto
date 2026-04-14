@@ -88,6 +88,62 @@ module.exports = class Goal {
         success,
         detail,
       ]
+    ); 
+  }
+
+    static fetchOneById(idGoal, idUser) {
+    return db.execute(
+      `SELECT
+        id_goal,
+        title,
+        description,
+        start_date,
+        end_date,
+        priority,
+        status,
+        is_draft,
+        id_user,
+        created_at,
+        updated_at
+      FROM goal
+      WHERE id_goal = ? AND id_user = ?
+      LIMIT 1`,
+      [idGoal, idUser]
     );
   }
+
+  static update({
+    idGoal,
+    title,
+    description,
+    startDate,
+    endDate,
+    priority,
+    status,
+    idUser,
+  }) {
+    return db.execute(
+      `UPDATE goal
+      SET
+        title = ?,
+        description = ?,
+        start_date = ?,
+        end_date = ?,
+        priority = ?,
+        status = ?,
+        updated_at = NOW()
+      WHERE id_goal = ? AND id_user = ?`,
+      [
+        title,
+        description,
+        startDate,
+        endDate,
+        priority,
+        status,
+        idGoal,
+        idUser,
+      ]
+    );
+  }
+
 };

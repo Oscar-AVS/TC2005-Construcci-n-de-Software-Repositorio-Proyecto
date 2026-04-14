@@ -29,23 +29,24 @@
         </select>
       </div>
 
-     <button id="generateReportBtn" class="btn-submit" type="button">Generate</button>
+     <!-- AI Summary Section -->
+
+    <button class="btn-generate-ai" type="button" onclick="generateSummary()">
+      <i class="fa-solid fa-sparkles"></i>
+      Generate Summary & Report
+    </button>
     </div>
   </div>
 </div>
 
-<!-- AI Summary Section -->
-<div class="ai-summary-card">
+    <div class="ai-summary-card">
   <div class="ai-summary-header">
     <div class="ai-summary-title">
       <i class="fa-solid fa-wand-magic-sparkles"></i>
       <span>AI-Powered Summary</span>
     </div>
-    <button class="btn-generate-ai" type="button" onclick="generateSummary()">
-      <i class="fa-solid fa-sparkles"></i>
-      Generate Summary
-    </button>
   </div>
+
 
   <div class="ai-summary-body" id="aiSummaryBody">
     <!-- Placeholder (default state) -->
@@ -75,49 +76,6 @@
 
 <div id="reportMessage" class="report-message" style="display:none;"></div>
 
-<!-- Report Preview
-<div class="report-card">
-  <div class="report-card-header">
-    <h2>Engineering Department — Weekly Summary</h2>
-    <span class="report-date">Mar 11 - Mar 18, 2026</span>
-  </div>
-
-  <div class="report-card-body">
-
-    <!-- Stats Summary 
-    <div class="report-stats-grid">
-      <div class="report-stat-card">
-        <i class="fa-solid fa-users"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">12</span>
-          <span class="report-stat-label">Team Members</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">156</span>
-          <span class="report-stat-label">Total Entries</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-trophy"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">23</span>
-          <span class="report-stat-label">Achievements</span>
-        </div>
-      </div>
-
-      <div class="report-stat-card">
-        <i class="fa-solid fa-bullseye"></i>
-        <div class="report-stat-info">
-          <span class="report-stat-value">3</span>
-          <span class="report-stat-label">Goals Completed</span>
-        </div>
-      </div>
-    </div>  -->
 
     <!-- Export Actions -->
     <div class="action-row-left">
