@@ -631,6 +631,34 @@
   margin-bottom: 16px;
 }
 
+.report-message {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.report-message.success {
+  background-color: #edf9f0;
+  color: #1f7a3d;
+  border-color: #b7e4c7;
+}
+
+.report-message.error {
+  background-color: #fdeeee;
+  color: #b42318;
+  border-color: #f5c2c7;
+}
+
+.report-message.info {
+  background-color: #eef4ff;
+  color: #1d4ed8;
+  border-color: #bfd3ff;
+}
+
 /* ----------------------------------------
    RESPONSIVE
    ---------------------------------------- */
