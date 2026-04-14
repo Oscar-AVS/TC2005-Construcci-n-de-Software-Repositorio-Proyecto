@@ -204,6 +204,56 @@ exports.createGoal = async (req, res) => {
   }
 };
 
+exports.getGoalById = async (req, res) => {
+  const activeUserId = 1;
+  const { id } = req.params;
+
+  try {
+    const [rows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (rows.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: 'Goal edit failed: goal not found.',
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      goal: rows[0],
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while loading goal for edit: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 exports.getHighlights = (req, res) => {
   res.render('manager/highlights', {
     currentPage: 'highlights',
