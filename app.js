@@ -10,6 +10,7 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const csrf = require('csurf');
 const db = require('./util/database');
+const User = require('./models/user.model');
 
 const app = express();
 
@@ -37,6 +38,20 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 },
 }));
+
+app.use(async (req, res, next) => {
+  if (req.session.isLoggedIn && req.session.role === 'admin') {
+    try {
+      const [[row]] = await User.countPending();
+      res.locals.pendingCount = row.count;
+    } catch (err) {
+      res.locals.pendingCount = 0;
+    }
+  } else {
+    res.locals.pendingCount = 0;
+  }
+  next();
+});
 
 const csrfProtection = csrf();
 

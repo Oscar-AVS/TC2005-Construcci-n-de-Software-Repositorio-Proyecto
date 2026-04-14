@@ -27,16 +27,34 @@ exports.postLogin = (req, res) => {
         return res.render('auth/login', {
           layout: false,
           error: 'Invalid username or password.',
+          csrfToken: req.csrfToken(),
         });
       }
 
       const user = rows[0];
+
+      if (user.status === 'pending') {
+        return res.render('auth/login', {
+          layout: false,
+          error: 'Your account is pending approval. Please wait for an administrator to activate it.',
+          csrfToken: req.csrfToken(),
+        });
+      }
+
+      if (user.status === 'inactive') {
+        return res.render('auth/login', {
+          layout: false,
+          error: 'Your account has been deactivated. Please contact an administrator.',
+          csrfToken: req.csrfToken(),
+        });
+      }
 
       return bcrypt.compare(password, user.password).then((match) => {
         if (!match) {
           return res.render('auth/login', {
             layout: false,
             error: 'Invalid username or password.',
+            csrfToken: req.csrfToken(),
           });
         }
 
@@ -104,6 +122,7 @@ exports.getSignup = (req, res) => {
   res.render('auth/signup', {
     layout: false,
     error: '',
+    success: '',
     csrfToken: req.csrfToken(),
   });
 };
@@ -113,19 +132,26 @@ exports.postSignup = (req, res) => {
 
   bcrypt.hash(password, 12)
     .then((hashedPassword) => {
-      return User.create(full_name, email, username, hashedPassword);
+      return User.createPending(full_name, email, username, hashedPassword);
     })
     .then(([result]) => {
       return User.assignRole(result.insertId, 4);
     })
     .then(() => {
-      res.redirect('/login');
+      res.render('auth/signup', {
+        layout: false,
+        error: '',
+        success: 'Account created successfully. Please wait for an administrator to approve your account.',
+        csrfToken: req.csrfToken(),
+      });
     })
     .catch((err) => {
       console.log(err);
       res.render('auth/signup', {
         layout: false,
         error: 'Username or email already exists.',
+        success: '',
+        csrfToken: req.csrfToken(),
       });
     });
 };

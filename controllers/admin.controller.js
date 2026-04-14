@@ -19,11 +19,13 @@ exports.getUsers = async (req, res) => {
   try {
     const [users] = await User.fetchAll();
     const [roles] = await db.query('SELECT * FROM role ORDER BY id_role ASC');
+    const [pending] = await User.fetchPending();
     res.render('admin/users', {
       currentPage: 'users',
       role: 'admin',
       users,
       roles,
+      pending,
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
@@ -160,4 +162,28 @@ exports.getProfile = (req, res) => {
     currentPage: 'profile',
     role: 'admin',
   });
+};
+
+exports.approveUser = async (req, res) => {
+  const { id_user } = req.body;
+
+  try {
+    await User.approve(id_user);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('approveUser error:', err);
+    res.status(500).send('Error approving user');
+  }
+};
+
+exports.rejectUser = async (req, res) => {
+  const { id_user } = req.body;
+
+  try {
+    await User.rejectUser(id_user);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('rejectUser error:', err);
+    res.status(500).send('Error rejecting user');
+  }
 };

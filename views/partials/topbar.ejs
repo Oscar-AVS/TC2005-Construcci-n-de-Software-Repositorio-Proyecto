@@ -7,20 +7,40 @@
   </div>
 
   <div class="topbar-actions">
-    <button class="icon-btn" type="button" aria-label="Notifications">
-      <i class="fa-regular fa-bell" aria-hidden="true"></i>
-    </button>
+    <div class="notif-wrapper" style="position: relative;">
+      <button class="icon-btn" type="button" id="notifBtn" aria-label="Notifications">
+        <i class="fa-regular fa-bell" aria-hidden="true"></i>
+        <% if (locals.pendingCount > 0) { %>
+          <span class="notif-badge"><%= pendingCount %></span>
+        <% } %>
+      </button>
+
+      <% if (locals.pendingCount > 0) { %>
+        <div class="notif-dropdown" id="notifDropdown" style="display: none;">
+          <div class="notif-header">
+            <span>Pending Approvals</span>
+            <span class="notif-count"><%= pendingCount %></span>
+          </div>
+          <div class="notif-body">
+            <p style="font-size: 13px; color: #5f6b85; padding: 12px 16px; margin: 0;">
+              <i class="fa-solid fa-circle-info" style="margin-right: 6px;"></i>
+              <%= pendingCount %> user<%= pendingCount > 1 ? 's are' : ' is' %> waiting for approval.
+            </p>
+            <a href="/admin/users" class="notif-action-btn">
+              <i class="fa-solid fa-users-gear"></i> Review pending users
+            </a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
     <button class="icon-btn" type="button" aria-label="Messages">
       <i class="fa-regular fa-envelope" aria-hidden="true"></i>
     </button>
 
     <div class="user-chip">
       <div class="avatar">
-        <img
-          id="userAvatar"
-          src="https://wallpapercave.com/wp/wp6608939.jpg"
-          alt="User profile picture"
-        />
+        <img id="userAvatar" src="https://wallpapercave.com/wp/wp6608939.jpg" alt="User profile picture" />
       </div>
       <span id="userChipName" class="user-chip-name">Employee</span>
       <a id="logoutBtn" class="logout-btn" href="/logout" title="Log out">
@@ -29,3 +49,24 @@
     </div>
   </div>
 </header>
+
+<script>
+  const notifBtn = document.getElementById('notifBtn');
+  const notifDropdown = document.getElementById('notifDropdown');
+
+  if (notifBtn && notifDropdown) {
+    notifBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = notifDropdown.style.display === 'block';
+      notifDropdown.style.display = isOpen ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', () => {
+      notifDropdown.style.display = 'none';
+    });
+
+    notifDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+</script>

@@ -6,11 +6,12 @@
       <div class="login-card">
 
         <div class="login-brand">
-        <img src="/images/logo.png" alt="Change.org" style="height: 40px;" />
+          <img src="/images/logo.png" alt="Change.org" style="height: 40px;" />
         </div>
 
         <h1 class="login-title">Welcome Back</h1>
         <p class="login-sub">Enter your credentials to continue</p>
+
         <form class="login-form" action="/login" method="POST">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
@@ -41,13 +42,7 @@
                 autocomplete="current-password"
                 required
               />
-              <button
-                id="togglePass"
-                class="lf-eye"
-                type="button"
-                tabindex="-1"
-                aria-label="Show password"
-              >
+              <button id="togglePass" class="lf-eye" type="button" tabindex="-1" aria-label="Show password">
                 <i id="eyeIcon" class="fa-regular fa-eye" aria-hidden="true"></i>
               </button>
             </div>

@@ -80,4 +80,40 @@ module.exports = class User {
       [id_user]
     );
   }
+
+  static fetchPending() {
+    return db.execute(
+      `SELECT id_user, full_name, email, username, status
+      FROM user
+      WHERE status = 'pending'
+      ORDER BY id_user DESC`
+    );
+  }
+
+  static countPending() {
+    return db.execute(
+      `SELECT COUNT(*) AS count FROM user WHERE status = 'pending'`
+    );
+  }
+
+  static approve(id_user) {
+    return db.execute(
+      `UPDATE user SET status = 'active', is_active = 1 WHERE id_user = ?`,
+      [id_user]
+    );
+  }
+
+  static rejectUser(id_user) {
+    return db.execute(
+      `UPDATE user SET status = 'inactive', is_active = 0 WHERE id_user = ?`,
+      [id_user]
+    );
+  }
+
+  static createPending(full_name, email, username, password) {
+    return db.execute(
+      `INSERT INTO user (full_name, email, username, password, status, is_active) VALUES (?, ?, ?, ?, 'pending', 0)`,
+      [full_name, email, username, password]
+    );
+  }
 };
