@@ -124,4 +124,17 @@ module.exports = class User {
       [id_user]
     );
   }
+  static updateSlack(id_user, slack_user) {
+    return db.execute(
+      'UPDATE user SET slack_user = ? WHERE id_user = ?',
+      [slack_user, id_user]
+    );
+  }
+
+  static updatePassword(id_user, hashedPassword) {
+    return db.execute(
+      'UPDATE user SET password = ? WHERE id_user = ?',
+      [hashedPassword, id_user]
+    );
+  }
 };

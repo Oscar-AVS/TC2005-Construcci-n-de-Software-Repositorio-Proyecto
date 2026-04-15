@@ -398,11 +398,19 @@ exports.getSelfReview = (req, res) => {
   });
 };
 
-exports.getProfile = (req, res) => {
-  res.render('shared/profile', {
-    currentPage: 'profile',
-    role: 'team-leader',
-  });
+exports.getProfile = async (req, res) => {
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'team-leader',
+      user,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.addTeamMember = async (req, res) => {

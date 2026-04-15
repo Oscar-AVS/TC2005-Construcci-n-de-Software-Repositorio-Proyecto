@@ -17,5 +17,7 @@ router.get('/achievements', employeeController.getAchievements);
 router.get('/self-review', employeeController.getSelfReview);
 router.get('/projects', employeeController.getProjects);
 router.get('/profile', employeeController.getProfile);
+router.post('/profile/slack', employeeController.postSlack);
+router.post('/profile/password', employeeController.postPassword);
 
 module.exports = router;

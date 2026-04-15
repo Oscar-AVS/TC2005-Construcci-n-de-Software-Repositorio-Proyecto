@@ -7,6 +7,7 @@ const User = require('../models/user.model.js');
 const Project = require('../models/project.model.js');
 const Log = require('../models/log.model.js');
 const Blocker = require('../models/blocker.model.js');
+const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
   const activeUserId = req.session.userId;
@@ -198,23 +199,83 @@ exports.getProjects = (req, res) => {
     });
 };
 
-exports.getProfile = (req, res) => {
-  const activeUserId = req.session.userId;
-
-  User.fetchOne(activeUserId)
-    .then(([rows]) => {
-      if (rows.length > 0) {
-        res.render('shared/profile', {
-          currentPage: 'profile',
-          role: 'employee',
-          user: rows[0],
-        });
-      } else {
-        res.status(404).send('User not found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+exports.getProfile = async (req, res) => {
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    if (!user) return res.status(404).send('User not found');
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'employee',
+      user,
+      error: '',
+      csrfToken: req.csrfToken(),
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postSlack = async (req, res) => {
+  const { slack_user } = req.body;
+  try {
+    await User.updateSlack(req.session.userId, slack_user);
+    const [[user]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'employee',
+      user,
+      error: '',
+      success: 'Slack username updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postPassword = async (req, res) => {
+  const { current_password, new_password, confirm_password } = req.body;
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    const match = await bcrypt.compare(current_password, user.password);
+
+    if (!match) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'employee',
+        user,
+        error: 'Current password is incorrect.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'employee',
+        user,
+        error: 'New passwords do not match.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    const hashed = await bcrypt.hash(new_password, 12);
+    await User.updatePassword(req.session.userId, hashed);
+    const [[updatedUser]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'employee',
+      user: updatedUser,
+      error: '',
+      success: 'Password updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };

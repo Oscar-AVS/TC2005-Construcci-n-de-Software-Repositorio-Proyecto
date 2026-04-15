@@ -13,6 +13,12 @@
             <span>Dashboard</span>
           </a>
         </li>
+        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
+          <a href="/employee/self-review">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <span>Self-Review</span>
+          </a>
+        </li>
         <li class="nav-item <%= currentPage === 'log' ? 'active' : '' %>">
           <a href="/employee/log">
             <i class="fa-solid fa-book" aria-hidden="true"></i>
@@ -25,22 +31,10 @@
             <span>Achievements</span>
           </a>
         </li>
-        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
-          <a href="/employee/self-review">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>Self-Review</span>
-          </a>
-        </li>
         <li class="nav-item <%= currentPage === 'projects' ? 'active' : '' %>">
           <a href="/employee/projects">
             <i class="fa-solid fa-folder" aria-hidden="true"></i>
             <span>Projects</span>
-          </a>
-        </li>
-        <li class="nav-item <%= currentPage === 'profile' ? 'active' : '' %>">
-          <a href="/employee/profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
           </a>
         </li>
 
@@ -49,6 +43,12 @@
           <a href="/team-leader/dashboard">
             <i class="fa-solid fa-house" aria-hidden="true"></i>
             <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
+          <a href="/team-leader/self-review">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <span>Self-Review</span>
           </a>
         </li>
         <li class="nav-item <%= currentPage === 'log' ? 'active' : '' %>">
@@ -75,24 +75,18 @@
             <span>Team Report</span>
           </a>
         </li>
-        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
-          <a href="/team-leader/self-review">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>Self-Review</span>
-          </a>
-        </li>
-        <li class="nav-item <%= currentPage === 'profile' ? 'active' : '' %>">
-          <a href="/team-leader/profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
-          </a>
-        </li>
 
       <% } else if (typeof role !== 'undefined' && role === 'manager') { %>
         <li class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
           <a href="/manager/dashboard">
             <i class="fa-solid fa-house" aria-hidden="true"></i>
             <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
+          <a href="/manager/self-review">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <span>Self-Review</span>
           </a>
         </li>
         <li class="nav-item <%= currentPage === 'goals' ? 'active' : '' %>">
@@ -123,18 +117,6 @@
           <a href="/manager/log">
             <i class="fa-solid fa-book" aria-hidden="true"></i>
             <span>Log</span>
-          </a>
-        </li>
-        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
-          <a href="/manager/self-review">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>Self-Review</span>
-          </a>
-        </li>
-        <li class="nav-item <%= currentPage === 'profile' ? 'active' : '' %>">
-          <a href="/manager/profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
           </a>
         </li>
 
@@ -171,6 +153,12 @@
             <span>Dashboard</span>
           </a>
         </li>
+        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
+          <a href="/project-manager/self-review">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <span>Self-Review</span>
+          </a>
+        </li>
         <li class="nav-item <%= currentPage === 'projects' ? 'active' : '' %>">
           <a href="/project-manager/projects">
             <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
@@ -189,24 +177,18 @@
             <span>Log</span>
           </a>
         </li>
-        <li class="nav-item <%= currentPage === 'self-review' ? 'active' : '' %>">
-          <a href="/project-manager/self-review">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>Self-Review</span>
-          </a>
-        </li>
-        <li class="nav-item <%= currentPage === 'profile' ? 'active' : '' %>">
-          <a href="/project-manager/profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
-          </a>
-        </li>
 
       <% } else { %>
         <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'dashboard' ? 'active' : '' %>">
           <a href="/employee/dashboard">
             <i class="fa-solid fa-house" aria-hidden="true"></i>
             <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'self-review' ? 'active' : '' %>">
+          <a href="/employee/self-review">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <span>Self-Review</span>
           </a>
         </li>
         <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'log' ? 'active' : '' %>">
@@ -221,22 +203,10 @@
             <span>Achievements</span>
           </a>
         </li>
-        <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'self-review' ? 'active' : '' %>">
-          <a href="/employee/self-review">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>Self-Review</span>
-          </a>
-        </li>
         <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'projects' ? 'active' : '' %>">
           <a href="/employee/projects">
             <i class="fa-solid fa-folder" aria-hidden="true"></i>
             <span>Projects</span>
-          </a>
-        </li>
-        <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'profile' ? 'active' : '' %>">
-          <a href="/employee/profile">
-            <i class="fa-solid fa-user" aria-hidden="true"></i>
-            <span>Profile</span>
           </a>
         </li>
       <% } %>
