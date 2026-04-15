@@ -19,7 +19,7 @@ exports.getLogin = (req, res) => {
 };
 
 exports.postLogin = (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   User.findByEmail(email)
     .then(([rows]) => {
@@ -73,11 +73,11 @@ exports.postLogin = (req, res) => {
               if (role === 'team-leader') {
                 return User.fetchTeamByLeader(user.id_user).then(([teams]) => {
                   req.session.teamId = teams.length > 0 ? teams[0].id_team : null;
-                  return saveAndRedirect(req, res, role);
+                  return saveAndRedirect(req, res, role, rememberMe);
                 });
               }
 
-              return saveAndRedirect(req, res, role);
+              return saveAndRedirect(req, res, role, rememberMe);
             });
           });
       });
@@ -88,7 +88,7 @@ exports.postLogin = (req, res) => {
     });
 };
 
-function saveAndRedirect(req, res, role) {
+function saveAndRedirect(req, res, role, rememberMe) {
   const dashboardRoutes = {
     admin: '/admin/dashboard',
     manager: '/manager/dashboard',
@@ -96,6 +96,12 @@ function saveAndRedirect(req, res, role) {
     'project-manager': '/project-manager/dashboard',
     employee: '/employee/dashboard',
   };
+
+  if (rememberMe) {
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
+  } else {
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24;
+  }
 
   return new Promise((resolve, reject) => {
     req.session.save((err) => {
