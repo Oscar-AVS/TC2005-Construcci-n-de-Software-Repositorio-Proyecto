@@ -3,8 +3,8 @@ const PDFDocument = require('pdfkit');
 const { generateText, Output } = require('ai');
 const { openai } = require('@ai-sdk/openai');
 const { z } = require('zod');
-const { getAiSummaryData } = require('../models/Report.model');
-const { getReportData } = require('../models/Report.model');
+const { getAiSummaryData } = require('../models/report.model');
+const { getReportData } = require('../models/report.model');
 
 async function buildAiSummary(data, fechaInicio, fechaFin) {
   const logsText = data.bitacoras
