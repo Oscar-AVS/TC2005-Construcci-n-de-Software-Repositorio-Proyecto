@@ -34,15 +34,13 @@
       <% } %>
     </div>
 
-    <button class="icon-btn" type="button" aria-label="Messages">
-      <i class="fa-regular fa-envelope" aria-hidden="true"></i>
-    </button>
-
     <div class="user-chip">
-      <div class="avatar">
-        <img id="userAvatar" src="https://wallpapercave.com/wp/wp6608939.jpg" alt="User profile picture" />
-      </div>
-      <span id="userChipName" class="user-chip-name">Employee</span>
+      <a href="/<%= locals.role || 'employee' %>/profile" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <div class="avatar" style="background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;">
+          <%= (locals.fullName || 'U').charAt(0).toUpperCase() %>
+        </div>
+        <span id="userChipName" class="user-chip-name"><%= locals.fullName || 'Employee' %></span>
+      </a>
       <a id="logoutBtn" class="logout-btn" href="/logout" title="Log out">
         <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
       </a>

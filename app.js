@@ -85,6 +85,12 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.fullName = req.session.fullName || '';
+  res.locals.role = req.session.role || '';
+  next();
+});
+
 const csrfProtection = csrf();
 
 const isAuth = require('./util/is-auth');
