@@ -18,10 +18,10 @@
 
         <div class="form-field">
           <label class="form-label" for="teamLeader">Team Leader</label>
-          <select id="teamLeader" name="id_leader" class="form-select" required>
+          <select id="teamLeader" name="id_leader" class="form-select">
             <option value="">Select team leader...</option>
             <% users.forEach(u => { %>
-              <option value="<%= u.id_user %>"><%= u.full_name %></option>
+              <option value="<%= u.id %>"><%= u.full_name %></option>
             <% }) %>
           </select>
         </div>
@@ -97,9 +97,9 @@
 <!-- Edit Team Modal -->
 <div
   id="editTeamModal"
-  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
+  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;"
 >
-  <div style="background: #fff; width: min(480px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
+  <div style="background: #fff; width: min(480px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2);">
     <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit Team</h3>
 
     <form action="/admin/teams/edit" method="POST">
@@ -116,21 +116,21 @@
         <input type="text" id="editTeamDescription" name="description" class="form-input" />
       </div>
 
-      <div class="form-field" style="margin-bottom: 20px;">
+      <div class="form-field" style="margin-bottom: 24px;">
         <label class="form-label" for="editTeamLeader">Team Leader</label>
-        <select id="editTeamLeader" name="id_leader" class="form-select" required>
+        <select id="editTeamLeader" name="id_leader" class="form-select">
           <option value="">Select team leader...</option>
           <% users.forEach(u => { %>
-            <option value="<%= u.id_user %>"><%= u.full_name %></option>
+            <option value="<%= u.id %>"><%= u.full_name %></option>
           <% }) %>
         </select>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" onclick="closeEditTeamModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+        <button type="button" onclick="closeEditTeamModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-xmark"></i> Cancel
         </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f25c2a; color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-check"></i> Save
         </button>
       </div>
@@ -141,20 +141,23 @@
 <!-- Delete Team Modal -->
 <div
   id="deleteTeamModal"
-  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
+  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;"
 >
-  <div style="background: #fff; width: min(400px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18); text-align: center;">
-    <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #1f2a44;">Delete Team</h3>
-    <p style="color: #6b7280; margin-bottom: 24px; font-size: 14px;">Are you sure you want to delete this team? This action cannot be undone.</p>
+  <div style="background: #fff; width: min(400px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); text-align: center;">
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; color: #e74c3c;">
+      <i class="fa-solid fa-trash"></i>
+    </div>
+    <h3 style="margin: 0 0 8px 0; font-size: 20px; color: #1f2a44;">Delete Team</h3>
+    <p style="color: #5f6b85; margin-bottom: 28px; font-size: 14px; line-height: 1.5;">Are you sure you want to delete this team? This action cannot be undone.</p>
 
     <form action="/admin/teams/delete" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="id_team" id="deleteTeamId" />
-      <div style="display: flex; justify-content: center; gap: 10px;">
-        <button type="button" onclick="closeDeleteTeamModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e5e7eb; color: #374151; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <button type="button" onclick="closeDeleteTeamModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-xmark"></i> Cancel
         </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-trash"></i> Delete
         </button>
       </div>

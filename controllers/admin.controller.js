@@ -113,7 +113,7 @@ exports.createTeam = async (req, res) => {
   const { team_name, description, id_leader } = req.body;
 
   try {
-    await Team.create(team_name, description, id_leader);
+    await Team.create(team_name, description, id_leader || null);
     res.redirect('/admin/teams');
   } catch (err) {
     console.error('createTeam error:', err);
@@ -125,7 +125,7 @@ exports.editTeam = async (req, res) => {
   const { id_team, team_name, description, id_leader } = req.body;
 
   try {
-    await Team.update(id_team, team_name, description, id_leader);
+    await Team.update(id_team, team_name, description, id_leader || null);
     res.redirect('/admin/teams');
   } catch (err) {
     console.error('editTeam error:', err);
