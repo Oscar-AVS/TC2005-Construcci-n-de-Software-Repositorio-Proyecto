@@ -8,11 +8,52 @@ const Team = require('../models/team.model');
 const db = require('../util/database');
 const bcrypt = require('bcrypt');
 
-exports.getDashboard = (req, res) => {
-  res.render('admin/dashboard', {
-    currentPage: 'dashboard',
-    role: 'admin',
-  });
+exports.getDashboard = async (req, res) => {
+  try {
+    const [[{ totalUsers }]] = await db.query(
+      `SELECT COUNT(*) AS totalUsers FROM user WHERE status = 'active'`
+    );
+
+    const [[{ totalTeams }]] = await db.query(
+      `SELECT COUNT(*) AS totalTeams FROM team`
+    );
+
+    const [[{ pendingApprovals }]] = await db.query(
+      `SELECT COUNT(*) AS pendingApprovals FROM user WHERE status = 'pending'`
+    );
+
+    const [roleStats] = await db.query(
+      `SELECT r.role_name, COUNT(ur.id_user) AS count
+      FROM role r
+      LEFT JOIN user_role ur ON r.id_role = ur.id_role
+      LEFT JOIN user u ON ur.id_user = u.id_user AND u.status = 'active'
+      GROUP BY r.id_role, r.role_name
+      ORDER BY r.id_role`
+    );
+
+    const [recentUsers] = await db.query(
+      `SELECT u.full_name, r.role_name, u.id_user
+      FROM user u
+      LEFT JOIN user_role ur ON u.id_user = ur.id_user
+      LEFT JOIN role r ON ur.id_role = r.id_role
+      WHERE u.status = 'active'
+      ORDER BY u.id_user DESC
+      LIMIT 4`
+    );
+
+    res.render('admin/dashboard', {
+      currentPage: 'dashboard',
+      role: 'admin',
+      totalUsers,
+      totalTeams,
+      pendingApprovals,
+      roleStats,
+      recentUsers,
+    });
+  } catch (err) {
+    console.error('getDashboard error:', err);
+    res.status(500).send('Error loading dashboard');
+  }
 };
 
 exports.getUsers = async (req, res) => {

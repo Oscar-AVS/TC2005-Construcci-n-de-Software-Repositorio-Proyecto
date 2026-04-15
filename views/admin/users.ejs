@@ -8,26 +8,30 @@
     <h2>Add New User</h2>
   </div>
   <div class="report-card-body">
-    <form action="/admin/users/create" method="POST">
+    <div id="createUserError" style="display: none; background: #fee2e2; color: #e74c3c; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px;">
+      <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+      <span id="createUserErrorText"></span>
+    </div>
+    <form action="/admin/users/create" method="POST" id="createUserForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div class="form-row-grid">
         <div class="form-field">
           <label class="form-label" for="userName">Full Name</label>
-          <input type="text" id="userName" name="full_name" class="form-input" placeholder="Enter full name..." required />
+          <input type="text" id="userName" name="full_name" class="form-input" placeholder="Enter full name..." />
         </div>
         <div class="form-field">
           <label class="form-label" for="userEmail">Email</label>
-          <input type="email" id="userEmail" name="email" class="form-input" placeholder="email@change.org" required />
+          <input type="text" id="userEmail" name="email" class="form-input" placeholder="email@change.org" />
         </div>
       </div>
       <div class="form-row-grid">
         <div class="form-field">
           <label class="form-label" for="userPassword">Password</label>
-          <input type="password" id="userPassword" name="password" class="form-input" placeholder="••••••••" required />
+          <input type="password" id="userPassword" name="password" class="form-input" placeholder="••••••••" />
         </div>
         <div class="form-field">
           <label class="form-label" for="userRole">Role</label>
-          <select id="userRole" name="id_role" class="form-select" required>
+          <select id="userRole" name="id_role" class="form-select">
             <option value="">Select role...</option>
             <% roles.forEach(r => { %>
               <option value="<%= r.id_role %>"><%= r.role_name %></option>
@@ -36,7 +40,7 @@
         </div>
       </div>
       <div class="action-row">
-        <button class="btn-submit" type="submit">
+        <button class="btn-submit" type="button" onclick="validateCreateUser()">
           <i class="fa-solid fa-user-plus"></i> Create User
         </button>
       </div>
@@ -211,20 +215,24 @@
 <div id="editUserModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
   <div style="background: #fff; width: min(480px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2);">
     <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit User</h3>
-    <form action="/admin/users/edit" method="POST">
+    <div id="editUserError" style="display: none; background: #fee2e2; color: #e74c3c; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px;">
+      <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+      <span id="editUserErrorText"></span>
+    </div>
+    <form action="/admin/users/edit" method="POST" id="editUserForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="id_user" id="editUserId" />
       <div class="form-field" style="margin-bottom: 12px;">
         <label class="form-label" for="editFullName">Full Name</label>
-        <input type="text" id="editFullName" name="full_name" class="form-input" required />
+        <input type="text" id="editFullName" name="full_name" class="form-input" />
       </div>
       <div class="form-field" style="margin-bottom: 12px;">
         <label class="form-label" for="editEmail">Email</label>
-        <input type="email" id="editEmail" name="email" class="form-input" required />
+        <input type="text" id="editEmail" name="email" class="form-input" />
       </div>
       <div class="form-field" style="margin-bottom: 24px;">
         <label class="form-label" for="editRole">Role</label>
-        <select id="editRole" name="id_role" class="form-select" required>
+        <select id="editRole" name="id_role" class="form-select">
           <% roles.forEach(r => { %>
             <option value="<%= r.id_role %>"><%= r.role_name %></option>
           <% }) %>
@@ -234,7 +242,7 @@
         <button type="button" onclick="closeEditModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-xmark"></i> Cancel
         </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f25c2a; color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
+        <button type="button" onclick="validateEditUser()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f25c2a; color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
           <i class="fa-solid fa-check"></i> Save Changes
         </button>
       </div>
@@ -286,6 +294,51 @@
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   let pendingToggleUserId = null;
   let pendingToggleStatus = null;
+
+  function showCreateError(msg) {
+    const box = document.getElementById('createUserError');
+    document.getElementById('createUserErrorText').textContent = msg;
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function validateCreateUser() {
+  const fullName = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  const password = document.getElementById('userPassword').value.trim();
+  const role = document.getElementById('userRole').value;
+
+  document.getElementById('createUserError').style.display = 'none';
+
+  if (!fullName) return showCreateError('Full name is required.');
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(fullName)) return showCreateError('Full name must contain letters only, no numbers.');
+  if (fullName.split(' ').filter(w => w).length < 2) return showCreateError('Please enter first and last name.');
+  if (!email) return showCreateError('Email is required.');
+  if (!email.includes('@')) return showCreateError('Please enter a valid email address.');
+  if (!password) return showCreateError('Password is required.');
+  if (!role) return showCreateError('Please select a role.');
+
+  document.getElementById('createUserForm').submit();
+}
+
+  function showEditError(msg) {
+    const box = document.getElementById('editUserError');
+    document.getElementById('editUserErrorText').textContent = msg;
+    box.style.display = 'block';
+  }
+
+  function validateEditUser() {
+    const fullName = document.getElementById('editFullName').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+
+    document.getElementById('editUserError').style.display = 'none';
+
+    if (!fullName) return showEditError('Full name is required.');
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(fullName)) return showEditError('Full name must contain letters only.');
+    if (fullName.split(' ').filter(w => w).length < 2) return showEditError('Please enter full name (first and last name).');
+
+    document.getElementById('editUserForm').submit();
+  }
 
   function openApproveModal(id, fullName) {
     document.getElementById('approveUserId').value = id;
@@ -371,7 +424,7 @@
       const data = await res.json();
 
       if (!data.success) {
-        alert('Something went wrong. No changes were made.');
+        location.reload();
         return;
       }
 
@@ -388,11 +441,10 @@
       const icon = document.getElementById(`toggle-icon-${pendingToggleUserId}`);
       icon.className = `fa-solid ${isNowActive ? 'fa-user-slash' : 'fa-user-check'}`;
 
-      const fullName = btn.getAttribute('data-name');
-      btn.setAttribute('onclick', `openToggleModal(${pendingToggleUserId}, ${isNowActive ? 1 : 0}, '${fullName}')`);
+      btn.setAttribute('onclick', `openToggleModal(${pendingToggleUserId}, ${isNowActive ? 1 : 0}, '${btn.getAttribute('data-name')}')`);
     } catch (err) {
       console.error('toggleStatus error:', err);
-      alert('Connection error. Please try again.');
+      location.reload();
     }
   });
 
@@ -409,6 +461,7 @@
     document.getElementById('editFullName').value = fullName;
     document.getElementById('editEmail').value = email;
     document.getElementById('editRole').value = idRole;
+    document.getElementById('editUserError').style.display = 'none';
     document.getElementById('editUserModal').style.display = 'flex';
   }
 
