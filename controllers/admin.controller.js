@@ -186,13 +186,6 @@ exports.getRoles = async (req, res) => {
   }
 };
 
-exports.getIntegrations = (req, res) => {
-  res.render('admin/integrations', {
-    currentPage: 'integrations',
-    role: 'admin',
-  });
-};
-
 exports.getProfile = (req, res) => {
   res.render('shared/profile', {
     currentPage: 'profile',

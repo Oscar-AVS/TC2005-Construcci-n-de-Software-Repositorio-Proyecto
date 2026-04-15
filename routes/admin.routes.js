@@ -21,7 +21,6 @@ router.post('/teams/create', adminController.createTeam);
 router.post('/teams/edit', adminController.editTeam);
 router.post('/teams/delete', adminController.deleteTeam);
 router.get('/roles', adminController.getRoles);
-router.get('/integrations', adminController.getIntegrations);
 router.get('/profile', adminController.getProfile);
 
 module.exports = router;
