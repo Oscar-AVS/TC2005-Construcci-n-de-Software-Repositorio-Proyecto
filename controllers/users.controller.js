@@ -19,14 +19,14 @@ exports.getLogin = (req, res) => {
 };
 
 exports.postLogin = (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  User.findByUsername(username)
+  User.findByEmail(email)
     .then(([rows]) => {
       if (rows.length === 0) {
         return res.render('auth/login', {
           layout: false,
-          error: 'Invalid username or password.',
+          error: 'Invalid email or password.',
           csrfToken: req.csrfToken(),
         });
       }
@@ -53,7 +53,7 @@ exports.postLogin = (req, res) => {
         if (!match) {
           return res.render('auth/login', {
             layout: false,
-            error: 'Invalid username or password.',
+            error: 'Invalid email or password.',
             csrfToken: req.csrfToken(),
           });
         }
@@ -65,7 +65,7 @@ exports.postLogin = (req, res) => {
             return User.fetchPrivilegesByUser(user.id_user).then(([privileges]) => {
               req.session.isLoggedIn = true;
               req.session.userId = user.id_user;
-              req.session.username = user.username;
+              req.session.email = user.email;
               req.session.fullName = user.full_name;
               req.session.role = role;
               req.session.privileges = privileges.map((p) => p.privilege_name);
@@ -128,11 +128,11 @@ exports.getSignup = (req, res) => {
 };
 
 exports.postSignup = (req, res) => {
-  const { full_name, email, username, password } = req.body;
+  const { full_name, email, password } = req.body;
 
   bcrypt.hash(password, 12)
     .then((hashedPassword) => {
-      return User.createPending(full_name, email, username, hashedPassword);
+      return User.createPending(full_name, email, email, hashedPassword);
     })
     .then(([result]) => {
       return User.assignRole(result.insertId, 4);
@@ -149,7 +149,7 @@ exports.postSignup = (req, res) => {
       console.log(err);
       res.render('auth/signup', {
         layout: false,
-        error: 'Username or email already exists.',
+        error: 'Email already exists.',
         success: '',
         csrfToken: req.csrfToken(),
       });

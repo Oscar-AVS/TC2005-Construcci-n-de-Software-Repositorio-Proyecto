@@ -50,13 +50,15 @@ exports.toggleUserStatus = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const newStatus = user.is_active ? 0 : 1;
+    const newIsActive = user.is_active ? 0 : 1;
+    const newStatus = newIsActive ? 'active' : 'inactive';
 
     await db.query(
-      'UPDATE user SET is_active = ? WHERE id_user = ?', [newStatus, id]
+      'UPDATE user SET is_active = ?, status = ? WHERE id_user = ?',
+      [newIsActive, newStatus, id]
     );
 
-    res.json({ success: true, is_active: newStatus });
+    res.json({ success: true, is_active: newIsActive });
   } catch (err) {
     console.error('toggleUserStatus error:', err);
     res.status(500).json({ success: false, message: 'Could not update user status' });
@@ -64,11 +66,11 @@ exports.toggleUserStatus = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-  const { full_name, email, username, password, id_role } = req.body;
+  const { full_name, email, password, id_role } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 12);
-    const [result] = await User.create(full_name, email, username, hashedPassword);
+    const [result] = await User.create(full_name, email, email, hashedPassword);
     await User.assignRole(result.insertId, id_role);
     res.redirect('/admin/users');
   } catch (err) {
@@ -78,10 +80,10 @@ exports.createUser = async (req, res) => {
 };
 
 exports.editUser = async (req, res) => {
-  const { id_user, full_name, email, username, id_role } = req.body;
+  const { id_user, full_name, email, id_role } = req.body;
 
   try {
-    await User.update(id_user, full_name, email, username);
+    await User.update(id_user, full_name, email, email);
     await User.updateRole(id_user, id_role);
     res.redirect('/admin/users');
   } catch (err) {

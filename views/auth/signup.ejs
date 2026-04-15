@@ -18,7 +18,7 @@
             <%= success %>
           </div>
         <% } else { %>
-          <form class="login-form" action="/signup" method="POST">
+          <form class="login-form" action="/signup" method="POST" autocomplete="off">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
             <div class="lf-field">
@@ -29,20 +29,13 @@
               </div>
             </div>
 
-            <div class="lf-field">
-              <label class="lf-label" for="email">Email</label>
+            <div class="lf-field" style="position: relative;">
+              <label class="lf-label" for="signupEmail">Email</label>
               <div class="lf-input-wrap">
                 <i class="fa-regular fa-envelope lf-icon" aria-hidden="true"></i>
-                <input id="email" name="email" type="email" placeholder="email@change.org" required />
+                <input id="signupEmail" name="email" type="text" placeholder="email@change.org" required autocomplete="off" />
               </div>
-            </div>
-
-            <div class="lf-field">
-              <label class="lf-label" for="signupUser">Username</label>
-              <div class="lf-input-wrap">
-                <i class="fa-solid fa-at lf-icon" aria-hidden="true"></i>
-                <input id="signupUser" name="username" type="text" placeholder="Your username" required />
-              </div>
+              <div id="emailSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); z-index: 100; overflow: hidden; margin-top: 4px;"></div>
             </div>
 
             <div class="lf-field">
@@ -85,6 +78,43 @@
           eyeIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
         });
       }
+
+      const emailInput = document.getElementById('signupEmail');
+      const emailSuggestions = document.getElementById('emailSuggestions');
+      const domains = ['@change.org', '@gmail.com', '@hotmail.com', '@outlook.com'];
+
+      emailInput.addEventListener('input', () => {
+        const val = emailInput.value;
+
+        if (!val || val.includes('@')) {
+          emailSuggestions.style.display = 'none';
+          emailSuggestions.innerHTML = '';
+          return;
+        }
+
+        emailSuggestions.innerHTML = domains.map(domain => `
+          <button type="button" data-value="${val}${domain}" style="width: 100%; border: none; background: #fff; padding: 10px 14px; text-align: left; cursor: pointer; font-size: 14px; color: #1f2a44; display: block; border-bottom: 1px solid #f0f0f0;">
+            ${val}<strong style="color: #f25c2a;">${domain}</strong>
+          </button>
+        `).join('');
+
+        emailSuggestions.style.display = 'block';
+
+        emailSuggestions.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('mouseenter', () => btn.style.background = '#f7f8fb');
+          btn.addEventListener('mouseleave', () => btn.style.background = '#fff');
+          btn.addEventListener('click', () => {
+            emailInput.value = btn.dataset.value;
+            emailSuggestions.style.display = 'none';
+          });
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (e.target !== emailInput) {
+          emailSuggestions.style.display = 'none';
+        }
+      });
     </script>
   </body>
 </html>

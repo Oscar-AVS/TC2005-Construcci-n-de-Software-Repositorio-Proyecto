@@ -16,15 +16,15 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
           <div class="lf-field">
-            <label class="lf-label" for="loginUser">Username</label>
+            <label class="lf-label" for="loginEmail">Email</label>
             <div class="lf-input-wrap">
-              <i class="fa-regular fa-user lf-icon" aria-hidden="true"></i>
+              <i class="fa-regular fa-envelope lf-icon" aria-hidden="true"></i>
               <input
-                id="loginUser"
-                name="username"
-                type="text"
-                placeholder="Your username"
-                autocomplete="username"
+                id="loginEmail"
+                name="email"
+                type="email"
+                placeholder="email@change.org"
+                autocomplete="email"
                 required
               />
             </div>

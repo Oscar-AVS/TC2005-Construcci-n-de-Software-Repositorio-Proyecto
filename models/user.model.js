@@ -6,8 +6,8 @@
 const db = require('../util/database');
 
 module.exports = class User {
-  static findByUsername(username) {
-    return db.execute('SELECT * FROM user WHERE username = ?', [username]);
+  static findByEmail(email) {
+    return db.execute('SELECT * FROM user WHERE email = ?', [email]);
   }
 
   static fetchOne(id_user) {
@@ -37,11 +37,12 @@ module.exports = class User {
 
   static fetchAll() {
     return db.execute(
-      `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active,
+      `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active, u.status,
         r.role_name AS role, ur.id_role
        FROM user u
        LEFT JOIN user_role ur ON u.id_user = ur.id_user
        LEFT JOIN role r ON ur.id_role = r.id_role
+       WHERE u.status != 'pending'
        ORDER BY u.id_user DESC`
     );
   }
@@ -73,7 +74,7 @@ module.exports = class User {
       [id_role, id_user]
     );
   }
-  
+
   static fetchTeamByLeader(id_user) {
     return db.execute(
       'SELECT id_team FROM team WHERE id_leader = ?',
@@ -84,9 +85,9 @@ module.exports = class User {
   static fetchPending() {
     return db.execute(
       `SELECT id_user, full_name, email, username, status
-      FROM user
-      WHERE status = 'pending'
-      ORDER BY id_user DESC`
+       FROM user
+       WHERE status = 'pending'
+       ORDER BY id_user DESC`
     );
   }
 

@@ -40,6 +40,38 @@ app.use(session({
 }));
 
 app.use(async (req, res, next) => {
+  if (!req.session.isLoggedIn || !req.session.userId) {
+    return next();
+  }
+
+  const isAjax = req.xhr || req.headers.accept?.includes('application/json') || req.method === 'PATCH';
+  if (isAjax) {
+    return next();
+  }
+
+  try {
+    const [[user]] = await db.query(
+      'SELECT status FROM user WHERE id_user = ?',
+      [req.session.userId]
+    );
+
+    if (!user) {
+      return next();
+    }
+
+    if (user.status === 'inactive' || user.status === 'pending') {
+      return req.session.destroy(() => {
+        return res.redirect('/login');
+      });
+    }
+  } catch (err) {
+    console.error('session check error:', err);
+  }
+
+  next();
+});
+
+app.use(async (req, res, next) => {
   if (req.session.isLoggedIn && req.session.role === 'admin') {
     try {
       const [[row]] = await User.countPending();
