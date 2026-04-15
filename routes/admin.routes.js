@@ -1,6 +1,5 @@
 /**
  * Admin module routes.
- * System administration: users, teams, roles and integrations.
  */
 
 const express = require('express');
@@ -22,5 +21,7 @@ router.post('/teams/edit', adminController.editTeam);
 router.post('/teams/delete', adminController.deleteTeam);
 router.get('/roles', adminController.getRoles);
 router.get('/profile', adminController.getProfile);
+router.post('/profile/slack', adminController.postSlack);
+router.post('/profile/password', adminController.postPassword);
 
 module.exports = router;

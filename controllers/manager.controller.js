@@ -8,6 +8,7 @@ const Blocker = require('../models/blocker.model');
 const Project = require('../models/project.model');
 const User = require('../models/user.model');
 const Goal = require('../models/goal.model');
+const bcrypt = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -314,4 +315,87 @@ exports.getProfile = (req, res) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
     });
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    if (!user) return res.status(404).send('User not found');
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'manager',
+      user,
+      error: '',
+      success: '',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postSlack = async (req, res) => {
+  const { slack_user } = req.body;
+  try {
+    await User.updateSlack(req.session.userId, slack_user);
+    const [[user]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'manager',
+      user,
+      error: '',
+      success: 'Slack username updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postPassword = async (req, res) => {
+  const { current_password, new_password, confirm_password } = req.body;
+  const bcrypt = require('bcrypt');
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    const match = await bcrypt.compare(current_password, user.password);
+
+    if (!match) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'manager',
+        user,
+        error: 'Current password is incorrect.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'manager',
+        user,
+        error: 'New passwords do not match.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    const hashed = await bcrypt.hash(new_password, 12);
+    await User.updatePassword(req.session.userId, hashed);
+    const [[updatedUser]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'manager',
+      user: updatedUser,
+      error: '',
+      success: 'Password updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
 };

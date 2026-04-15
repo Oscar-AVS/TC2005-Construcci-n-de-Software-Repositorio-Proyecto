@@ -22,5 +22,7 @@ router.post('/achievements/reject', teamLeaderController.rejectAchievement);
 router.get('/team-report', teamLeaderController.getTeamReport);
 router.get('/self-review', teamLeaderController.getSelfReview);
 router.get('/profile', teamLeaderController.getProfile);
+router.post('/profile/slack', teamLeaderController.postSlack);
+router.post('/profile/password', teamLeaderController.postPassword);
 
 module.exports = router;

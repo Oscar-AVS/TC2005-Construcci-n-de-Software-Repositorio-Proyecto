@@ -236,3 +236,67 @@ exports.deleteUser = async (req, res) => {
     res.status(500).send('Error deleting user');
   }
 };
+
+exports.postSlack = async (req, res) => {
+  const { slack_user } = req.body;
+  try {
+    await User.updateSlack(req.session.userId, slack_user);
+    const [[user]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'admin',
+      user,
+      error: '',
+      success: 'Slack username updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postPassword = async (req, res) => {
+  const { current_password, new_password, confirm_password } = req.body;
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    const match = await bcrypt.compare(current_password, user.password);
+
+    if (!match) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'admin',
+        user,
+        error: 'Current password is incorrect.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'admin',
+        user,
+        error: 'New passwords do not match.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    const hashed = await bcrypt.hash(new_password, 12);
+    await User.updatePassword(req.session.userId, hashed);
+    const [[updatedUser]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'admin',
+      user: updatedUser,
+      error: '',
+      success: 'Password updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
