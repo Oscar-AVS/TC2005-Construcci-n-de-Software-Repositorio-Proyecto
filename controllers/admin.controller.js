@@ -187,3 +187,15 @@ exports.rejectUser = async (req, res) => {
     res.status(500).send('Error rejecting user');
   }
 };
+
+exports.deleteUser = async (req, res) => {
+  const { id_user } = req.body;
+
+  try {
+    await User.delete(id_user);
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('deleteUser error:', err);
+    res.status(500).send('Error deleting user');
+  }
+};

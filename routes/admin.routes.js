@@ -15,6 +15,7 @@ router.post('/users/edit', adminController.editUser);
 router.patch('/users/:id/toggle-status', adminController.toggleUserStatus);
 router.post('/users/approve', adminController.approveUser);
 router.post('/users/reject', adminController.rejectUser);
+router.post('/users/delete', adminController.deleteUser);
 router.get('/teams', adminController.getTeams);
 router.post('/teams/create', adminController.createTeam);
 router.post('/teams/edit', adminController.editTeam);

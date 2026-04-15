@@ -116,4 +116,11 @@ module.exports = class User {
       [full_name, email, username, password]
     );
   }
+
+  static delete(id_user) {
+    return db.execute(
+      'DELETE FROM user WHERE id_user = ?',
+      [id_user]
+    );
+  }
 };

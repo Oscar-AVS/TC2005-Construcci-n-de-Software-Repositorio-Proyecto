@@ -2,6 +2,60 @@
 <meta name="csrf-token" content="<%= csrfToken %>" />
 <h1 id="pageTitle" class="page-title">Users Management</h1>
 
+<% if (pending && pending.length > 0) { %>
+<div class="report-card" style="border-left: 4px solid #e74c3c;">
+  <div class="report-card-header">
+    <h2 style="color: #e74c3c;"><i class="fa-solid fa-clock"></i> Pending Approval</h2>
+    <span class="item-count"><%= pending.length %> pending</span>
+  </div>
+  <div class="report-card-body" style="padding: 0;">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Username</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pending.forEach(user => { %>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="<%= user.full_name %>" />
+              <div class="user-cell-info">
+                <span class="user-cell-name"><%= user.full_name %></span>
+                <span class="user-cell-email"><%= user.email %></span>
+              </div>
+            </div>
+          </td>
+          <td><%= user.username %></td>
+          <td>
+            <div class="table-actions">
+              <form action="/admin/users/approve" method="POST" style="display: inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="id_user" value="<%= user.id_user %>" />
+                <button class="btn-icon" type="submit" title="Approve" style="color: #27ae60;">
+                  <i class="fa-solid fa-user-check"></i>
+                </button>
+              </form>
+              <form action="/admin/users/reject" method="POST" style="display: inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="id_user" value="<%= user.id_user %>" />
+                <button class="btn-icon btn-danger" type="submit" title="Reject">
+                  <i class="fa-solid fa-user-xmark"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
 <!-- Add User Card -->
 <div class="report-card">
   <div class="report-card-header">
@@ -92,9 +146,6 @@
               <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', '<%= user.username %>', <%= user.id_role %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              <button class="btn-icon" type="button" title="Reset Password">
-                <i class="fa-solid fa-key"></i>
-              </button>
               <button
                 class="btn-icon <%= user.is_active ? 'btn-danger' : '' %>"
                 type="button"
@@ -103,6 +154,14 @@
                 id="toggle-btn-<%= user.id %>"
               >
                 <i id="toggle-icon-<%= user.id %>" class="fa-solid <%= user.is_active ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+              </button>
+              <button
+                class="btn-icon btn-danger"
+                type="button"
+                title="Delete"
+                onclick="openDeleteUserModal(<%= user.id %>, '<%= user.full_name %>')"
+              >
+                <i class="fa-solid fa-trash"></i>
               </button>
             </div>
           </td>
@@ -117,26 +176,21 @@
 <div id="editUserModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;">
   <div style="background: #fff; width: min(480px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
     <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit User</h3>
-
     <form action="/admin/users/edit" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="id_user" id="editUserId" />
-
       <div class="form-field" style="margin-bottom: 12px;">
         <label class="form-label" for="editFullName">Full Name</label>
         <input type="text" id="editFullName" name="full_name" class="form-input" required />
       </div>
-
       <div class="form-field" style="margin-bottom: 12px;">
         <label class="form-label" for="editEmail">Email</label>
         <input type="email" id="editEmail" name="email" class="form-input" required />
       </div>
-
       <div class="form-field" style="margin-bottom: 12px;">
         <label class="form-label" for="editUsername">Username</label>
         <input type="text" id="editUsername" name="username" class="form-input" required />
       </div>
-
       <div class="form-field" style="margin-bottom: 20px;">
         <label class="form-label" for="editRole">Role</label>
         <select id="editRole" name="id_role" class="form-select" required>
@@ -145,7 +199,6 @@
           <% }) %>
         </select>
       </div>
-
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button type="button" onclick="closeEditModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
           <i class="fa-solid fa-xmark"></i> Cancel
@@ -163,7 +216,6 @@
   <div style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
     <h3 style="margin: 0 0 10px 0; font-size: 22px; color: #1f2a44;" id="toggleModalTitle">Deactivate account</h3>
     <p id="toggleModalText" style="margin: 0 0 20px 0; color: #5f6b85; line-height: 1.5;">Are you sure you want to deactivate this account?</p>
-
     <div style="display: flex; justify-content: flex-end; gap: 10px;">
       <button type="button" id="cancelToggleBtn" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
         <i class="fa-solid fa-xmark"></i> Cancel
@@ -172,6 +224,26 @@
         <i class="fa-solid fa-check"></i> Confirm
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Delete User Modal -->
+<div id="deleteUserModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18); text-align: center;">
+    <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #1f2a44;">Delete User</h3>
+    <p id="deleteUserText" style="color: #6b7280; margin-bottom: 24px; font-size: 14px;">Are you sure you want to delete this user? This action cannot be undone.</p>
+    <form action="/admin/users/delete" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="id_user" id="deleteUserId" />
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button type="button" onclick="closeDeleteUserModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e5e7eb; color: #374151; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </button>
+        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-trash"></i> Delete
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -263,5 +335,19 @@
 
   document.getElementById('editUserModal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('editUserModal')) closeEditModal();
+  });
+
+  function openDeleteUserModal(id, fullName) {
+    document.getElementById('deleteUserId').value = id;
+    document.getElementById('deleteUserText').textContent = `Are you sure you want to delete ${fullName}? This action cannot be undone.`;
+    document.getElementById('deleteUserModal').style.display = 'flex';
+  }
+
+  function closeDeleteUserModal() {
+    document.getElementById('deleteUserModal').style.display = 'none';
+  }
+
+  document.getElementById('deleteUserModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('deleteUserModal')) closeDeleteUserModal();
   });
 </script>
