@@ -210,7 +210,7 @@ CREATE TABLE `project` (
   `project_name` varchar(150) NOT NULL,
   `description` text DEFAULT NULL,
   `status` enum('active','inactive','completed') DEFAULT 'active',
-  `start_date` date DEFAULT curdate()
+  `start_date` date DEFAULT (curdate())
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
