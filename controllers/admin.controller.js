@@ -145,11 +145,45 @@ exports.deleteTeam = async (req, res) => {
   }
 };
 
-exports.getRoles = (req, res) => {
-  res.render('admin/roles', {
-    currentPage: 'roles',
-    role: 'admin',
-  });
+exports.getRoles = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.id_role, r.role_name,
+        u.full_name, u.email
+       FROM role r
+       LEFT JOIN user_role ur ON r.id_role = ur.id_role
+       LEFT JOIN user u ON ur.id_user = u.id_user AND u.status = 'active'
+       ORDER BY r.id_role, u.full_name`
+    );
+
+    const rolesMap = {};
+    rows.forEach(row => {
+      if (!rolesMap[row.id_role]) {
+        rolesMap[row.id_role] = {
+          id_role: row.id_role,
+          role_name: row.role_name,
+          users: [],
+        };
+      }
+      if (row.full_name) {
+        rolesMap[row.id_role].users.push({
+          full_name: row.full_name,
+          email: row.email,
+        });
+      }
+    });
+
+    const roles = Object.values(rolesMap);
+
+    res.render('admin/roles', {
+      currentPage: 'roles',
+      role: 'admin',
+      roles,
+    });
+  } catch (err) {
+    console.error('getRoles error:', err);
+    res.status(500).send('Error loading roles');
+  }
 };
 
 exports.getIntegrations = (req, res) => {

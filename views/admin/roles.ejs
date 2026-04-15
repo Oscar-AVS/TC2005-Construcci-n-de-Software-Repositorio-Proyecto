@@ -1,160 +1,41 @@
-<!-- Admin Roles View -->
 <h1 id="pageTitle" class="page-title">Roles & Permissions</h1>
 
-<!-- Roles Overview -->
 <div class="report-card">
   <div class="report-card-header">
     <h2>System Roles</h2>
-    <span class="item-count">4 roles</span>
+    <span class="item-count"><%= roles.length %> roles</span>
   </div>
 
   <div class="report-card-body">
     <div class="roles-grid">
+      <% roles.forEach(r => { %>
+        <div class="role-card <%= r.role_name %>-role">
+          <div class="role-card-header">
+            <div>
+              <h3 class="role-card-title"><%= r.role_name.charAt(0).toUpperCase() + r.role_name.slice(1).replace(/-/g, ' ') %></h3>
+              <p class="role-card-count"><%= r.users.length %> user<%= r.users.length !== 1 ? 's' : '' %></p>
+            </div>
+          </div>
 
-      <!-- Admin Role -->
-      <div class="role-card admin-role">
-        <div class="role-card-header">
-          <div>
-            <h3 class="role-card-title">Admin</h3>
-            <p class="role-card-count">2 users</p>
-          </div>
-          <button class="btn-icon" type="button" title="Edit Permissions">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-        </div>
-
-        <div class="role-permissions">
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Manage all users</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Create and delete teams</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Configure integrations</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Manage roles and permissions</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Reset user credentials</span>
+          <div class="role-permissions">
+            <% if (r.users.length > 0) { %>
+              <% r.users.forEach(u => { %>
+                <div class="permission-item" style="gap: 10px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: #e74c3c; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; flex-shrink: 0;">
+                    <%= u.full_name.charAt(0).toUpperCase() %>
+                  </div>
+                  <div>
+                    <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1f2a44;"><%= u.full_name %></p>
+                    <p style="margin: 0; font-size: 12px; color: #5f6b85;"><%= u.email %></p>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p style="color: #5f6b85; font-size: 14px;">No users assigned.</p>
+            <% } %>
           </div>
         </div>
-      </div>
-
-      <!-- Manager Role -->
-      <div class="role-card manager-role">
-        <div class="role-card-header">
-          <div>
-            <h3 class="role-card-title">Manager</h3>
-            <p class="role-card-count">5 users</p>
-          </div>
-          <button class="btn-icon" type="button" title="Edit Permissions">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-        </div>
-
-        <div class="role-permissions">
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Define goals and objectives</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Create and manage highlights</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>View all contribution history</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Generate AI summaries</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Export reports (PDF/Excel)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Team Leader Role -->
-      <div class="role-card team-leader-role">
-        <div class="role-card-header">
-          <div>
-            <h3 class="role-card-title">Team Leader</h3>
-            <p class="role-card-count">8 users</p>
-          </div>
-          <button class="btn-icon" type="button" title="Edit Permissions">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-        </div>
-
-        <div class="role-permissions">
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>View team members' logs</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Add/remove team members</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Generate team reports</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Receive blocker notifications</span>
-          </div>
-          <div class="permission-item denied">
-            <i class="fa-solid fa-xmark"></i>
-            <span>Cannot manage other teams</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Employee Role -->
-      <div class="role-card employee-role">
-        <div class="role-card-header">
-          <div>
-            <h3 class="role-card-title">Employee</h3>
-            <p class="role-card-count">32 users</p>
-          </div>
-          <button class="btn-icon" type="button" title="Edit Permissions">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-        </div>
-
-        <div class="role-permissions">
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Create daily log entries</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>View own history</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>Create self-reviews</span>
-          </div>
-          <div class="permission-item">
-            <i class="fa-solid fa-check"></i>
-            <span>View assigned projects</span>
-          </div>
-          <div class="permission-item denied">
-            <i class="fa-solid fa-xmark"></i>
-            <span>Cannot view others' logs</span>
-          </div>
-        </div>
-      </div>
-
+      <% }) %>
     </div>
   </div>
 </div>
