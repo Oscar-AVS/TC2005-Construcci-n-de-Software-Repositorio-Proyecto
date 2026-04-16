@@ -29,6 +29,7 @@ router.get('/reports', managerController.getReports);
 router.get('/log', managerController.getLog);
 router.get('/self-review', managerController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, managerController.generateSelfReview);
+router.post('/self-review/export-pdf', selfReviewLimiter, managerController.exportSelfReviewPDF);
 router.get('/profile', managerController.getProfile);
 router.post('/profile/slack', managerController.postSlack);
 router.post('/profile/password', managerController.postPassword);

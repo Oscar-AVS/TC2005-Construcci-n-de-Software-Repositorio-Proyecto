@@ -24,6 +24,7 @@ router.get('/reports', pmController.getReports);
 router.get('/log', pmController.getLog);
 router.get('/self-review', pmController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, pmController.generateSelfReview);
+router.post('/self-review/export-pdf', selfReviewLimiter, pmController.exportSelfReviewPDF);
 router.get('/profile', pmController.getProfile);
 router.post('/profile/slack', pmController.postSlack);
 router.post('/profile/password', pmController.postPassword);

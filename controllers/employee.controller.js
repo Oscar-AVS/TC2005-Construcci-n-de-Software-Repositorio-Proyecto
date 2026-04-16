@@ -7,6 +7,7 @@ const User = require('../models/user.model.js');
 const Project = require('../models/project.model.js');
 const Log = require('../models/log.model.js');
 const Blocker = require('../models/blocker.model.js');
+const Achievement = require('../models/achievement.model.js');
 const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
@@ -168,11 +169,59 @@ exports.deleteLog = (req, res) => {
     });
 };
 
-exports.getAchievements = (req, res) => {
-  res.render('employee/achievements', {
-    currentPage: 'achievements',
-    role: 'employee',
-  });
+exports.getAchievements = async (req, res) => {
+  const activeUserId = req.session.userId;
+  try {
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    res.render('employee/achievements', {
+      currentPage: 'achievements',
+      role: 'employee',
+      achievements,
+      projects,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postAchievement = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { title, description, created_at } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ success: false, message: 'Title is required.' });
+  }
+  if (!created_at) {
+    return res.status(400).json({ success: false, message: 'Date is required.' });
+  }
+
+  try {
+    await Achievement.create(activeUserId, title.trim(), description ? description.trim() : '', created_at);
+    return res.status(201).json({ success: true, message: 'Achievement saved successfully.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+exports.deleteAchievement = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id_achievement } = req.body;
+
+  try {
+    const [result] = await Achievement.delete(id_achievement, activeUserId);
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ success: false, message: 'Cannot delete this achievement.' });
+    }
+    return res.status(200).json({ success: true, message: 'Achievement deleted.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
 };
 
 exports.getSelfReview = (req, res) => {
@@ -372,4 +421,99 @@ exports.postPassword = async (req, res) => {
     console.log(err);
     res.status(500).send('Internal Server Error');
   }
+};
+
+exports.exportSelfReviewPDF = (req, res) => {
+  const PDFDocument = require('pdfkit');
+  const activeUserId = req.session.userId;
+  const fullName = req.session.fullName;
+  const { fechaInicio, fechaFin, doneWell, contributions, challenges, growth } = req.body;
+
+  if (!fechaInicio || !fechaFin) {
+    return res.status(400).send('Missing period data.');
+  }
+
+  const doc = new PDFDocument({ margin: 50 });
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="self_review_${fullName.replace(/\s+/g, '_')}_${fechaInicio}_${fechaFin}.pdf"`
+  );
+
+  doc.pipe(res);
+
+  // Header Box
+  doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#FFF4ED', '#E84C1E');
+
+  doc.fillColor('#E84C1E')
+    .fontSize(20)
+    .text('Self-Review Report', 60, 50, { align: 'center', width: 475 });
+
+  doc.fillColor('#444444')
+    .fontSize(10)
+    .text('Change.org Employee Development', 60, 80, { align: 'center', width: 475 });
+
+  doc.fillColor('#000000').fontSize(10);
+  doc.text(`Employee: ${fullName}`, 60, 105, { width: 250 });
+  doc.text(`Period: ${fechaInicio} — ${fechaFin}`, 350, 105, { width: 150 });
+
+  let parsedAchievements = [];
+  let parsedProjects = [];
+  if (req.body.achievements) {
+    try { parsedAchievements = JSON.parse(req.body.achievements); } catch(e) {}
+  }
+  if (req.body.projects) {
+    try { parsedProjects = JSON.parse(req.body.projects); } catch(e) {}
+  }
+
+  doc.y = 150;
+  doc.moveDown(1.5);
+
+  const writeSection = (title, content) => {
+    doc.fontSize(13).fillColor('#E84C1E').text(title, 50, doc.y);
+    doc.moveDown(0.4);
+    doc.fontSize(10).fillColor('#333333');
+    doc.text(content || 'No content provided.', 50, doc.y, { align: 'justify', width: 495 });
+    doc.moveDown(1);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown(1);
+  };
+
+  // Render Achievements
+  doc.fontSize(13).fillColor('#E84C1E').text('My Achievements', 50, doc.y);
+  doc.moveDown(0.4);
+  doc.fontSize(10).fillColor('#333333');
+  if (parsedAchievements.length === 0) {
+    doc.text('No achievements in this period.', 50, doc.y);
+  } else {
+    parsedAchievements.forEach(a => {
+      doc.text(`• ${a.description}`, 50, doc.y, { width: 495 });
+    });
+  }
+  doc.moveDown(1);
+  doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+  doc.moveDown(1);
+
+  // Render Projects
+  doc.fontSize(13).fillColor('#E84C1E').text('What I Worked On', 50, doc.y);
+  doc.moveDown(0.4);
+  doc.fontSize(10).fillColor('#333333');
+  if (parsedProjects.length === 0) {
+    doc.text('No log entries in this period.', 50, doc.y);
+  } else {
+    parsedProjects.forEach(p => {
+      doc.text(`• ${p.project_name} (${p.log_count} entries)`, 50, doc.y, { width: 495 });
+    });
+  }
+  doc.moveDown(1);
+  doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+  doc.moveDown(1);
+
+  writeSection('What I Did Well', doneWell);
+  writeSection('My Contributions', contributions);
+  writeSection('Challenges I Overcame', challenges);
+  writeSection('Areas for Growth', growth);
+
+  doc.end();
 };

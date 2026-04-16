@@ -1,5 +1,8 @@
 <h1 id="pageTitle" class="page-title">Achievements</h1>
 
+<!-- Feedback message -->
+<div id="achievementMsg" style="display:none; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px;"></div>
+
 <!-- New Achievement Form -->
 <div class="report-card">
   <div class="report-card-header">
@@ -10,10 +13,10 @@
     <div class="form-row-grid">
       <div class="form-field">
         <label class="form-label" for="achievementTitle">Title</label>
-        <input 
-          type="text" 
-          id="achievementTitle" 
-          class="form-input" 
+        <input
+          type="text"
+          id="achievementTitle"
+          class="form-input"
           placeholder="e.g. Launched new payment system"
         />
       </div>
@@ -38,9 +41,9 @@
         <label class="form-label" for="achievementProject">Project (optional)</label>
         <select id="achievementProject" class="form-select">
           <option value="">None</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
+          <% projects.forEach(p => { %>
+            <option value="<%= p.id_project %>"><%= p.project_name %></option>
+          <% }) %>
         </select>
       </div>
 
@@ -48,14 +51,14 @@
         <label class="form-label" for="achievementGoal">Goal (optional)</label>
         <select id="achievementGoal" class="form-select">
           <option value="">None</option>
-          <option value="1">Q1 Performance</option>
-          <option value="2">Q2 Objectives</option>
         </select>
       </div>
     </div>
 
     <div class="action-row">
-      <button class="btn-submit" type="button">Save Achievement</button>
+      <button class="btn-submit" type="button" id="saveAchievementBtn" onclick="saveAchievement()">
+        Save Achievement
+      </button>
     </div>
   </div>
 </div>
@@ -64,26 +67,143 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>My Achievements</h2>
-    <span class="item-count">3 total</span>
+    <span class="item-count" id="achievementCount"><%= achievements.length %> total</span>
   </div>
 
   <div class="report-card-body">
-    <div class="achievements-list">
+    <div class="achievements-list" id="achievementsList">
 
-      <div class="achievement-card">
-        <div class="achievement-icon">
-          <i class="fa-solid fa-trophy"></i>
+      <% if (achievements.length === 0) { %>
+        <div style="text-align: center; padding: 40px 0; color: #9ca3af;">
+          <i class="fa-solid fa-trophy" style="font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.4;"></i>
+          <p style="margin: 0; font-size: 15px; font-style: italic;">No achievements yet. Add your first one above!</p>
         </div>
-        <div class="achievement-content">
-          <div class="achievement-header">
-            <h3 class="achievement-title">Launched new payment system</h3>
-            <span class="achievement-date">12 Mar 2026</span>
+      <% } else { %>
+        <% achievements.forEach(a => { %>
+          <div class="achievement-card" id="achievement-<%= a.id_achievement %>">
+            <div class="achievement-icon">
+              <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div class="achievement-content">
+              <div class="achievement-header">
+                <h3 class="achievement-title"><%= a.title || a.description %></h3>
+                <span class="achievement-date">
+                  <%= new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </span>
+              </div>
+              <% if (a.description) { %>
+                <p class="achievement-desc" style="margin: 4px 0 0; font-size: 13px; color: #5f6b85;"><%= a.description %></p>
+              <% } %>
+              <div class="achievement-tags" style="margin-top: 8px;">
+                <%
+                  const statusColors = {
+                    pending:  { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa', label: 'Pending Review' },
+                    approved: { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0', label: 'Approved' },
+                    rejected: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca', label: 'Rejected' },
+                  };
+                  const s = statusColors[a.validation_status] || statusColors.pending;
+                %>
+                <span style="display: inline-flex; align-items: center; gap: 5px; background: <%= s.bg %>; color: <%= s.color %>; border: 1px solid <%= s.border %>; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600;">
+                  <i class="fa-solid <%= a.validation_status === 'approved' ? 'fa-circle-check' : a.validation_status === 'rejected' ? 'fa-circle-xmark' : 'fa-clock' %>" style="font-size: 10px;"></i>
+                  <%= s.label %>
+                </span>
+              </div>
+            </div>
+            <% if (a.validation_status === 'pending') { %>
+              <div class="achievement-actions">
+                <button class="btn-icon btn-delete" type="button" title="Delete" onclick="deleteAchievement(<%= a.id_achievement %>)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            <% } %>
           </div>
-          <p class="achievement-desc">Successfully deployed the new payment gateway, reducing transaction failures by 40% and improving checkout speed.</p>
-          <div class="achievement-tags">
-            <span class="tag tag-project">Internal Tools</span>
-            <span class="tag tag-goal">Q1 Performance</span>
-          </div>
-        </div>
-        <div class="achievement-actions">
-          <button class="btn-icon" type="button"
+        <% }) %>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const csrfToken = '<%= csrfToken %>';
+
+  function showMsg(text, type) {
+    const el = document.getElementById('achievementMsg');
+    el.textContent = text;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = '#f0fdf4';
+      el.style.color = '#15803d';
+      el.style.border = '1px solid #bbf7d0';
+    } else {
+      el.style.background = '#fef2f2';
+      el.style.color = '#b91c1c';
+      el.style.border = '1px solid #fecaca';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  async function saveAchievement() {
+    const title       = document.getElementById('achievementTitle').value.trim();
+    const description = document.getElementById('achievementDesc').value.trim();
+    const created_at  = document.getElementById('achievementDate').value;
+
+    if (!title)      { showMsg('Please enter a title.', 'error'); return; }
+    if (!created_at) { showMsg('Please select a date.', 'error'); return; }
+
+    const btn = document.getElementById('saveAchievementBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      const res = await fetch('/employee/achievements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ title, description, created_at, _csrf: csrfToken }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showMsg('Achievement saved! Waiting for team leader approval.', 'success');
+        document.getElementById('achievementTitle').value = '';
+        document.getElementById('achievementDesc').value = '';
+        document.getElementById('achievementDate').value = '';
+        document.getElementById('achievementProject').value = '';
+        document.getElementById('achievementGoal').value = '';
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showMsg(data.message || 'Error saving achievement.', 'error');
+      }
+    } catch (err) {
+      showMsg('Unexpected error. Please try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Achievement';
+    }
+  }
+
+  async function deleteAchievement(id) {
+    if (!confirm('Delete this achievement?')) return;
+
+    try {
+      const res = await fetch('/employee/achievements/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id_achievement: id, _csrf: csrfToken }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById(`achievement-${id}`)?.remove();
+        showMsg('Achievement deleted.', 'success');
+        const countEl = document.getElementById('achievementCount');
+        const current = parseInt(countEl.textContent) - 1;
+        countEl.textContent = `${current} total`;
+      } else {
+        showMsg(data.message || 'Cannot delete this achievement.', 'error');
+      }
+    } catch (err) {
+      showMsg('Unexpected error. Please try again.', 'error');
+    }
+  }
+</script>

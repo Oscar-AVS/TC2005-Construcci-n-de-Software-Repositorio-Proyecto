@@ -18,16 +18,26 @@
         <input type="date" id="periodTo" class="form-input" />
       </div>
 
-      <button class="btn-generate-ai" type="button" onclick="generateSelfReview()">
+      <button class="btn-generate-ai" type="button" onclick="generateSelfReview()" style="align-self: flex-end;">
         <i class="fa-solid fa-sparkles"></i>
         Generate Review
       </button>
+    </div>
+
+    <!-- Date Shortcuts -->
+    <div class="date-shortcuts" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn-draft" onclick="setDates('lastWeek')" style="padding: 4px 10px; font-size: 12px;">Last Week</button>
+      <button type="button" class="btn-draft" onclick="setDates('lastMonth')" style="padding: 4px 10px; font-size: 12px;">Last Month</button>
+      <button type="button" class="btn-draft" onclick="setDates('q1')" style="padding: 4px 10px; font-size: 12px;">Q1</button>
+      <button type="button" class="btn-draft" onclick="setDates('q2')" style="padding: 4px 10px; font-size: 12px;">Q2</button>
+      <button type="button" class="btn-draft" onclick="setDates('q3')" style="padding: 4px 10px; font-size: 12px;">Q3</button>
+      <button type="button" class="btn-draft" onclick="setDates('q4')" style="padding: 4px 10px; font-size: 12px;">Q4</button>
     </div>
   </div>
 </div>
 
 <!-- AI Summary Card -->
-<div class="ai-summary-card">
+<div class="ai-summary-card" id="aiSummarySection">
   <div class="ai-summary-header">
     <div class="ai-summary-title">
       <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -139,6 +149,49 @@
         <textarea id="growth" rows="3" placeholder="AI will generate this section..."></textarea>
       </div>
 
+      <!-- Action Row: Export left, Submit right -->
+      <div class="action-row-split" style="margin-top: 30px;">
+        <div class="export-actions">
+          <button class="btn-export-large" type="button" onclick="exportPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Export to PDF
+          </button>
+          <button class="btn-draft" type="button" onclick="openClearDraftModal()" style="margin-left: 10px; color: #e74c3c; border-color: #fca5a5;">
+            <i class="fa-solid fa-trash-can"></i> Start Fresh
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <form id="exportPdfForm" method="POST" action="/<%= role %>/self-review/export-pdf" target="_blank" style="display: none;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" id="exportFechaInicio" name="fechaInicio">
+    <input type="hidden" id="exportFechaFin" name="fechaFin">
+    <input type="hidden" id="exportDoneWell" name="doneWell">
+    <input type="hidden" id="exportContributions" name="contributions">
+    <input type="hidden" id="exportChallenges" name="challenges">
+    <input type="hidden" id="exportGrowth" name="growth">
+    <input type="hidden" id="exportAchievements" name="achievements">
+    <input type="hidden" id="exportProjects" name="projects">
+  </form>
+
+  <!-- Clear Draft Modal -->
+  <div id="clearDraftModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #fff; width: min(420px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); text-align: center;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; color: #e74c3c;">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+      <h3 style="margin: 0 0 8px 0; font-size: 22px; color: #1f2a44;">Start Fresh</h3>
+      <p style="color: #5f6b85; margin-bottom: 28px; font-size: 14px; line-height: 1.5;">Are you sure you want to discard this self-review and start fresh? All text will be lost.</p>
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <button type="button" onclick="closeClearDraftModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </button>
+        <button type="button" onclick="executeClearDraft()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
+          <i class="fa-solid fa-trash-can"></i> Discard
+        </button>
+      </div>
     </div>
   </div>
 
@@ -168,6 +221,7 @@
     }
 
     // Show loading
+    document.getElementById('aiSummarySection').style.display = 'block';
     document.getElementById('aiPlaceholder').style.display = 'none';
     document.getElementById('aiLoading').style.display = 'flex';
     document.getElementById('reviewContent').style.display = 'none';
@@ -193,8 +247,10 @@
         achievementsList.innerHTML = data.achievements
           .map(a => `<li>${a.description}</li>`)
           .join('');
+        document.getElementById('exportAchievements').value = JSON.stringify(data.achievements);
       } else {
         achievementsList.innerHTML = '<li style="color: #9ca3af; font-style: italic;">No achievements in this period.</li>';
+        document.getElementById('exportAchievements').value = '[]';
       }
 
       // Project breakdown
@@ -213,8 +269,10 @@
             </div>
           `;
         }).join('');
+        document.getElementById('exportProjects').value = JSON.stringify(data.projectBreakdown);
       } else {
         projectBreakdown.innerHTML = '<p style="color: #9ca3af; font-style: italic;">No log entries in this period.</p>';
+        document.getElementById('exportProjects').value = '[]';
       }
 
       // AI sections
@@ -223,15 +281,169 @@
       document.getElementById('challenges').value = data.ai.challengesOvercome || '';
       document.getElementById('growth').value = data.ai.areasForGrowth || '';
 
-      // Show result
+      // Hide AI placeholder section
+      document.getElementById('aiSummarySection').style.display = 'none';
       document.getElementById('aiLoading').style.display = 'none';
       document.getElementById('reviewContent').style.display = 'block';
+
+      // Save to localStorage automatically
+      saveDraft();
 
     } catch (err) {
       console.error('Error generating self-review:', err);
       errorText.textContent = 'Unexpected error. Please try again.';
       errorDiv.style.display = 'block';
+      document.getElementById('aiSummarySection').style.display = 'block';
       document.getElementById('aiLoading').style.display = 'none';
+    }
+  }
+
+  function saveDraft() {
+    const draft = {
+      fechaInicio: document.getElementById('periodFrom').value,
+      fechaFin: document.getElementById('periodTo').value,
+      achievementsHtml: document.getElementById('achievementsList').innerHTML,
+      projectBreakdownHtml: document.getElementById('projectBreakdown').innerHTML,
+      doneWell: document.getElementById('doneWell').value,
+      contributions: document.getElementById('contributions').value,
+      challenges: document.getElementById('challenges').value,
+      growth: document.getElementById('growth').value,
+      rawAchievements: document.getElementById('exportAchievements').value,
+      rawProjects: document.getElementById('exportProjects').value
+    };
+    localStorage.setItem('selfReview_draft', JSON.stringify(draft));
+  }
+
+  function loadDraft() {
+    const draftStr = localStorage.getItem('selfReview_draft');
+    if (draftStr) {
+      try {
+        const draft = JSON.parse(draftStr);
+        document.getElementById('periodFrom').value = draft.fechaInicio;
+        document.getElementById('periodTo').value = draft.fechaFin;
+        document.getElementById('reviewPeriodLabel').textContent = `${draft.fechaInicio} — ${draft.fechaFin}`;
+        
+        document.getElementById('achievementsList').innerHTML = draft.achievementsHtml;
+        document.getElementById('projectBreakdown').innerHTML = draft.projectBreakdownHtml;
+        
+        document.getElementById('doneWell').value = draft.doneWell;
+        document.getElementById('contributions').value = draft.contributions;
+        document.getElementById('challenges').value = draft.challenges;
+        document.getElementById('growth').value = draft.growth;
+
+        document.getElementById('exportAchievements').value = draft.rawAchievements || '[]';
+        document.getElementById('exportProjects').value = draft.rawProjects || '[]';
+
+        document.getElementById('aiSummarySection').style.display = 'none';
+        document.getElementById('reviewContent').style.display = 'block';
+      } catch (e) {
+        console.error('Failed to parse draft.');
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Automatically save on any edit to the textareas
+    const textareas = ['doneWell', 'contributions', 'challenges', 'growth'];
+    textareas.forEach(id => {
+      document.getElementById(id).addEventListener('input', saveDraft);
+    });
+
+    // Try to load any existing draft
+    loadDraft();
+  });
+
+  function openClearDraftModal() {
+    document.getElementById('clearDraftModal').style.display = 'flex';
+  }
+
+  function closeClearDraftModal() {
+    document.getElementById('clearDraftModal').style.display = 'none';
+  }
+
+  function executeClearDraft() {
+    // Close modal
+    closeClearDraftModal();
+    
+    // Clear localStorage
+    localStorage.removeItem('selfReview_draft');
+    
+    // Reset inputs
+    document.getElementById('periodFrom').value = '';
+    document.getElementById('periodTo').value = '';
+    document.getElementById('doneWell').value = '';
+    document.getElementById('contributions').value = '';
+    document.getElementById('challenges').value = '';
+    document.getElementById('growth').value = '';
+    
+    // Toggle UI back to starting state
+    document.getElementById('reviewContent').style.display = 'none';
+    document.getElementById('aiSummarySection').style.display = 'block';
+    document.getElementById('aiPlaceholder').style.display = 'flex';
+  }
+
+  function exportPDF() {
+    const fechaInicio = document.getElementById('periodFrom').value;
+    const fechaFin = document.getElementById('periodTo').value;
+
+    if (!fechaInicio || !fechaFin) {
+      alert('Please select a valid period.');
+      return;
+    }
+
+    // Populate hidden form
+    document.getElementById('exportFechaInicio').value = fechaInicio;
+    document.getElementById('exportFechaFin').value = fechaFin;
+    document.getElementById('exportDoneWell').value = document.getElementById('doneWell').value;
+    document.getElementById('exportContributions').value = document.getElementById('contributions').value;
+    document.getElementById('exportChallenges').value = document.getElementById('challenges').value;
+    document.getElementById('exportGrowth').value = document.getElementById('growth').value;
+
+    // Submit form to open PDF in new tab
+    document.getElementById('exportPdfForm').submit();
+  }
+
+  function setDates(shortcut) {
+    const today = new Date();
+    let fromDate, toDate;
+    const year = today.getFullYear();
+
+    const formatDate = (date) => {
+      return date.toISOString().split('T')[0];
+    };
+
+    switch(shortcut) {
+      case 'lastWeek':
+        toDate = new Date(today);
+        fromDate = new Date(today);
+        fromDate.setDate(today.getDate() - 7);
+        break;
+      case 'lastMonth':
+        toDate = new Date(today);
+        fromDate = new Date(today);
+        fromDate.setMonth(today.getMonth() - 1);
+        break;
+      case 'q1':
+        fromDate = new Date(year, 0, 1);
+        toDate = new Date(year, 2, 31);
+        break;
+      case 'q2':
+        fromDate = new Date(year, 3, 1);
+        toDate = new Date(year, 5, 30);
+        break;
+      case 'q3':
+        fromDate = new Date(year, 6, 1);
+        toDate = new Date(year, 8, 30);
+        break;
+      case 'q4':
+        fromDate = new Date(year, 9, 1);
+        toDate = new Date(year, 11, 31);
+        break;
+    }
+
+    if (fromDate && toDate) {
+      document.getElementById('periodFrom').value = formatDate(fromDate);
+      document.getElementById('periodTo').value = formatDate(toDate);
     }
   }
 </script>

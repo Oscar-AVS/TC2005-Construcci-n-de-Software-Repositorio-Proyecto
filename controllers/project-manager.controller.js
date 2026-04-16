@@ -63,6 +63,11 @@ exports.generateSelfReview = async (req, res) => {
   return employeeController.generateSelfReview(req, res);
 };
 
+exports.exportSelfReviewPDF = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.exportSelfReviewPDF(req, res);
+};
+
 exports.getProfile = (req, res) => {
   res.render('shared/profile', {
     title: 'Profile',
