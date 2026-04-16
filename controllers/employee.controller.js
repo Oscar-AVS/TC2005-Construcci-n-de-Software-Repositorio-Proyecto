@@ -12,11 +12,12 @@ const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
   const activeUserId = req.session.userId;
+  const weekOffset = parseInt(req.query.weekOffset) || 0;
 
   try {
-    const [weekRows] = await Log.countByWeek(activeUserId);
+    const [weekRows] = await Log.countByWeek(activeUserId, weekOffset);
     const [todayLogs] = await Log.fetchToday(activeUserId);
-    const [weekLogs] = await Log.fetchByWeek(activeUserId);
+    const [weekLogs] = await Log.fetchByWeek(activeUserId, weekOffset);
     const [[blockerRow]] = await Blocker.countActiveByUser(activeUserId);
 
     const weeklyData = [0, 0, 0, 0, 0];
@@ -44,6 +45,7 @@ exports.getDashboard = async (req, res) => {
       completedToday: todayLogs.length,
       weeklyTotal: weeklyData.reduce((a, b) => a + b, 0),
       activeBlockers: Number(blockerRow.count),
+      weekOffset,
     });
   } catch (err) {
     console.log(err);
@@ -51,7 +53,7 @@ exports.getDashboard = async (req, res) => {
   }
 };
 
-exports.getLog = (req, res) => {
+exports.getLog = async (req, res) => {
   const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
@@ -59,33 +61,41 @@ exports.getLog = (req, res) => {
     date_to: req.query.date_to || null,
   };
 
-  Promise.all([
-    Log.fetchAllByEmployee(activeUserId, filters),
-    Project.fetchAllByEmployee(activeUserId),
-  ])
-    .then(([[logs], [projects]]) => {
-      return Promise.all(
-        logs.map((log) =>
-          Blocker.fetchByLog(log.id_log).then(([blockers]) => ({
-            ...log,
-            blockers,
-          }))
-        )
-      ).then((logsWithBlockers) => {
-        res.render('shared/log', {
-          currentPage: 'log',
-          role: 'employee',
-          logs: logsWithBlockers,
-          projects,
-          filters,
-          csrfToken: req.csrfToken(),
-        });
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Log.countAllByEmployee(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+    const [logs] = await Log.fetchAllByEmployee(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    const logsWithBlockers = await Promise.all(
+      logs.map(async (log) => {
+        const [blockers] = await Blocker.fetchByLog(log.id_log);
+        return { ...log, blockers };
+      })
+    );
+
+    res.render('shared/log', {
+      currentPage: 'log',
+      role: 'employee',
+      logs: logsWithBlockers,
+      projects,
+      filters,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.postLog = (req, res) => {
@@ -171,8 +181,16 @@ exports.deleteLog = (req, res) => {
 
 exports.getAchievements = async (req, res) => {
   const activeUserId = req.session.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   try {
-    const [achievements] = await Achievement.fetchAllByUser(activeUserId);
+    const [[countResult]] = await Achievement.countAllByUser(activeUserId);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId, limit, offset);
     const [projects] = await Project.fetchAllByEmployee(activeUserId);
 
     res.render('employee/achievements', {
@@ -180,6 +198,10 @@ exports.getAchievements = async (req, res) => {
       role: 'employee',
       achievements,
       projects,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
       csrfToken: req.csrfToken(),
     });
   } catch (err) {

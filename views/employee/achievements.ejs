@@ -120,6 +120,21 @@
         <% }) %>
       <% } %>
 
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid #e1e4e8;">
+          <a href="?page=<%= page - 1 %>" 
+             class="btn-draft" <%= !hasPrevPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
+            <i class="fa-solid fa-chevron-left"></i> Previous
+          </a>
+          <span style="color: #5f6b85; font-size: 14px; font-weight: 500;">Page <%= page %> of <%= totalPages %></span>
+          <a href="?page=<%= page + 1 %>" 
+             class="btn-draft" <%= !hasNextPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
+            Next <i class="fa-solid fa-chevron-right"></i>
+          </a>
+        </div>
+      <% } %>
+
     </div>
   </div>
 </div>

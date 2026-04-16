@@ -50,10 +50,19 @@
 
   <div class="media-row single-chart-row">
     <div class="media-card chart-card">
-      <div class="media-card-header">
+      <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
           <p class="media-card-title">Weekly Activity</p>
-          <p class="media-card-sub" id="chartSubtitle">Logs submitted per day this week — click a bar to filter</p>
+          <p class="media-card-sub" id="chartSubtitle">Logs submitted per day <%= weekOffset == 0 ? 'this week' : 'selected week' %> — click a bar to filter</p>
+        </div>
+        <div>
+          <select class="form-select" onchange="window.location.href='?weekOffset='+this.value" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+            <option value="0" <%= weekOffset == 0 ? 'selected' : '' %>>This Week</option>
+            <option value="1" <%= weekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+            <option value="2" <%= weekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+            <option value="3" <%= weekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+            <option value="4" <%= weekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+          </select>
         </div>
       </div>
       <div class="chart-area">

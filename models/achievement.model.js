@@ -6,13 +6,23 @@
 const db = require('../util/database');
 
 module.exports = class Achievement {
-  static fetchAllByUser(id_user) {
+  static countAllByUser(id_user) {
+    return db.execute(
+      `SELECT COUNT(*) as total
+       FROM achievement
+       WHERE id_user = ?`,
+      [id_user]
+    );
+  }
+
+  static fetchAllByUser(id_user, limit = 10, offset = 0) {
     return db.execute(
       `SELECT id_achievement, title, description, created_at, validation_status
        FROM achievement
        WHERE id_user = ?
-       ORDER BY created_at DESC`,
-      [id_user]
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [id_user, limit.toString(), offset.toString()]
     );
   }
 

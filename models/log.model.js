@@ -6,15 +6,11 @@
 const db = require('../util/database');
 
 module.exports = class Log {
-  static fetchAllByEmployee(id_user, filters = {}) {
+  static countAllByEmployee(id_user, filters = {}) {
     let query = `
-      SELECT DISTINCT l.*,
-        GROUP_CONCAT(DISTINCT p.project_name ORDER BY p.project_name SEPARATOR ', ') AS project_names,
-        GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+      SELECT COUNT(DISTINCT l.id_log) as total
       FROM log l
-      JOIN log_project lp ON l.id_log = lp.id_log
-      JOIN project p ON lp.id_project = p.id_project
-      JOIN team t ON lp.id_team = t.id_team
+      LEFT JOIN log_project lp ON l.id_log = lp.id_log
       WHERE l.id_user = ?
     `;
     const params = [id_user];
@@ -34,7 +30,39 @@ module.exports = class Log {
       params.push(filters.date_to);
     }
 
-    query += ' GROUP BY l.id_log ORDER BY l.created_at DESC';
+    return db.execute(query, params);
+  }
+
+  static fetchAllByEmployee(id_user, filters = {}, limit = 10, offset = 0) {
+    let query = `
+      SELECT DISTINCT l.*,
+        GROUP_CONCAT(DISTINCT p.project_name ORDER BY p.project_name SEPARATOR ', ') AS project_names,
+        GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+      FROM log l
+      LEFT JOIN log_project lp ON l.id_log = lp.id_log
+      LEFT JOIN project p ON lp.id_project = p.id_project
+      LEFT JOIN team t ON lp.id_team = t.id_team
+      WHERE l.id_user = ?
+    `;
+    const params = [id_user];
+
+    if (filters.id_project) {
+      query += ' AND lp.id_project = ?';
+      params.push(filters.id_project);
+    }
+
+    if (filters.date_from) {
+      query += ' AND DATE(l.created_at) >= ?';
+      params.push(filters.date_from);
+    }
+
+    if (filters.date_to) {
+      query += ' AND DATE(l.created_at) <= ?';
+      params.push(filters.date_to);
+    }
+
+    query += ' GROUP BY l.id_log ORDER BY l.created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit.toString(), offset.toString());
 
     return db.execute(query, params);
   }
@@ -82,14 +110,14 @@ module.exports = class Log {
     );
   }
 
-  static countByWeek(id_user) {
+  static countByWeek(id_user, weekOffset = 0) {
     return db.execute(
       `SELECT WEEKDAY(created_at) AS weekday, COUNT(*) AS count
        FROM log
        WHERE id_user = ?
-       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        GROUP BY WEEKDAY(created_at)`,
-      [id_user]
+      [id_user, weekOffset.toString()]
     );
   }
 
@@ -103,15 +131,15 @@ module.exports = class Log {
       [id_user]
     );
   }
-  static fetchByWeek(id_user) {
+  static fetchByWeek(id_user, weekOffset = 0) {
     return db.execute(
       `SELECT id_log, completed, planned, created_at,
               WEEKDAY(created_at) AS weekday
        FROM log
        WHERE id_user = ?
-       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+       AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        ORDER BY created_at DESC`,
-      [id_user]
+      [id_user, weekOffset.toString()]
     );
   }
 };
