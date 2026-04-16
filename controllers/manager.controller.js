@@ -293,7 +293,13 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: 'manager',
+    csrfToken: req.csrfToken(),
   });
+};
+
+exports.generateSelfReview = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.generateSelfReview(req, res);
 };
 
 exports.getProfile = (req, res) => {

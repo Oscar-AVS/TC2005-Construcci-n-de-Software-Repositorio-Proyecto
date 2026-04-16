@@ -54,7 +54,13 @@ exports.getSelfReview = (req, res) => {
     title: 'Self Review',
     role: 'project-manager',
     currentPage: 'self-review',
+    csrfToken: req.csrfToken(),
   });
+};
+
+exports.generateSelfReview = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.generateSelfReview(req, res);
 };
 
 exports.getProfile = (req, res) => {

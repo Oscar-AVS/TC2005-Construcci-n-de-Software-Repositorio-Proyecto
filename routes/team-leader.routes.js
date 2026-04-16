@@ -4,9 +4,20 @@
  */
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 const teamLeaderController = require('../controllers/team-leader.controller');
+
+const selfReviewLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'Too many self-review generation requests. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 router.get('/dashboard', teamLeaderController.getDashboard);
 router.get('/log', teamLeaderController.getLog);
@@ -21,6 +32,7 @@ router.post('/achievements/approve', teamLeaderController.approveAchievement);
 router.post('/achievements/reject', teamLeaderController.rejectAchievement);
 router.get('/team-report', teamLeaderController.getTeamReport);
 router.get('/self-review', teamLeaderController.getSelfReview);
+router.get('/self-review/generate', selfReviewLimiter, teamLeaderController.generateSelfReview);
 router.get('/profile', teamLeaderController.getProfile);
 router.post('/profile/slack', teamLeaderController.postSlack);
 router.post('/profile/password', teamLeaderController.postPassword);

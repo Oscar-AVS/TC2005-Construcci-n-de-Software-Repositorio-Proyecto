@@ -179,6 +179,100 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: 'employee',
+    csrfToken: req.csrfToken(),
+  });
+};
+
+exports.generateSelfReview = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const fullName = req.session.fullName;
+  const { fechaInicio, fechaFin } = req.query;
+
+  if (!fechaInicio || !fechaFin) {
+    return res.status(400).json({ error: 'Please select a valid period (From and To).' });
+  }
+
+  if (fechaInicio > fechaFin) {
+    return res.status(400).json({ error: 'Start date cannot be later than end date.' });
+  }
+
+  const { getSelfReviewData } = require('../models/self-review.model');
+  const { generateText, Output } = require('ai');
+  const { openai } = require('@ai-sdk/openai');
+  const { z } = require('zod');
+
+  let data;
+  try {
+    data = await getSelfReviewData(activeUserId, fechaInicio, fechaFin);
+  } catch (err) {
+    console.error('Error fetching self-review data:', err);
+    return res.status(500).json({ error: 'Error fetching your data.' });
+  }
+
+  const logsText = data.logs
+    .map(l => `- [${new Date(l.created_at).toLocaleDateString('en-US')}] Completed: "${l.completed}" / Planned: "${l.planned}" (${l.projects || 'no project'})`)
+    .join('\n') || 'No log entries in this period.';
+
+  const achievementsText = data.achievements
+    .map(a => `- ${a.description}`)
+    .join('\n') || 'No achievements registered.';
+
+  const blockersText = data.blockers
+    .map(b => `- ${b.description} [${b.resolution_status}]`)
+    .join('\n') || 'No blockers in this period.';
+
+  const prompt = `
+You are a career development assistant helping an employee write their self-review.
+Analyze the following data about the employee and generate thoughtful, first-person self-review sections.
+
+EMPLOYEE: ${fullName}
+PERIOD: ${fechaInicio} to ${fechaFin}
+
+LOG ENTRIES (what they worked on daily):
+${logsText}
+
+ACHIEVEMENTS:
+${achievementsText}
+
+BLOCKERS/CHALLENGES FACED:
+${blockersText}
+
+Generate the following sections in first person ("I"), written in a professional but natural tone:
+1. "What I Did Well" — 2-3 sentences highlighting strengths based on the logs and achievements
+2. "My Contributions" — 2-3 sentences about the impact of their work on the team/project
+3. "Challenges I Overcame" — 2-3 sentences about obstacles they faced (from blockers) and how they dealt with them
+4. "Areas for Growth" — 2-3 sentences suggesting areas for improvement based on patterns in their work
+
+Keep each section concise and actionable. Write in English.
+  `.trim();
+
+  const selfReviewSchema = z.object({
+    whatIDidWell: z.string().describe('2-3 sentences about what the employee did well'),
+    myContributions: z.string().describe('2-3 sentences about their contributions'),
+    challengesOvercome: z.string().describe('2-3 sentences about challenges they overcame'),
+    areasForGrowth: z.string().describe('2-3 sentences about areas for improvement'),
+  });
+
+  let aiOutput;
+  try {
+    const { output } = await generateText({
+      model: openai('gpt-4o-mini'),
+      output: Output.object({ schema: selfReviewSchema }),
+      prompt,
+    });
+    aiOutput = output;
+  } catch (err) {
+    console.error('Error calling AI model:', err);
+    return res.status(500).json({ error: 'Error generating AI self-review.' });
+  }
+
+  return res.status(200).json({
+    employee: fullName,
+    period: { from: fechaInicio, to: fechaFin },
+    achievements: data.achievements,
+    projectBreakdown: data.projectBreakdown,
+    totalLogs: data.logs.length,
+    ai: aiOutput,
   });
 };
 

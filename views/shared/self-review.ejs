@@ -18,144 +18,220 @@
         <input type="date" id="periodTo" class="form-input" />
       </div>
 
-      <button class="btn-submit" type="button">Generate Review</button>
+      <button class="btn-generate-ai" type="button" onclick="generateSelfReview()">
+        <i class="fa-solid fa-sparkles"></i>
+        Generate Review
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Self Review Content -->
-<div class="report-card">
-  <div class="report-card-header">
-    <h2>My Self-Review</h2>
+<!-- AI Summary Card -->
+<div class="ai-summary-card">
+  <div class="ai-summary-header">
+    <div class="ai-summary-title">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <span>AI-Powered Self-Review</span>
+    </div>
   </div>
 
-  <div class="report-card-body">
-    <div class="review-grid">
-
-      <!-- Left Column -->
-      <div class="review-column">
-
-        <!-- Achievements -->
-        <div class="review-section">
-          <div class="section-header">
-            <i class="fa-solid fa-trophy"></i>
-            <h3>My Achievements</h3>
-          </div>
-          <p class="section-hint">Pulled from your registered achievements.</p>
-          <ul class="review-achievements">
-            <li>Completed MVC architecture implementation</li>
-            <li>Deployed staging environment</li>
-            <li>Finished employee module with all views</li>
-            <li>Integrated Chart.js for activity visualization</li>
-          </ul>
-        </div>
-
-        <!-- What I Worked On -->
-        <div class="review-section">
-          <div class="section-header">
-            <i class="fa-solid fa-briefcase"></i>
-            <h3>What I Worked On</h3>
-          </div>
-          <p class="section-hint">Summary of your logged activities.</p>
-          <div class="work-breakdown">
-            <div class="work-item">
-              <span class="work-name">Internal Tools</span>
-              <div class="work-bar">
-                <div class="work-fill" style="width: 48%;"></div>
-              </div>
-              <span class="work-count">12 entries</span>
-            </div>
-            <div class="work-item">
-              <span class="work-name">Dashboard Redesign</span>
-              <div class="work-bar">
-                <div class="work-fill" style="width: 32%;"></div>
-              </div>
-              <span class="work-count">8 entries</span>
-            </div>
-            <div class="work-item">
-              <span class="work-name">API Integration</span>
-              <div class="work-bar">
-                <div class="work-fill" style="width: 20%;"></div>
-              </div>
-              <span class="work-count">5 entries</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Right Column -->
-      <div class="review-column">
-
-        <!-- What I Did Well -->
-        <div class="review-section">
-          <div class="section-header">
-            <i class="fa-solid fa-thumbs-up"></i>
-            <h3>What I Did Well</h3>
-          </div>
-          <textarea
-            id="doneWell"
-            rows="4"
-            placeholder="Reflect on what you did well..."
-          >Consistently delivered features on time. Maintained clean code standards and helped teammates with code reviews.</textarea>
-        </div>
-
-        <!-- Contributions -->
-        <div class="review-section">
-          <div class="section-header">
-            <i class="fa-solid fa-hands-helping"></i>
-            <h3>My Contributions</h3>
-          </div>
-          <textarea
-            id="contributions"
-            rows="4"
-            placeholder="How did you contribute to the team?"
-          >Led the frontend architecture decisions. Created reusable components that the team now uses across projects.</textarea>
-        </div>
-
-      </div>
-
+  <div class="ai-summary-body" id="aiSummaryBody">
+    <!-- Placeholder -->
+    <div class="ai-summary-placeholder" id="aiPlaceholder">
+      <i class="fa-solid fa-robot"></i>
+      <p>Select a review period and click "Generate Review" to create an AI-powered self-review based on your logs, achievements, and blockers.</p>
     </div>
 
-    <!-- Full Width Sections -->
-    <div class="review-section full-width">
-      <div class="section-header">
-        <i class="fa-solid fa-mountain"></i>
-        <h3>Challenges I Overcame</h3>
-      </div>
-      <textarea
-        id="challenges"
-        rows="3"
-        placeholder="What obstacles did you face and how did you overcome them?"
-      >Resolved complex state management issues in the dashboard. Learned new Chart.js features under tight deadlines.</textarea>
+    <!-- Loading -->
+    <div class="ai-summary-placeholder" id="aiLoading" style="display:none;">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Analyzing your data and generating self-review, please wait...</p>
     </div>
 
-    <div class="review-section full-width">
-      <div class="section-header">
-        <i class="fa-solid fa-seedling"></i>
-        <h3>Areas for Growth</h3>
-      </div>
-      <textarea
-        id="growth"
-        rows="3"
-        placeholder="What areas would you like to improve?"
-      >Want to improve my backend skills, especially with database optimization. Also planning to learn more about testing strategies.</textarea>
-    </div>
-
-    <!-- Action Row: Export left, Submit right -->
-    <div class="action-row-split">
-      <div class="export-actions">
-        <button class="btn-export-large" type="button">
-          <i class="fa-solid fa-file-pdf"></i> PDF
-        </button>
-        <button class="btn-export-large" type="button">
-          <i class="fa-solid fa-file-excel"></i> Excel
-        </button>
-      </div>
-      <div class="submit-actions">
-        <button class="btn-draft" type="button">Save Draft</button>
-        <button class="btn-submit" type="button">Submit Review</button>
-      </div>
+    <!-- Error -->
+    <div id="reviewError" style="display:none; background: #fee2e2; color: #e74c3c; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 16px; font-size: 14px;">
+      <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+      <span id="reviewErrorText"></span>
     </div>
   </div>
 </div>
+
+<!-- Self Review Content (hidden until generated) -->
+<div id="reviewContent" style="display: none;">
+
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>My Self-Review</h2>
+      <span class="item-count" id="reviewPeriodLabel"></span>
+    </div>
+
+    <div class="report-card-body">
+      <div class="review-grid">
+
+        <!-- Left Column -->
+        <div class="review-column">
+
+          <!-- Achievements (from DB) -->
+          <div class="review-section">
+            <div class="section-header">
+              <i class="fa-solid fa-trophy"></i>
+              <h3>My Achievements</h3>
+            </div>
+            <p class="section-hint">Pulled from your registered achievements.</p>
+            <ul class="review-achievements" id="achievementsList">
+              <li style="color: #9ca3af; font-style: italic;">No achievements in this period.</li>
+            </ul>
+          </div>
+
+          <!-- What I Worked On (from DB) -->
+          <div class="review-section">
+            <div class="section-header">
+              <i class="fa-solid fa-briefcase"></i>
+              <h3>What I Worked On</h3>
+            </div>
+            <p class="section-hint">Summary of your logged activities.</p>
+            <div class="work-breakdown" id="projectBreakdown">
+              <p style="color: #9ca3af; font-style: italic;">No log entries in this period.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="review-column">
+
+          <!-- What I Did Well (AI) -->
+          <div class="review-section">
+            <div class="section-header">
+              <i class="fa-solid fa-thumbs-up"></i>
+              <h3>What I Did Well</h3>
+            </div>
+            <textarea id="doneWell" rows="4" placeholder="AI will generate this section..."></textarea>
+          </div>
+
+          <!-- Contributions (AI) -->
+          <div class="review-section">
+            <div class="section-header">
+              <i class="fa-solid fa-hands-helping"></i>
+              <h3>My Contributions</h3>
+            </div>
+            <textarea id="contributions" rows="4" placeholder="AI will generate this section..."></textarea>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Full Width Sections (AI) -->
+      <div class="review-section full-width">
+        <div class="section-header">
+          <i class="fa-solid fa-mountain"></i>
+          <h3>Challenges I Overcame</h3>
+        </div>
+        <textarea id="challenges" rows="3" placeholder="AI will generate this section..."></textarea>
+      </div>
+
+      <div class="review-section full-width">
+        <div class="section-header">
+          <i class="fa-solid fa-seedling"></i>
+          <h3>Areas for Growth</h3>
+        </div>
+        <textarea id="growth" rows="3" placeholder="AI will generate this section..."></textarea>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  async function generateSelfReview() {
+    const fechaInicio = document.getElementById('periodFrom').value;
+    const fechaFin = document.getElementById('periodTo').value;
+
+    const errorDiv = document.getElementById('reviewError');
+    const errorText = document.getElementById('reviewErrorText');
+    errorDiv.style.display = 'none';
+
+    if (!fechaInicio || !fechaFin) {
+      errorText.textContent = 'Please select a valid period (From and To).';
+      errorDiv.style.display = 'block';
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      return;
+    }
+
+    if (fechaInicio > fechaFin) {
+      errorText.textContent = 'Start date cannot be later than end date.';
+      errorDiv.style.display = 'block';
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      return;
+    }
+
+    // Show loading
+    document.getElementById('aiPlaceholder').style.display = 'none';
+    document.getElementById('aiLoading').style.display = 'flex';
+    document.getElementById('reviewContent').style.display = 'none';
+
+    try {
+      const url = `/<%= role %>/self-review/generate?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        errorText.textContent = data.error || 'Error generating self-review.';
+        errorDiv.style.display = 'block';
+        document.getElementById('aiLoading').style.display = 'none';
+        return;
+      }
+
+      // Period label
+      document.getElementById('reviewPeriodLabel').textContent = `${fechaInicio} — ${fechaFin}`;
+
+      // Achievements
+      const achievementsList = document.getElementById('achievementsList');
+      if (data.achievements && data.achievements.length > 0) {
+        achievementsList.innerHTML = data.achievements
+          .map(a => `<li>${a.description}</li>`)
+          .join('');
+      } else {
+        achievementsList.innerHTML = '<li style="color: #9ca3af; font-style: italic;">No achievements in this period.</li>';
+      }
+
+      // Project breakdown
+      const projectBreakdown = document.getElementById('projectBreakdown');
+      if (data.projectBreakdown && data.projectBreakdown.length > 0) {
+        const maxCount = Math.max(...data.projectBreakdown.map(p => p.log_count));
+        projectBreakdown.innerHTML = data.projectBreakdown.map(p => {
+          const pct = Math.round((p.log_count / maxCount) * 100);
+          return `
+            <div class="work-item">
+              <span class="work-name">${p.project_name}</span>
+              <div class="work-bar">
+                <div class="work-fill" style="width: ${pct}%;"></div>
+              </div>
+              <span class="work-count">${p.log_count} entries</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        projectBreakdown.innerHTML = '<p style="color: #9ca3af; font-style: italic;">No log entries in this period.</p>';
+      }
+
+      // AI sections
+      document.getElementById('doneWell').value = data.ai.whatIDidWell || '';
+      document.getElementById('contributions').value = data.ai.myContributions || '';
+      document.getElementById('challenges').value = data.ai.challengesOvercome || '';
+      document.getElementById('growth').value = data.ai.areasForGrowth || '';
+
+      // Show result
+      document.getElementById('aiLoading').style.display = 'none';
+      document.getElementById('reviewContent').style.display = 'block';
+
+    } catch (err) {
+      console.error('Error generating self-review:', err);
+      errorText.textContent = 'Unexpected error. Please try again.';
+      errorDiv.style.display = 'block';
+      document.getElementById('aiLoading').style.display = 'none';
+    }
+  }
+</script>
