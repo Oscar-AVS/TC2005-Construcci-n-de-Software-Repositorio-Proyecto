@@ -38,11 +38,15 @@ module.exports = class User {
   static fetchAll() {
     return db.execute(
       `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active, u.status,
-        r.role_name AS role, ur.id_role
+        r.role_name AS role, ur.id_role,
+        GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR '||') AS team
        FROM user u
        LEFT JOIN user_role ur ON u.id_user = ur.id_user
        LEFT JOIN role r ON ur.id_role = r.id_role
+       LEFT JOIN user_team ut ON u.id_user = ut.id_user
+       LEFT JOIN team t ON ut.id_team = t.id_team
        WHERE u.status != 'pending'
+       GROUP BY u.id_user, u.full_name, u.email, u.username, u.is_active, u.status, r.role_name, ur.id_role
        ORDER BY u.id_user DESC`
     );
   }

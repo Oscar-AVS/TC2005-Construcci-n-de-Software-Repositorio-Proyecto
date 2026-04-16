@@ -80,6 +80,28 @@
               </div>
             </div>
 
+            <div style="padding: 0 16px; margin-bottom: 12px;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fa-solid fa-users" style="margin-right: 4px;"></i>
+                Members (<%= team.members.length %>)
+              </p>
+              <% if (team.members.length > 0) { %>
+                <% team.members.forEach(m => { %>
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12px; flex-shrink: 0;">
+                      <%= m.full_name.charAt(0).toUpperCase() %>
+                    </div>
+                    <div style="min-width: 0;">
+                      <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1f2a44; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= m.full_name %></p>
+                      <p style="margin: 0; font-size: 11px; color: #5f6b85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= m.email %></p>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <p style="color: #9ca3af; font-size: 13px; font-style: italic; margin: 0;">No members assigned.</p>
+              <% } %>
+            </div>
+
             <div class="team-card-footer">
               <span class="team-stat">
                 <i class="fa-solid fa-calendar"></i> <%= team.created_at ? new Date(team.created_at).toLocaleDateString('en-GB') : '—' %>

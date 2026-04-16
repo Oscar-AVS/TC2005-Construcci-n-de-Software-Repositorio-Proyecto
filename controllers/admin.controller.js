@@ -135,8 +135,32 @@ exports.editUser = async (req, res) => {
 
 exports.getTeams = async (req, res) => {
   try {
-    const [teams] = await Team.fetchAll();
+    const [rows] = await Team.fetchAll();
     const [users] = await User.fetchAll();
+
+    const teamsMap = {};
+    rows.forEach(row => {
+      if (!teamsMap[row.id_team]) {
+        teamsMap[row.id_team] = {
+          id_team: row.id_team,
+          team_name: row.team_name,
+          description: row.description,
+          created_at: row.created_at,
+          leader_id: row.leader_id,
+          leader_name: row.leader_name,
+          members: [],
+        };
+      }
+      if (row.member_name) {
+        teamsMap[row.id_team].members.push({
+          full_name: row.member_name,
+          email: row.member_email,
+        });
+      }
+    });
+
+    const teams = Object.values(teamsMap);
+
     res.render('admin/teams', {
       currentPage: 'teams',
       role: 'admin',

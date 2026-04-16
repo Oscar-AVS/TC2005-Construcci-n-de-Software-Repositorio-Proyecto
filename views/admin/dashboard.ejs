@@ -80,19 +80,9 @@
       </div>
       <div class="report-card-body">
         <div class="recent-users-list">
-          <%
-            const avatarColors = {
-              'admin': '#e74c3c',
-              'manager': '#9b59b6',
-              'team-leader': '#3498db',
-              'employee': '#27ae60',
-              'project-manager': '#f39c12'
-            };
-          %>
           <% recentUsers.forEach(u => { %>
-            <% const avatarColor = avatarColors[u.role_name] || '#95a5a6'; %>
             <div class="recent-user-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: <%= avatarColor %>; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0;">
                 <%= u.full_name.charAt(0).toUpperCase() %>
               </div>
               <div style="flex: 1;">
