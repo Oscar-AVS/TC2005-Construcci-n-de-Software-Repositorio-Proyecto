@@ -136,6 +136,17 @@ exports.getSignup = (req, res) => {
 exports.postSignup = (req, res) => {
   const { full_name, email, password } = req.body;
 
+  const trimmedName = full_name ? full_name.trim() : '';
+  if (!trimmedName) {
+    return res.render('auth/signup', { layout: false, error: 'Full name is required.', success: '', csrfToken: req.csrfToken() });
+  }
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(trimmedName)) {
+    return res.render('auth/signup', { layout: false, error: 'Full name must contain letters only, no numbers.', success: '', csrfToken: req.csrfToken() });
+  }
+  if (trimmedName.split(' ').filter(w => w).length < 2) {
+    return res.render('auth/signup', { layout: false, error: 'Please enter first and last name.', success: '', csrfToken: req.csrfToken() });
+  }
+
   bcrypt.hash(password, 12)
     .then((hashedPassword) => {
       return User.createPending(full_name, email, email, hashedPassword);

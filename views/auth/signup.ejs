@@ -51,7 +51,7 @@
 
             <p id="signupError" class="lf-error" aria-live="polite"><%= typeof error !== 'undefined' ? error : '' %></p>
 
-            <button id="signupBtn" class="btn-login" type="submit">
+            <button id="signupBtn" class="btn-login" type="button" onclick="validateSignup()">
               <span>Create Account</span>
               <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
             </button>
@@ -67,6 +67,24 @@
     </div>
 
     <script>
+      function validateSignup() {
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPass').value.trim();
+        const errorEl = document.getElementById('signupError');
+
+        errorEl.textContent = '';
+
+        if (!fullName) { errorEl.textContent = 'Full name is required.'; return; }
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(fullName)) { errorEl.textContent = 'Full name must contain letters only, no numbers.'; return; }
+        if (fullName.split(' ').filter(w => w).length < 2) { errorEl.textContent = 'Please enter first and last name.'; return; }
+        if (!email) { errorEl.textContent = 'Email is required.'; return; }
+        if (!email.includes('@')) { errorEl.textContent = 'Please enter a valid email address.'; return; }
+        if (!password) { errorEl.textContent = 'Password is required.'; return; }
+
+        document.querySelector('.login-form').submit();
+      }
+
       const passwordInput = document.getElementById('signupPass');
       const toggleBtn = document.getElementById('togglePass');
       const eyeIcon = document.getElementById('eyeIcon');
