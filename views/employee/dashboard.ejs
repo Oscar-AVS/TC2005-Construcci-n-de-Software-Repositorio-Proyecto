@@ -4,19 +4,21 @@
   window.personalWeeklyData = <%- JSON.stringify(weeklyData) %>;
   window.logsByDay = <%- JSON.stringify(logsByDay) %>;
   window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
+  window.orgWeeklyData = <%- JSON.stringify(orgWeeklyData) %>;
+  window.orgLogsByDay = <%- JSON.stringify(orgLogsByDay) %>;
 </script>
 
 <div class="view-mode-toggle">
-  <button type="button" class="view-mode-btn active" data-view="personal">
+  <button type="button" class="view-mode-btn <%= activeView === 'personal' ? 'active' : '' %>" data-view="personal">
     <i class="fa-solid fa-user"></i> Personal
   </button>
-  <button type="button" class="view-mode-btn" data-view="organization">
+  <button type="button" class="view-mode-btn <%= activeView === 'organization' ? 'active' : '' %>" data-view="organization">
     <i class="fa-solid fa-building"></i> Organization
   </button>
 </div>
 
 <!-- PERSONAL VIEW -->
-<div class="activity-view active" id="view-personal">
+<div class="activity-view <%= activeView === 'personal' ? 'active' : '' %>" id="view-personal">
 
   <div class="stats-row">
     <div class="stat-card">
@@ -56,7 +58,7 @@
           <p class="media-card-sub" id="chartSubtitle">Logs submitted per day <%= weekOffset == 0 ? 'this week' : 'selected week' %> — click a bar to filter</p>
         </div>
         <div>
-          <select class="form-select" onchange="window.location.href='?weekOffset='+this.value" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+          <select class="form-select" onchange="window.location.href='?weekOffset='+this.value+'&orgWeekOffset=<%= orgWeekOffset %>&view=personal'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
             <option value="0" <%= weekOffset == 0 ? 'selected' : '' %>>This Week</option>
             <option value="1" <%= weekOffset == 1 ? 'selected' : '' %>>Last Week</option>
             <option value="2" <%= weekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
@@ -109,7 +111,7 @@
 </div>
 
 <!-- ORGANIZATION VIEW -->
-<div class="activity-view" id="view-organization">
+<div class="activity-view <%= activeView === 'organization' ? 'active' : '' %>" id="view-organization">
 
   <div class="stats-row">
     <div class="stat-card">
@@ -117,7 +119,7 @@
         <i class="fa-solid fa-users"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">42</p>
+        <p class="stat-value"><%= orgActiveUsers %></p>
         <p class="stat-label">Active employees</p>
       </div>
     </div>
@@ -126,7 +128,7 @@
         <i class="fa-solid fa-clipboard-list"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">156</p>
+        <p class="stat-value"><%= orgTodayLogsCount %></p>
         <p class="stat-label">Logs today</p>
       </div>
     </div>
@@ -135,7 +137,7 @@
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">8</p>
+        <p class="stat-value"><%= orgActiveBlockers %></p>
         <p class="stat-label">Active blockers</p>
       </div>
     </div>
@@ -143,10 +145,19 @@
 
   <div class="media-row single-chart-row">
     <div class="media-card chart-card">
-      <div class="media-card-header">
+      <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
           <p class="media-card-title">Organization Activity</p>
-          <p class="media-card-sub">Organization-wide activities per day</p>
+          <p class="media-card-sub">Organization-wide activities per day <%= orgWeekOffset == 0 ? 'this week' : 'that week' %></p>
+        </div>
+        <div>
+          <select class="form-select" onchange="window.location.href='?weekOffset=<%= weekOffset %>&orgWeekOffset='+this.value+'&view=organization'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+            <option value="0" <%= orgWeekOffset == 0 ? 'selected' : '' %>>This Week</option>
+            <option value="1" <%= orgWeekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+            <option value="2" <%= orgWeekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+            <option value="3" <%= orgWeekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+            <option value="4" <%= orgWeekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+          </select>
         </div>
       </div>
       <div class="chart-area">

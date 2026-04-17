@@ -51,4 +51,12 @@ module.exports = class Blocker {
       [id_user]
     );
   }
+
+  static countAllActive() {
+    return db.execute(
+      `SELECT COUNT(*) AS count
+       FROM blocker
+       WHERE resolution_status = 'pending'`
+    );
+  }
 };

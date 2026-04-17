@@ -13,11 +13,11 @@ const ChartModule = (() => {
   let personalChart = null;
   let selectedDay = null;
 
-  const buildBarColors = (data, selected) =>
+  const buildBarColors = (data, selected, baseColor, activeColor) =>
     data.map((_, i) => {
-      if (selected !== null) return i === selected ? '#f05a28' : '#f4c5b3';
+      if (selected !== null) return i === selected ? activeColor : baseColor;
       const today = Math.min(window.todayWeekday, 4);
-      return i === today ? '#f05a28' : '#f4c5b3';
+      return i === today ? activeColor : baseColor;
     });
 
   const renderActivities = (dayIndex) => {
@@ -72,13 +72,14 @@ const ChartModule = (() => {
       renderActivities(clickedIndex);
     }
 
-    personalChart.data.datasets[0].backgroundColor = buildBarColors(personalChart.data.datasets[0].data, selectedDay);
+    personalChart.data.datasets[0].backgroundColor = buildBarColors(personalChart.data.datasets[0].data, selectedDay, '#f4c5b3', '#f05a28');
     personalChart.update();
   };
 
   const init = () => {
     const personalData = (window.personalWeeklyData || [0, 0, 0, 0, 0]).slice(0, 5);
     const personalMax = Math.max(...personalData, 4);
+    const organizationData = (window.orgWeeklyData || [0, 0, 0, 0, 0]).slice(0, 5);
     const orgMax = Math.max(...organizationData, 10);
 
     const personalCanvas = byId('personalActivityChart');
@@ -89,7 +90,7 @@ const ChartModule = (() => {
           labels: dayLabels,
           datasets: [{
             data: personalData,
-            backgroundColor: buildBarColors(personalData, null),
+            backgroundColor: buildBarColors(personalData, null, '#f4c5b3', '#f05a28'),
             borderRadius: 8,
             borderSkipped: false,
           }],
@@ -133,7 +134,7 @@ const ChartModule = (() => {
           labels: dayLabels,
           datasets: [{
             data: organizationData,
-            backgroundColor: buildBarColors(organizationData, null),
+            backgroundColor: buildBarColors(organizationData, null, '#bfdbfe', '#3b82f6'),
             borderRadius: 8,
             borderSkipped: false,
           }],

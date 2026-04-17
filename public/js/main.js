@@ -12,16 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const hasViewToggle = document.querySelector('.view-mode-toggle');
 
-  if (byId('activityChart') && !hasViewToggle) {
-    const weeklyData = [3, 5, 4, 7, 6, 2, 4];
-    ChartModule.init(weeklyData);
-  }
-
-  if (hasViewToggle && typeof ChartModule !== 'undefined') {
-    ChartModule.init();
-  }
-
-  if (typeof TabsModule !== 'undefined' && (document.querySelector('.dashboard-tabs') || hasViewToggle)) {
+  if (hasViewToggle && typeof TabsModule !== 'undefined') {
     TabsModule.init();
+  } else if (byId('activityChart') || byId('personalActivityChart') || byId('orgActivityChart')) {
+    if (typeof ChartModule !== 'undefined') {
+      // For pages without tabs but with a chart, use ChartModule
+      ChartModule.init();
+    }
   }
 });

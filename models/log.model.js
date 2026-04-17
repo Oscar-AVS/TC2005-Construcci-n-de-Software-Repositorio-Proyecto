@@ -142,4 +142,53 @@ module.exports = class Log {
       [id_user, weekOffset.toString()]
     );
   }
+
+  // ── Organization-wide queries ──
+
+  static countByWeekAll(weekOffset = 0) {
+    return db.execute(
+      `SELECT WEEKDAY(created_at) AS weekday, COUNT(*) AS count
+       FROM log
+       WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
+       GROUP BY WEEKDAY(created_at)`,
+      [weekOffset.toString()]
+    );
+  }
+
+  static countTodayAll() {
+    return db.execute(
+      `SELECT COUNT(*) AS count FROM log WHERE DATE(created_at) = CURDATE()`
+    );
+  }
+
+  static fetchTodayAll() {
+    return db.execute(
+      `SELECT l.id_log, l.completed, l.created_at, u.full_name,
+              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+       FROM log l
+       JOIN user u ON l.id_user = u.id_user
+       LEFT JOIN log_project lp ON l.id_log = lp.id_log
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       WHERE DATE(l.created_at) = CURDATE()
+       GROUP BY l.id_log
+       ORDER BY l.created_at DESC
+       LIMIT 30`
+    );
+  }
+
+  static fetchByWeekAll(weekOffset = 0) {
+    return db.execute(
+      `SELECT l.id_log, l.completed, l.created_at, u.full_name,
+              WEEKDAY(l.created_at) AS weekday,
+              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+       FROM log l
+       JOIN user u ON l.id_user = u.id_user
+       LEFT JOIN log_project lp ON l.id_log = lp.id_log
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       WHERE YEARWEEK(l.created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
+       GROUP BY l.id_log
+       ORDER BY l.created_at DESC`,
+       [weekOffset.toString()]
+    );
+  }
 };

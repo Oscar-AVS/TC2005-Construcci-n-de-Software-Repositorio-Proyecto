@@ -141,4 +141,10 @@ module.exports = class User {
       [hashedPassword, id_user]
     );
   }
+
+  static countActive() {
+    return db.execute(
+      `SELECT COUNT(*) AS count FROM user WHERE is_active = 1 AND status = 'active'`
+    );
+  }
 };

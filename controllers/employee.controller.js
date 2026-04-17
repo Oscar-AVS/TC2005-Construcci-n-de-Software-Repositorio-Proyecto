@@ -13,6 +13,8 @@ const bcrypt = require('bcrypt');
 exports.getDashboard = async (req, res) => {
   const activeUserId = req.session.userId;
   const weekOffset = parseInt(req.query.weekOffset) || 0;
+  const orgWeekOffset = parseInt(req.query.orgWeekOffset) || 0;
+  const activeView = req.query.view || 'personal';
 
   try {
     const [weekRows] = await Log.countByWeek(activeUserId, weekOffset);
@@ -20,9 +22,21 @@ exports.getDashboard = async (req, res) => {
     const [weekLogs] = await Log.fetchByWeek(activeUserId, weekOffset);
     const [[blockerRow]] = await Blocker.countActiveByUser(activeUserId);
 
+    // Organization data
+    const [[orgActiveUsers]] = await User.countActive();
+    const [[orgTodayLogsCount]] = await Log.countTodayAll();
+    const [[orgActiveBlockers]] = await Blocker.countAllActive();
+    const [orgWeekRows] = await Log.countByWeekAll(orgWeekOffset);
+    const [orgWeekLogs] = await Log.fetchByWeekAll(orgWeekOffset);
+
     const weeklyData = [0, 0, 0, 0, 0];
     weekRows.forEach((row) => {
       if (row.weekday <= 4) weeklyData[row.weekday] = Number(row.count);
+    });
+
+    const orgWeeklyData = [0, 0, 0, 0, 0];
+    orgWeekRows.forEach((row) => {
+      if (row.weekday <= 4) orgWeeklyData[row.weekday] = Number(row.count);
     });
 
     const logsByDay = [[], [], [], [], []];
@@ -36,6 +50,17 @@ exports.getDashboard = async (req, res) => {
       }
     });
 
+    const orgLogsByDay = [[], [], [], [], [], [], []];
+    orgWeekLogs.forEach((log) => {
+      orgLogsByDay[log.weekday].push({
+        id_log: log.id_log,
+        full_name: log.full_name,
+        completed: log.completed,
+        created_at: log.created_at,
+        team_names: log.team_names,
+      });
+    });
+
     res.render('employee/dashboard', {
       currentPage: 'dashboard',
       role: 'employee',
@@ -46,6 +71,14 @@ exports.getDashboard = async (req, res) => {
       weeklyTotal: weeklyData.reduce((a, b) => a + b, 0),
       activeBlockers: Number(blockerRow.count),
       weekOffset,
+      orgWeekOffset,
+      activeView,
+      // Org vars
+      orgActiveUsers: Number(orgActiveUsers.count),
+      orgTodayLogsCount: Number(orgTodayLogsCount.count),
+      orgActiveBlockers: Number(orgActiveBlockers.count),
+      orgWeeklyData,
+      orgLogsByDay,
     });
   } catch (err) {
     console.log(err);

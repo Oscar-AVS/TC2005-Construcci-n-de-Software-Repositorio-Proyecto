@@ -6,8 +6,8 @@ const TabsModule = (() => {
 
   const byId = (id) => document.getElementById(id);
 
-  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
   // Personal activities by day (0 = Monday, 6 = Sunday)
   const activitiesByDay = {
@@ -172,28 +172,31 @@ const TabsModule = (() => {
 
   const buildBarColors = (data, selectedIndex, baseColor, accentColor) =>
     data.map((_, index) => {
-      if (selectedIndex !== null && index === selectedIndex) return accentColor;
-      if (index === data.length - 1 && selectedIndex === null) return accentColor;
-      return baseColor;
+      if (selectedIndex !== null) return index === selectedIndex ? accentColor : baseColor;
+      const today = Math.min(window.todayWeekday !== undefined ? window.todayWeekday : 0, 4);
+      return index === today ? accentColor : baseColor;
     });
 
   const buildOrgBarColors = (data, selectedIndex) =>
     data.map((_, index) => {
-      if (selectedIndex !== null && index === selectedIndex) return '#3b82f6';
-      return '#93c5fd';
+      if (selectedIndex !== null) return index === selectedIndex ? '#3b82f6' : '#93c5fd';
+      const today = Math.min(window.todayWeekday !== undefined ? window.todayWeekday : 0, 4);
+      return index === today ? '#3b82f6' : '#93c5fd';
     });
 
   const renderActivities = (dayIndex) => {
-    const activities = activitiesByDay[dayIndex] || [];
     const list = byId('personalActivityList');
-    const titleEl = byId('personalActivitiesTitle');
-    const dateEl = byId('personalActivitiesDate');
+    const titleEl = byId('personalActivitiesTitle') || byId('activitiesTitle');
+    const dateEl = byId('personalActivitiesDate') || byId('activitiesDate');
+    const countEl = byId('loggedCount');
     const completedEl = byId('personalCompletedCount');
     const pendingEl = byId('personalPendingCount');
     const statCompleted = byId('statCompletedPersonal');
     const statPending = byId('statPendingPersonal');
 
     if (!list) return;
+
+    const logs = (window.logsByDay && window.logsByDay[dayIndex]) || [];
 
     if (titleEl) {
       titleEl.textContent = selectedDayIndex !== null
@@ -203,23 +206,24 @@ const TabsModule = (() => {
     if (dateEl) {
       dateEl.textContent = getDateForDay(dayIndex);
     }
+    if (countEl) countEl.textContent = logs.length;
 
-    list.innerHTML = activities
-      .map(
-        (activity, index) => `
-        <li class="activity-item${activity.completed ? ' completed' : ''}">
-          <label class="activity-check">
-            <input type="checkbox" data-day="${dayIndex}" data-index="${index}"${activity.completed ? ' checked' : ''} />
-            <span class="checkmark"></span>
-          </label>
-          <span class="activity-text">${activity.text}</span>
+    if (logs.length > 0) {
+      list.innerHTML = logs.map(
+        (log) => `
+        <li class="activity-item">
+          <span class="activity-text">${log.completed}</span>
         </li>
       `
-      )
-      .join('');
+      ).join('');
+    } else {
+      list.innerHTML = `<li class="activity-item">
+           <span class="activity-text" style="color: var(--text-muted);">No activities logged on ${dayNames[dayIndex]}.</span>
+         </li>`;
+    }
 
-    const completed = activities.filter((a) => a.completed).length;
-    const pending = activities.length - completed;
+    const completed = logs.length;
+    const pending = 0; // Assuming all logged are completed for now
 
     if (completedEl) completedEl.textContent = completed;
     if (pendingEl) pendingEl.textContent = pending;
@@ -228,7 +232,6 @@ const TabsModule = (() => {
   };
 
   const renderOrgActivities = (dayIndex) => {
-    const dayData = orgActivitiesByDay[dayIndex] || {};
     const feed = byId('teamActivityFeed');
     const titleEl = byId('orgFeedTitle');
     const dateEl = byId('orgFeedDate');
@@ -250,33 +253,67 @@ const TabsModule = (() => {
     }
 
     let html = '';
-    const teams = ['mufasa', 'phoenix', 'delta'];
+    
+    // Group window.orgLogsByDay[dayIndex] by team
+    const logs = (window.orgLogsByDay && window.orgLogsByDay[dayIndex]) || [];
+    const groupedData = {};
+    logs.forEach(log => {
+      // If no team, we can put them in an "Other" category or just skip.
+      // Based on SQL query, `team_names` can be a comma string. Let's pick the first one, or "Other Team".
+      const teamNamesArr = log.team_names ? log.team_names.split(', ') : ['Unassigned'];
+      teamNamesArr.forEach(teamName => {
+        if (!groupedData[teamName]) {
+          groupedData[teamName] = { name: teamName, project: 'General', items: [] };
+        }
+        groupedData[teamName].items.push({
+          author: log.full_name,
+          desc: log.completed,
+          time: new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          blocker: false // Assuming false for logs without block info retrieved.
+        });
+      });
+    });
 
-    teams.forEach(teamKey => {
-      const activities = dayData[teamKey] || [];
-      const meta = teamMeta[teamKey];
-      const isHidden = selectedTeam && selectedTeam !== teamKey;
-      const hasActivities = activities.length > 0;
-
-      if (isHidden) return;
-
-      html += `
-        <div class="team-activity-group" data-team="${teamKey}">
-          <div class="team-activity-header">
-            <h3 class="team-name">
-              <i class="fa-solid fa-people-group"></i> ${meta.name}
-            </h3>
-            <span class="team-project">${meta.project}</span>
-          </div>
+    if (logs.length === 0 || Object.keys(groupedData).length === 0) {
+      html = `
+        <div class="team-activity-group">
           <ul class="team-activity-list">
+            <li class="team-activity-item empty">
+              <p class="no-activity-text">No activities found for this selection</p>
+            </li>
+          </ul>
+        </div>
       `;
+    } else {
+      Object.keys(groupedData).forEach(teamKey => {
+        const teamObj = groupedData[teamKey];
+        // Ensure team match logic does not hide blindly
+        const isHidden = selectedTeam !== '' && 
+                         !teamKey.toLowerCase().includes(selectedTeam.toLowerCase());
+        
+        if (isHidden) return;
 
-      if (hasActivities) {
-        activities.forEach(act => {
+        html += `
+          <div class="team-activity-group" data-team="${teamKey}">
+            <div class="team-activity-header">
+              <h3 class="team-name">
+                <i class="fa-solid fa-people-group"></i> ${teamObj.name}
+              </h3>
+              <span class="team-project">${teamObj.project}</span>
+            </div>
+            <ul class="team-activity-list">
+        `;
+
+        teamObj.items.forEach(act => {
           const isBlocker = act.blocker === true;
+          const authorName = act.author || 'User';
+          const initial = authorName.charAt(0).toUpperCase();
+
           html += `
             <li class="team-activity-item${isBlocker ? ' blocker' : ''}">
-              <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="${act.author}" class="activity-avatar" />
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: #bfdbfe; display: flex; align-items: center; justify-content: center; color: #1e3a8a; font-weight: 700; font-size: 14px; flex-shrink: 0; margin-right: 12px;">
+                ${initial}
+              </div>
               <div class="activity-details">
                 <p class="activity-author">${act.author}</p>
                 <p class="activity-desc">${isBlocker ? '<i class="fa-solid fa-triangle-exclamation"></i> ' : ''}${act.desc}</p>
@@ -285,19 +322,13 @@ const TabsModule = (() => {
             </li>
           `;
         });
-      } else {
-        html += `
-          <li class="team-activity-item empty">
-            <p class="no-activity-text">No activity this day</p>
-          </li>
-        `;
-      }
 
-      html += `
-          </ul>
-        </div>
-      `;
-    });
+        html += `
+            </ul>
+          </div>
+        `;
+      });
+    }
 
     feed.innerHTML = html;
   };
@@ -369,7 +400,8 @@ const TabsModule = (() => {
     if (!canvas || typeof Chart === 'undefined') return;
     if (personalChart) personalChart.destroy();
 
-    const data = [3, 4, 4, 7, 5, 1, 4];
+    const data = (window.personalWeeklyData || [0, 0, 0, 0, 0]).slice(0, 5);
+    const personalMax = Math.max(...data, 4);
 
     personalChart = new Chart(canvas, {
       type: 'bar',
@@ -391,7 +423,7 @@ const TabsModule = (() => {
           tooltip: {
             callbacks: {
               title: (context) => dayNames[context[0].dataIndex],
-              label: (context) => `${context.raw} tasks`,
+              label: (context) => `${context.raw} logs`,
             },
           },
         },
@@ -403,9 +435,9 @@ const TabsModule = (() => {
           },
           y: {
             beginAtZero: true,
-            max: 10,
+            max: personalMax,
             border: { display: false },
-            ticks: { stepSize: 2, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
+            ticks: { stepSize: 1, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
             grid: { color: '#f1f2f4' },
           },
         },
@@ -413,7 +445,7 @@ const TabsModule = (() => {
     });
 
     selectedDayIndex = null;
-    renderActivities(6);
+    renderActivities(Math.min(window.todayWeekday !== undefined ? window.todayWeekday : 6, 4));
   };
 
   const initOrgChart = () => {
@@ -421,7 +453,8 @@ const TabsModule = (() => {
     if (!canvas || typeof Chart === 'undefined') return;
     if (orgChart) orgChart.destroy();
 
-    const data = [18, 24, 20, 32, 28, 12, 35];
+    const data = (window.orgWeeklyData || [0, 0, 0, 0, 0]).slice(0, 5);
+    const orgMax = Math.max(...data, 10);
 
     orgChart = new Chart(canvas, {
       type: 'bar',
@@ -443,7 +476,7 @@ const TabsModule = (() => {
           tooltip: {
             callbacks: {
               title: (context) => dayNames[context[0].dataIndex],
-              label: (context) => `${context.raw} logs`,
+              label: (context) => `${context.raw} activities`,
             },
           },
         },
@@ -455,9 +488,9 @@ const TabsModule = (() => {
           },
           y: {
             beginAtZero: true,
-            max: 40,
+            max: orgMax,
             border: { display: false },
-            ticks: { stepSize: 10, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
+            ticks: { stepSize: 1, color: '#9ca3af', font: { family: 'DM Sans', size: 11 } },
             grid: { color: '#f1f2f4' },
           },
         },
@@ -465,7 +498,7 @@ const TabsModule = (() => {
     });
 
     selectedOrgDayIndex = null;
-    renderOrgActivities(6);
+    renderOrgActivities(Math.min(window.todayWeekday !== undefined ? window.todayWeekday : 6, 4));
   };
 
   const switchTab = (tabId) => {
@@ -483,6 +516,10 @@ const TabsModule = (() => {
   };
 
   const switchView = (viewId) => {
+    const url = new URL(window.location);
+    url.searchParams.set('view', viewId);
+    window.history.pushState({}, '', url);
+
     document.querySelectorAll('.view-mode-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.view === viewId);
     });
@@ -530,7 +567,13 @@ const TabsModule = (() => {
     const hasViewToggle = document.querySelector('.view-mode-toggle');
     
     if (!hasTabs && hasViewToggle) {
-      setTimeout(initPersonalChart, 100);
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeView = urlParams.get('view') || 'personal';
+      if (activeView === 'organization') {
+        setTimeout(initOrgChart, 100);
+      } else {
+        setTimeout(initPersonalChart, 100);
+      }
     }
   };
 
