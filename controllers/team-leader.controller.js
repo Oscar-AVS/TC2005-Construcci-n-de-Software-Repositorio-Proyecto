@@ -15,53 +15,195 @@ exports.getDashboard = async (req, res) => {
   try {
     const teamId = req.session.teamId;
 
-    const [pendingBlockers] = await db.query(
-      `
-      SELECT
-        b.id_blocker,
-        b.description,
-        b.resolution_status,
-        l.created_at,
-        u.full_name,
-        u.avatar,
-        p.project_name
-      FROM blocker b
-      INNER JOIN log l ON b.id_log = l.id_log
-      INNER JOIN user u ON l.id_user = u.id_user
-      INNER JOIN log_project lp ON l.id_log = lp.id_log
-      INNER JOIN project p ON lp.id_project = p.id_project
-      WHERE lp.id_team = ?
-        AND b.resolution_status = 'pending'
-      ORDER BY l.created_at DESC
-      `,
-      [teamId]
-    );
+    if (!teamId) {
+      return res.redirect('/login?error=access_denied');
+    }
 
-    const [pendingAchievements] = await db.query(
-      `
-      SELECT
-        a.id_achievement,
-        a.description,
-        a.created_at,
-        a.validation_status,
-        u.id_user,
-        u.full_name,
-        u.avatar
-      FROM achievement a
-      INNER JOIN user u ON a.id_user = u.id_user
-      INNER JOIN user_team ut ON u.id_user = ut.id_user
-      WHERE ut.id_team = ?
-        AND a.validation_status = 'pending'
-      ORDER BY a.created_at DESC
-      `,
-      [teamId]
-    );
+    const [
+      [[{ totalMembers }]],
+      [[{ entriesThisWeek }]],
+      [[{ totalAchievements }]],
+      [[{ totalBlockers }]],
+      [teamMembersOverview],
+      [pendingBlockers],
+      [pendingAchievements],
+      [recentActivity],
+    ] = await Promise.all([
+      db.query(
+        `SELECT COUNT(*) AS totalMembers
+         FROM user_team
+         WHERE id_team = ?`,
+        [teamId]
+      ),
+
+      db.query(
+        `SELECT COUNT(DISTINCT l.id_log) AS entriesThisWeek
+         FROM log l
+         INNER JOIN log_project lp ON l.id_log = lp.id_log
+         WHERE lp.id_team = ?
+           AND YEARWEEK(DATE(l.created_at), 1) = YEARWEEK(CURDATE(), 1)`,
+        [teamId]
+      ),
+
+      db.query(
+        `SELECT COUNT(*) AS totalAchievements
+         FROM achievement a
+         INNER JOIN user_team ut ON a.id_user = ut.id_user
+         WHERE ut.id_team = ?
+           AND a.validation_status = 'approved'`,
+        [teamId]
+      ),
+
+      db.query(
+        `SELECT COUNT(*) AS totalBlockers
+         FROM blocker b
+         INNER JOIN log l ON b.id_log = l.id_log
+         INNER JOIN log_project lp ON l.id_log = lp.id_log
+         WHERE lp.id_team = ?
+           AND b.resolution_status = 'pending'`,
+        [teamId]
+      ),
+
+      db.query(
+        `SELECT
+          u.id_user,
+          u.full_name,
+          u.email,
+          u.avatar,
+          COALESCE(entries.entries_this_week, 0) AS entries_this_week,
+          CASE
+            WHEN COALESCE(blockers.pending_blockers, 0) > 0 THEN 'Blocked'
+            ELSE 'On Track'
+          END AS member_status
+         FROM user_team ut
+         INNER JOIN user u ON ut.id_user = u.id_user
+         LEFT JOIN (
+           SELECT
+             l.id_user,
+             COUNT(DISTINCT l.id_log) AS entries_this_week
+           FROM log l
+           INNER JOIN log_project lp ON l.id_log = lp.id_log
+           WHERE lp.id_team = ?
+             AND YEARWEEK(DATE(l.created_at), 1) = YEARWEEK(CURDATE(), 1)
+           GROUP BY l.id_user
+         ) entries ON u.id_user = entries.id_user
+         LEFT JOIN (
+           SELECT
+             l.id_user,
+             COUNT(DISTINCT b.id_blocker) AS pending_blockers
+           FROM blocker b
+           INNER JOIN log l ON b.id_log = l.id_log
+           INNER JOIN log_project lp ON l.id_log = lp.id_log
+           WHERE lp.id_team = ?
+             AND b.resolution_status = 'pending'
+           GROUP BY l.id_user
+         ) blockers ON u.id_user = blockers.id_user
+         WHERE ut.id_team = ?
+         ORDER BY u.full_name ASC`,
+        [teamId, teamId, teamId]
+      ),
+
+      db.query(
+        `
+        SELECT
+          b.id_blocker,
+          b.description,
+          b.resolution_status,
+          l.created_at,
+          u.full_name,
+          u.avatar,
+          p.project_name
+        FROM blocker b
+        INNER JOIN log l ON b.id_log = l.id_log
+        INNER JOIN user u ON l.id_user = u.id_user
+        INNER JOIN log_project lp ON l.id_log = lp.id_log
+        INNER JOIN project p ON lp.id_project = p.id_project
+        WHERE lp.id_team = ?
+          AND b.resolution_status = 'pending'
+        ORDER BY l.created_at DESC
+        `,
+        [teamId]
+      ),
+
+      db.query(
+        `
+        SELECT
+          a.id_achievement,
+          a.description,
+          a.created_at,
+          a.validation_status,
+          u.id_user,
+          u.full_name,
+          u.avatar
+        FROM achievement a
+        INNER JOIN user u ON a.id_user = u.id_user
+        INNER JOIN user_team ut ON u.id_user = ut.id_user
+        WHERE ut.id_team = ?
+          AND a.validation_status = 'pending'
+        ORDER BY a.created_at DESC
+        `,
+        [teamId]
+      ),
+
+      db.query(
+        `SELECT activity_type, full_name, project_name, activity_date
+         FROM (
+           SELECT
+             'log' AS activity_type,
+             u.full_name,
+             p.project_name,
+             l.created_at AS activity_date
+           FROM log l
+           INNER JOIN user u ON l.id_user = u.id_user
+           INNER JOIN log_project lp ON l.id_log = lp.id_log
+           INNER JOIN project p ON lp.id_project = p.id_project
+           WHERE lp.id_team = ?
+
+           UNION ALL
+
+           SELECT
+             'blocker' AS activity_type,
+             u.full_name,
+             p.project_name,
+             l.created_at AS activity_date
+           FROM blocker b
+           INNER JOIN log l ON b.id_log = l.id_log
+           INNER JOIN user u ON l.id_user = u.id_user
+           INNER JOIN log_project lp ON l.id_log = lp.id_log
+           INNER JOIN project p ON lp.id_project = p.id_project
+           WHERE lp.id_team = ?
+
+           UNION ALL
+
+           SELECT
+             'achievement' AS activity_type,
+             u.full_name,
+             NULL AS project_name,
+             a.created_at AS activity_date
+           FROM achievement a
+           INNER JOIN user u ON a.id_user = u.id_user
+           INNER JOIN user_team ut ON u.id_user = ut.id_user
+           WHERE ut.id_team = ?
+         ) feed
+         ORDER BY activity_date DESC
+         LIMIT 5`,
+        [teamId, teamId, teamId]
+      ),
+    ]);
 
     res.render('team-leader/dashboard', {
       currentPage: 'dashboard',
       role: 'team-leader',
+      summary: {
+        totalMembers,
+        entriesThisWeek,
+        totalAchievements,
+        totalBlockers,
+      },
+      teamMembersOverview,
       pendingBlockers,
       pendingAchievements,
+      recentActivity,
       csrfToken: req.csrfToken(),
     });
   } catch (error) {

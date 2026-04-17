@@ -72,7 +72,14 @@ exports.postLogin = (req, res) => {
 
               if (role === 'team-leader') {
                 return User.fetchTeamByLeader(user.id_user).then(([teams]) => {
+                  console.log('LOGIN DEBUG - user.id_user:', user.id_user);
+                  console.log('LOGIN DEBUG - role:', role);
+                  console.log('LOGIN DEBUG - teams:', teams);
+
                   req.session.teamId = teams.length > 0 ? teams[0].id_team : null;
+
+                  console.log('LOGIN DEBUG - req.session.teamId:', req.session.teamId);
+
                   return saveAndRedirect(req, res, role, rememberMe);
                 });
               }
@@ -102,6 +109,13 @@ function saveAndRedirect(req, res, role, rememberMe) {
   } else {
     req.session.cookie.maxAge = 1000 * 60 * 60 * 24;
   }
+
+  console.log('SESSION BEFORE SAVE:', {
+    userId: req.session.userId,
+    role: req.session.role,
+    fullName: req.session.fullName,
+    teamId: req.session.teamId,
+  });
 
   return new Promise((resolve, reject) => {
     req.session.save((err) => {
