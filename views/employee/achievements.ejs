@@ -87,9 +87,6 @@
             <div class="achievement-content">
               <div class="achievement-header">
                 <h3 class="achievement-title"><%= a.title || a.description %></h3>
-                <span class="achievement-date">
-                  <%= new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
-                </span>
               </div>
               <% if (a.description) { %>
                 <p class="achievement-desc" style="margin: 4px 0 0; font-size: 13px; color: #5f6b85;"><%= a.description %></p>
@@ -109,13 +106,20 @@
                 </span>
               </div>
             </div>
-            <% if (a.validation_status === 'pending') { %>
-              <div class="achievement-actions">
-                <button class="btn-icon btn-delete" type="button" title="Delete" onclick="deleteAchievement(<%= a.id_achievement %>)">
+              <div class="achievement-actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                <span class="achievement-date" style="font-size: 13px; color: #94a3b8;">
+                  <%= new Date(a.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </span>
+                <div style="display: flex; gap: 6px;">
+                <!-- Use a specific date string representation for the date input -->
+                <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= a.id_achievement %>, '<%= (a.title || '').replace(/'/g, "\\'") %>', '<%= (a.description || '').replace(/'/g, "\\'") %>', '<%= new Date(a.created_at).toISOString().split('T')[0] %>')">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn-icon btn-delete" type="button" title="Delete" onclick="openDeleteModal(<%= a.id_achievement %>)">
                   <i class="fa-solid fa-trash"></i>
                 </button>
+                </div>
               </div>
-            <% } %>
           </div>
         <% }) %>
       <% } %>
@@ -139,6 +143,48 @@
   </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <div class="modal-header" style="justify-content: center; border: none;">
+      <h2 style="margin-bottom: 0;">Delete Achievement</h2>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">Are you sure you want to delete this achievement? This action cannot be undone.</p>
+    <div class="action-row" style="justify-content: center; gap: 16px;">
+      <button type="button" class="btn-draft" onclick="closeDeleteModal()">Cancel</button>
+      <button type="button" class="btn-submit" style="background: #dc2626;" onclick="executeDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Achievement Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2>Edit Achievement</h2>
+    </div>
+    
+    <div class="form-row-grid" style="margin-top: 16px;">
+      <div class="form-field">
+        <label class="form-label" for="editAchievementTitle">Title</label>
+        <input type="text" id="editAchievementTitle" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="editAchievementDate">Date</label>
+        <input type="date" id="editAchievementDate" class="form-input" />
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="editAchievementDesc">Description</label>
+      <textarea id="editAchievementDesc" rows="3" class="form-input" style="width: 100%; border: 1px solid #e1e4e8; border-radius: 8px; padding: 12px; font-family: inherit; font-size: 14px;"></textarea>
+    </div>
+
+    <div class="action-row" style="justify-content: flex-end; gap: 16px; margin-top: 24px;">
+      <button type="button" class="btn-draft" onclick="closeEditModal()">Cancel</button>
+      <button type="button" class="btn-submit" onclick="executeEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
 <script>
   const csrfToken = '<%= csrfToken %>';
 
@@ -197,28 +243,104 @@
     }
   }
 
-  async function deleteAchievement(id) {
-    if (!confirm('Delete this achievement?')) return;
+  let currentDeleteId = null;
+
+  function openDeleteModal(id) {
+    currentDeleteId = id;
+    document.getElementById('deleteModal').classList.add('active');
+  }
+
+  function closeDeleteModal() {
+    currentDeleteId = null;
+    document.getElementById('deleteModal').classList.remove('active');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const dm = document.getElementById('deleteModal');
+    if (dm) {
+      dm.addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+      });
+    }
+    const em = document.getElementById('editModal');
+    if (em) {
+      em.addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+      });
+    }
+  });
+
+  let currentEditId = null;
+
+  function openEditModal(id, title, desc, date) {
+    currentEditId = id;
+    document.getElementById('editAchievementTitle').value = title;
+    document.getElementById('editAchievementDesc').value = desc;
+    document.getElementById('editAchievementDate').value = date;
+    document.getElementById('editModal').classList.add('active');
+  }
+
+  function closeEditModal() {
+    currentEditId = null;
+    document.getElementById('editModal').classList.remove('active');
+  }
+
+  async function executeEdit() {
+    if (!currentEditId) return;
+
+    const title = document.getElementById('editAchievementTitle').value.trim();
+    const description = document.getElementById('editAchievementDesc').value.trim();
+    const created_at = document.getElementById('editAchievementDate').value;
+
+    if (!title) { showMsg('Please enter a title.', 'error'); return; }
+    if (!created_at) { showMsg('Please select a date.', 'error'); return; }
+
+    try {
+      const res = await fetch('/employee/achievements/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id_achievement: currentEditId, title, description, created_at, _csrf: csrfToken }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showMsg('Achievement updated.', 'success');
+        setTimeout(() => window.location.reload(), 1000); // the easiest way to reflect changes fast
+      } else {
+        showMsg(data.message || 'Cannot edit this achievement.', 'error');
+        closeEditModal();
+      }
+    } catch (err) {
+      showMsg('Unexpected error.', 'error');
+      closeEditModal();
+    }
+  }
+
+  async function executeDelete() {
+    if (!currentDeleteId) return;
 
     try {
       const res = await fetch('/employee/achievements/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ id_achievement: id, _csrf: csrfToken }),
+        body: new URLSearchParams({ id_achievement: currentDeleteId, _csrf: csrfToken }),
       });
       const data = await res.json();
 
       if (res.ok) {
-        document.getElementById(`achievement-${id}`)?.remove();
         showMsg('Achievement deleted.', 'success');
+        document.getElementById('achievement-' + currentDeleteId).remove();
         const countEl = document.getElementById('achievementCount');
         const current = parseInt(countEl.textContent) - 1;
         countEl.textContent = `${current} total`;
+        closeDeleteModal();
       } else {
         showMsg(data.message || 'Cannot delete this achievement.', 'error');
+        closeDeleteModal();
       }
     } catch (err) {
-      showMsg('Unexpected error. Please try again.', 'error');
+      showMsg('Unexpected error.', 'error');
+      closeDeleteModal();
     }
   }
 </script>

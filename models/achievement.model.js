@@ -35,11 +35,19 @@ module.exports = class Achievement {
   }
 
   static delete(id_achievement, id_user) {
-    // Only allow deleting own pending achievements
     return db.execute(
       `DELETE FROM achievement
-       WHERE id_achievement = ? AND id_user = ? AND validation_status = 'pending'`,
+       WHERE id_achievement = ? AND id_user = ?`,
       [id_achievement, id_user]
+    );
+  }
+
+  static update(id_achievement, id_user, title, description, created_at) {
+    return db.execute(
+      `UPDATE achievement
+       SET title = ?, description = ?, created_at = ?
+       WHERE id_achievement = ? AND id_user = ?`,
+      [title, description || '', created_at, id_achievement, id_user]
     );
   }
 };

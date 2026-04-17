@@ -297,6 +297,26 @@ exports.deleteAchievement = async (req, res) => {
   }
 };
 
+exports.editAchievement = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id_achievement, title, description, created_at } = req.body;
+
+  if (!title || !created_at) {
+    return res.status(400).json({ success: false, message: 'Title and date are required.' });
+  }
+
+  try {
+    const [result] = await Achievement.update(id_achievement, activeUserId, title, description, created_at);
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ success: false, message: 'Cannot edit this achievement.' });
+    }
+    return res.status(200).json({ success: true, message: 'Achievement updated.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
 exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',

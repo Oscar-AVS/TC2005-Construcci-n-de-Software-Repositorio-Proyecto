@@ -27,6 +27,7 @@ router.post('/log/delete', employeeController.deleteLog);
 router.get('/achievements', employeeController.getAchievements);
 router.post('/achievements', employeeController.postAchievement);
 router.post('/achievements/delete', employeeController.deleteAchievement);
+router.post('/achievements/edit', employeeController.editAchievement);
 router.get('/self-review', employeeController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, employeeController.generateSelfReview);
 router.post('/self-review/export-pdf', selfReviewLimiter, employeeController.exportSelfReviewPDF);
