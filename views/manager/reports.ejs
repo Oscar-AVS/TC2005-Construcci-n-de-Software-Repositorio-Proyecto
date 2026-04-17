@@ -98,153 +98,10 @@
     </div>
 
 
+
     <script>
-    let aiSummaryGenerated = false;
+  let aiSummaryGenerated = false;
 
-        function showReportMessage(message, type = 'info') {
-          const messageBox = document.getElementById('reportMessage');
-          messageBox.textContent = message;
-          messageBox.className = `report-message ${type}`;
-          messageBox.style.display = 'block';
-        }
-
-        function hideReportMessage() {
-          const messageBox = document.getElementById('reportMessage');
-          messageBox.textContent = '';
-          messageBox.className = 'report-message';
-          messageBox.style.display = 'none';
-        }
-
-        function generateReport() {
-        const idEquipo = document.getElementById('reportTeam').value;
-        const fechaInicio = document.getElementById('reportFrom').value;
-        const fechaFin = document.getElementById('reportTo').value;
-
-        if (!idEquipo) {
-          showReportMessage('Please select a team.', 'error');
-          return;
-        }
-
-        if (!fechaInicio || !fechaFin) {
-          showReportMessage('Please select a valid period (From and To).', 'error');
-          return;
-        }
-
-        if (fechaInicio > fechaFin) {
-          showReportMessage('Start date cannot be later than end date.', 'error');
-          return;
-        }
-
-        showReportMessage('Report generated successfully. Ready to export.', 'success');
-      }
-
-      async function generateSummary() {
-        const idEquipo = document.getElementById('reportTeam').value;
-        const fechaInicio = document.getElementById('reportFrom').value;
-        const fechaFin = document.getElementById('reportTo').value;
-        const idProyecto = '1';
-
-        if (!idEquipo) {
-          showReportMessage('Please select a team.', 'error');
-          return;
-        }
-        if (!fechaInicio || !fechaFin) {
-          showReportMessage('Please select a valid period (From and To).', 'error');
-          return;
-        }
-        if (fechaInicio > fechaFin) {
-          showReportMessage('Start date cannot be later than end date.', 'error');
-          return;
-        }
-
-        hideReportMessage();
-
-        document.getElementById('aiPlaceholder').style.display = 'none';
-        document.getElementById('aiResult').style.display = 'none';
-        document.getElementById('aiLoading').style.display = 'flex';
-
-        try {
-          const url = `/manager/reports/ai-summary?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
-          const response = await fetch(url);
-          const data = await response.json();
-
-          if (!response.ok) {
-            showReportMessage(data.error || 'Error generating summary.', 'error');
-            document.getElementById('aiLoading').style.display = 'none';
-            document.getElementById('aiPlaceholder').style.display = 'flex';
-            return;
-          }
-
-          document.getElementById('aiOverall').textContent = data.summary.overallAssessment;
-
-          const highlightsList = document.getElementById('aiHighlights');
-          highlightsList.innerHTML = '';
-          data.summary.highlights.forEach((item) => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            highlightsList.appendChild(li);
-          });
-
-          const risksList = document.getElementById('aiRisks');
-          risksList.innerHTML = '';
-          data.summary.risks.forEach((item) => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            risksList.appendChild(li);
-          });
-
-          const recommendationsList = document.getElementById('aiRecommendations');
-          recommendationsList.innerHTML = '';
-          data.summary.recommendations.forEach((item) => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            recommendationsList.appendChild(li);
-          });
-
-          document.getElementById('aiLoading').style.display = 'none';
-          showReportMessage('AI summary generated successfully.', 'success');
-          document.getElementById('aiResult').style.display = 'block';
-        } catch (err) {
-          console.error('Error generating summary:', err);
-          showReportMessage('Unexpected error. Please try again.', 'error');
-          document.getElementById('aiLoading').style.display = 'none';
-          document.getElementById('aiPlaceholder').style.display = 'flex';
-        }
-      }
-
-      function exportPDF() {
-          const idEquipo = document.getElementById('reportTeam').value;
-          const fechaInicio = document.getElementById('reportFrom').value;
-          const fechaFin = document.getElementById('reportTo').value;
-          const idProyecto = '1';
-
-          if (!idEquipo) {
-            showReportMessage('Please select a team.', 'error');
-            return;
-          }
-
-          if (!fechaInicio || !fechaFin) {
-            showReportMessage('Please select a valid period (From and To).', 'error');
-            return;
-          }
-
-          if (fechaInicio > fechaFin) {
-            showReportMessage('Start date cannot be later than end date.', 'error');
-            return;
-          }
-
-          if (!aiSummaryGenerated) {
-  showReportMessage('No AI summary generated yet. Please generate the summary before exporting the PDF.', 'error');
-  return;
-}
-
-          showReportMessage('Exporting PDF report...', 'info');
-
-          
-
-          const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
-          window.location.href = url;
-        }     
   function showReportMessage(message, type = 'info') {
     const messageBox = document.getElementById('reportMessage');
     messageBox.textContent = message;
@@ -292,16 +149,19 @@
       showReportMessage('Please select a team.', 'error');
       return;
     }
+
     if (!fechaInicio || !fechaFin) {
       showReportMessage('Please select a valid period (From and To).', 'error');
       return;
     }
+
     if (fechaInicio > fechaFin) {
       showReportMessage('Start date cannot be later than end date.', 'error');
       return;
     }
 
     hideReportMessage();
+    aiSummaryGenerated = false;
 
     document.getElementById('aiPlaceholder').style.display = 'none';
     document.getElementById('aiResult').style.display = 'none';
@@ -346,9 +206,10 @@
       });
 
       document.getElementById('aiLoading').style.display = 'none';
-      aiSummaryGenerated = true;
-      showReportMessage('AI summary generated successfully.', 'success');
       document.getElementById('aiResult').style.display = 'block';
+      aiSummaryGenerated = true;
+
+      showReportMessage('AI summary generated successfully.', 'success');
     } catch (err) {
       console.error('Error generating summary:', err);
       showReportMessage('Unexpected error. Please try again.', 'error');
@@ -378,6 +239,11 @@
       return;
     }
 
+    if (!aiSummaryGenerated) {
+      showReportMessage('No AI summary generated yet. Please generate the summary before exporting the PDF.', 'error');
+      return;
+    }
+
     showReportMessage('Exporting PDF report...', 'info');
 
     const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
@@ -385,34 +251,39 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const reportTeam = document.getElementById('reportTeam');
-    const generateButton = document.getElementById('generateReportBtn');
     const quarterSelect = document.getElementById('quarterSelect');
     const reportFrom = document.getElementById('reportFrom');
     const reportTo = document.getElementById('reportTo');
+    const reportTeam = document.getElementById('reportTeam');
 
     function resetSummaryState() {
-  aiSummaryGenerated = false;
-}
+      aiSummaryGenerated = false;
+      document.getElementById('aiResult').style.display = 'none';
+      document.getElementById('aiLoading').style.display = 'none';
+      document.getElementById('aiPlaceholder').style.display = 'flex';
+      hideReportMessage();
+    }
 
-if (quarterSelect) {
-  quarterSelect.addEventListener('change', resetSummaryState);
-}
+    if (quarterSelect) {
+      quarterSelect.addEventListener('change', resetSummaryState);
+    }
 
-if (reportFrom) {
-  reportFrom.addEventListener('change', resetSummaryState);
-}
+    if (reportFrom) {
+      reportFrom.addEventListener('change', () => {
+        quarterSelect.value = '';
+        resetSummaryState();
+      });
+    }
 
-if (reportTo) {
-  reportTo.addEventListener('change', resetSummaryState);
-}
+    if (reportTo) {
+      reportTo.addEventListener('change', () => {
+        quarterSelect.value = '';
+        resetSummaryState();
+      });
+    }
 
-if (reportTeam) {
-  reportTeam.addEventListener('change', resetSummaryState);
-}
-
-    if (generateButton) {
-      generateButton.addEventListener('click', generateReport);
+    if (reportTeam) {
+      reportTeam.addEventListener('change', resetSummaryState);
     }
 
     if (quarterSelect && reportFrom && reportTo) {
@@ -424,72 +295,63 @@ if (reportTeam) {
         let endDate = '';
 
         switch (selectedQuarter) {
-  case 'LAST_WEEK': {
-    const today = new Date();
-    const lastWeek = new Date();
+          case 'LAST_WEEK': {
+            const today = new Date();
+            const lastWeek = new Date();
+            lastWeek.setDate(today.getDate() - 7);
 
-    lastWeek.setDate(today.getDate() - 7);
+            startDate = lastWeek.toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            break;
+          }
 
-    startDate = lastWeek.toISOString().split('T')[0];
-    endDate = today.toISOString().split('T')[0];
-    break;
-  }
+          case 'LAST_MONTH': {
+            const today = new Date();
 
-  case 'LAST_MONTH': {
-    const today = new Date();
+            const firstDayLastMonth = new Date(
+              today.getFullYear(),
+              today.getMonth() - 1,
+              1
+            );
 
-    const firstDayLastMonth = new Date(
-      today.getFullYear(),
-      today.getMonth() - 1,
-      1
-    );
+            const lastDayLastMonth = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              0
+            );
 
-    const lastDayLastMonth = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      0
-    );
+            startDate = firstDayLastMonth.toISOString().split('T')[0];
+            endDate = lastDayLastMonth.toISOString().split('T')[0];
+            break;
+          }
 
-    startDate = firstDayLastMonth.toISOString().split('T')[0];
-    endDate = lastDayLastMonth.toISOString().split('T')[0];
-    break;
-  }
+          case 'Q1':
+            startDate = `${year}-01-01`;
+            endDate = `${year}-03-31`;
+            break;
 
-  case 'Q1':
-    startDate = `${year}-01-01`;
-    endDate = `${year}-03-31`;
-    break;
+          case 'Q2':
+            startDate = `${year}-04-01`;
+            endDate = `${year}-06-30`;
+            break;
 
-  case 'Q2':
-    startDate = `${year}-04-01`;
-    endDate = `${year}-06-30`;
-    break;
+          case 'Q3':
+            startDate = `${year}-07-01`;
+            endDate = `${year}-09-30`;
+            break;
 
-  case 'Q3':
-    startDate = `${year}-07-01`;
-    endDate = `${year}-09-30`;
-    break;
+          case 'Q4':
+            startDate = `${year}-10-01`;
+            endDate = `${year}-12-31`;
+            break;
 
-  case 'Q4':
-    startDate = `${year}-10-01`;
-    endDate = `${year}-12-31`;
-    break;
-
-  default:
-    startDate = '';
-    endDate = '';
-}
+          default:
+            startDate = '';
+            endDate = '';
+        }
 
         reportFrom.value = startDate;
         reportTo.value = endDate;
-      });
-
-      reportFrom.addEventListener('change', () => {
-        quarterSelect.value = '';
-      });
-
-      reportTo.addEventListener('change', () => {
-        quarterSelect.value = '';
       });
     }
   });
