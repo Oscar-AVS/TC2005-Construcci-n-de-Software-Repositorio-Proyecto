@@ -142,6 +142,7 @@ exports.getLog = async (req, res) => {
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
       csrfToken: req.csrfToken(),
+      successMessage: req.query.success === 'true' ? 'Log entry created successfully!' : null,
     });
   } catch (err) {
     console.log(err);
@@ -173,7 +174,7 @@ exports.postLog = (req, res) => {
         });
       });
     })
-    .then(() => res.redirect('/employee/log'))
+    .then(() => res.redirect('/employee/log?success=true'))
     .catch((err) => {
       console.log(err);
       res.status(500).send('Internal Server Error');

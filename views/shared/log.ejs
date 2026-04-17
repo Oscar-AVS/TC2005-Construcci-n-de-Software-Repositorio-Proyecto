@@ -1,5 +1,40 @@
 <h1 id="pageTitle" class="page-title">My Activity Log</h1>
 
+<% if (successMessage) { %>
+  <div id="toastSuccess" class="toast-notification">
+    <i class="fa-solid fa-circle-check"></i> <%= successMessage %>
+  </div>
+  <style>
+    .toast-notification {
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-weight: 500;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      animation: slideDown 0.3s ease-out forwards;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+  <script>
+    setTimeout(() => {
+      const t = document.getElementById('toastSuccess');
+      if (t) {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
 <!-- Daily Report Form -->
 <div class="report-card">
   <div class="report-card-header">
