@@ -124,3 +124,41 @@ exports.postPassword = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+exports.getProjects = async (req, res) => {
+  try {
+    const [projects] = await Project.fetchAll();
+    res.render('project-manager/projects', {
+      title: 'Projects',
+      role: 'project-manager',
+      currentPage: 'projects',
+      projects,
+      error: req.query.error || '',
+      success: req.query.success || '',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.getProjectDetail = async (req, res) => {
+  try {
+    const [[project]] = await Project.fetchOne(req.params.id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+
+    res.render('project-manager/project-detail', {
+      title: project.project_name,
+      role: 'project-manager',
+      currentPage: 'projects',
+      project,
+      error: req.query.error || '',
+      success: req.query.success || '',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
