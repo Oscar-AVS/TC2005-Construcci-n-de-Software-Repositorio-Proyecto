@@ -6,4 +6,32 @@ const db = require('../util/database');
 
 module.exports = class Project {
 
+  static fetchAll() {
+    return db.execute(
+      `SELECT p.*, t.team_name
+       FROM project p
+       LEFT JOIN user_assignment ua ON p.id_project = ua.id_project
+       LEFT JOIN team t ON ua.id_team = t.id_team
+       GROUP BY p.id_project`
+    );
+  }
+
+  static fetchAllByEmployee(id_user) {
+    return db.execute(
+      `SELECT p.*, t.team_name, ua.id_team
+       FROM project p
+       JOIN user_assignment ua ON p.id_project = ua.id_project
+       JOIN team t ON ua.id_team = t.id_team
+       WHERE ua.id_user = ?`,
+      [id_user]
+    );
+  }
+
+  static fetchOne(id_project) {
+    return db.execute(
+      `SELECT * FROM project WHERE id_project = ?`,
+      [id_project]
+    );
+  }
+
 };
