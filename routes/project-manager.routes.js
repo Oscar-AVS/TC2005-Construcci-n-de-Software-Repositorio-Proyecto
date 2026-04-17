@@ -19,3 +19,6 @@ router.post('/profile/password', pmController.postPassword);
 // Proyectos
 router.get('/projects',         pmController.getProjects);
 router.get('/project/:id',      pmController.getProjectDetail);
+
+router.post('/projects/create',     pmController.postCreateProject);  // 4.1
+router.post('/projects/:id/delete', pmController.postDeleteProject);  // 4.3
