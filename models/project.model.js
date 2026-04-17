@@ -65,4 +65,18 @@ module.exports = class Project {
     );
   }
 
+  static delete(id_project) {
+    return db.execute(
+      `DELETE FROM project WHERE id_project = ?`,
+      [id_project]
+    );
+  }
+  
+  static updateDates(id_project, start_date, end_date) {
+    return db.execute(
+      `UPDATE project SET start_date = ?, end_date = ? WHERE id_project = ?`,
+      [start_date, end_date, id_project]
+    );
+  }
+
 };
