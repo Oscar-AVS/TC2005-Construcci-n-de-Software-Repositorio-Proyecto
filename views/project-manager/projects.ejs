@@ -162,3 +162,57 @@
     </form>
   </div>
  </div>
+
+ <script>
+  // Filtros en tiempo real
+  const searchInput  = document.getElementById('searchInput');
+  const statusFilter = document.getElementById('statusFilter');
+  const cards        = document.querySelectorAll('.project-card');
+ 
+  function filterCards() {
+    const query  = searchInput.value.toLowerCase().trim();
+    const status = statusFilter.value;
+    cards.forEach(card => {
+      const nameMatch   = card.dataset.name.includes(query);
+      const statusMatch = !status || card.dataset.status === status;
+      card.style.display = (nameMatch && statusMatch) ? '' : 'none';
+    });
+  }
+  searchInput.addEventListener('input', filterCards);
+  statusFilter.addEventListener('change', filterCards);
+ 
+  // Modal helpers — igual que en log.ejs
+  function openModal(modal)  { modal.classList.add('active'); }
+  function closeModal(modal) { modal.classList.remove('active'); }
+ 
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this);
+    });
+  });
+ 
+  // Modal Alta (4.1)
+  const modalCreate = document.getElementById('modalCreateProject');
+  document.getElementById('btnNewProject').addEventListener('click', () => openModal(modalCreate));
+  document.getElementById('btnCloseCreate').addEventListener('click', () => closeModal(modalCreate));
+  document.getElementById('btnCancelCreate').addEventListener('click', () => closeModal(modalCreate));
+ 
+  // Modal Eliminar (4.3)
+  const modalDelete     = document.getElementById('modalDeleteProject');
+  const formDelete      = document.getElementById('formDeleteProject');
+  const deleteNameLabel = document.getElementById('deleteProjectName');
+ 
+  document.querySelectorAll('.btn-delete-project').forEach(btn => {
+    btn.addEventListener('click', () => {
+      deleteNameLabel.textContent = btn.dataset.name;
+      formDelete.action = `/project-manager/projects/${btn.dataset.id}/delete`;
+      openModal(modalDelete);
+    });
+  });
+  document.getElementById('btnCancelDelete').addEventListener('click', () => closeModal(modalDelete));
+ 
+  // Auto-dismiss alerts
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => el.style.display = 'none', 4000);
+  });
+ </script>
