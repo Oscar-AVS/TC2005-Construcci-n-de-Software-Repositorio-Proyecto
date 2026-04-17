@@ -287,14 +287,22 @@
     try {
       const payload = getGoalPayload(saveMode);
 
-      const response = await fetch('/manager/goals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify(payload),
-      });
+
+
+  const endpoint = isEditMode
+  ? `/manager/goals/${editingGoalId}`
+  : '/manager/goals';
+
+  const method = isEditMode ? 'PUT' : 'POST';
+
+  const response = await fetch(endpoint, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken,
+    },
+    body: JSON.stringify(payload),
+  });
 
       const data = await response.json();
 
@@ -347,12 +355,18 @@
   const validateForm = (mode) => {
     let isValid = true;
 
-    [titleInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
+    [titleInput, descriptionInput, priorityInput, statusInput, startDateInput, endDateInput].forEach(clearInvalid);
 
     if (!titleInput.value.trim()) {
       markInvalid(titleInput);
       showFormMessage('Title is required.', 'error');
       isValid = false;
+    }
+
+    if (!descriptionInput.value.trim()) {
+    markInvalid(descriptionInput);
+    showFormMessage('Description is required.', 'error');
+    isValid = false;
     }
 
     if (mode === 'final') {

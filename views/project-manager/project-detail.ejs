@@ -4,19 +4,43 @@
   </a>
 </div>
 
-<h1 id="pageTitle" class="page-title">Internal Tools</h1>
+<h1 id="pageTitle" class="page-title"><%= project.project_name %></h1>
+
+<% if (success) { %>
+  <div class="alert alert-success">
+    <i class="fa-solid fa-circle-check"></i> <%= success %>
+  </div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error">
+    <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
+  </div>
+<% } %>
 
 <!-- Project Header -->
 <div class="project-detail-header">
   <div class="project-detail-info">
-    <span class="project-status active">Active</span>
+    <span class="project-status <%= project.status %>"><%= project.status %></span>
     <div class="project-dates-inline">
-      <span><i class="fa-solid fa-calendar-plus"></i> Started: Feb 15, 2026</span>
-      <span><i class="fa-solid fa-calendar-check"></i> Due: Mar 30, 2026</span>
+      <span>
+        <i class="fa-solid fa-calendar-plus"></i>
+        Started: <%= project.start_date
+          ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Not set' %>
+      </span>
+      <span>
+        <i class="fa-solid fa-calendar-check"></i>
+        Due: <%= project.end_date
+          ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Not set' %>
+      </span>
     </div>
   </div>
   <div class="project-detail-actions">
-    <button class="btn-draft" type="button">
+    <button class="btn-draft" type="button" id="btnEditDates">
+      <i class="fa-solid fa-calendar-days"></i> Set Dates
+    </button>
+    <button class="btn-draft" type="button" id="btnEditProject">
       <i class="fa-solid fa-pen"></i> Edit Project
     </button>
     <button class="btn-submit" type="button">
@@ -32,95 +56,29 @@
   </div>
   <div class="report-card-body">
     <p class="project-description">
-      Building internal productivity tools for the engineering team including dashboards and automation scripts. 
-      This project aims to reduce manual work by 40% and improve team visibility into ongoing tasks.
+      <%= project.description || 'This project has no description yet.' %>
     </p>
   </div>
 </div>
 
-<!-- Two Column Layout -->
+<!-- Two Column -->
 <div class="project-detail-grid">
-  <!-- Team Members -->
   <div class="report-card">
     <div class="report-card-header">
       <h2>Team Members</h2>
-      <span class="item-count">4 members</span>
     </div>
-
     <div class="report-card-body">
-      <div class="team-members-list">
-        <div class="team-member-row">
-          <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" class="member-avatar" />
-          <div class="member-info">
-            <p class="member-name">Francisco Arreola</p>
-            <p class="member-role">Full Stack Developer</p>
-          </div>
-          <button class="btn-icon-small" title="Remove">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-
-        <div class="team-member-row">
-          <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez" class="member-avatar" />
-          <div class="member-info">
-            <p class="member-name">Lakshmi Martinez Jara</p>
-            <p class="member-role">UI/UX Designer</p>
-          </div>
-          <button class="btn-icon-small" title="Remove">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-
-        <div class="team-member-row">
-          <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" class="member-avatar" />
-          <div class="member-info">
-            <p class="member-name">Oscar Vilchis</p>
-            <p class="member-role">Backend Developer</p>
-          </div>
-          <button class="btn-icon-small" title="Remove">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-
-        <div class="team-member-row">
-          <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Víctor Esquivel" class="member-avatar" />
-          <div class="member-info">
-            <p class="member-name">Víctor Esquivel</p>
-            <p class="member-role">DevOps Engineer</p>
-          </div>
-          <button class="btn-icon-small" title="Remove">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-      </div>
+      <p style="color: var(--text-secondary); font-size: 14px;">No members assigned yet.</p>
     </div>
   </div>
 
-  <!-- Blockers -->
   <div class="report-card">
     <div class="report-card-header">
       <h2>Active Blockers</h2>
-      <span class="item-count">1 blocker</span>
+      <span class="item-count">0 blockers</span>
     </div>
-
     <div class="report-card-body">
-      <div class="blockers-list">
-        <div class="blocker-item medium">
-          <div class="blocker-priority">
-            <i class="fa-solid fa-circle-exclamation"></i>
-          </div>
-          <div class="blocker-content">
-            <p class="blocker-title">Design specs incomplete for mobile views</p>
-            <div class="blocker-meta">
-              <span class="blocker-author">Lakshmi Martinez</span>
-              <span class="blocker-date">1 day ago</span>
-            </div>
-          </div>
-          <button class="btn-icon-small resolve" title="Mark Resolved">
-            <i class="fa-solid fa-check"></i>
-          </button>
-        </div>
-      </div>
+      <p style="color: var(--text-secondary); font-size: 14px;">No active blockers.</p>
     </div>
   </div>
 </div>
@@ -131,58 +89,150 @@
     <h2>Recent Activity</h2>
     <a href="/project-manager/reports" class="btn-link">View Full Report</a>
   </div>
-
   <div class="report-card-body">
-    <div class="activity-timeline">
-      <div class="activity-item">
-        <div class="activity-icon green">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        <div class="activity-content">
-          <p class="activity-text"><strong>Francisco Arreola</strong> completed "Build MVC structure"</p>
-          <span class="activity-time">Today at 2:30 PM</span>
-        </div>
-      </div>
-
-      <div class="activity-item">
-        <div class="activity-icon blue">
-          <i class="fa-solid fa-code"></i>
-        </div>
-        <div class="activity-content">
-          <p class="activity-text"><strong>Oscar Vilchis</strong> pushed 12 commits to main branch</p>
-          <span class="activity-time">Today at 11:00 AM</span>
-        </div>
-      </div>
-
-      <div class="activity-item">
-        <div class="activity-icon yellow">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div class="activity-content">
-          <p class="activity-text"><strong>Lakshmi Martinez</strong> reported a blocker</p>
-          <span class="activity-time">Yesterday at 4:15 PM</span>
-        </div>
-      </div>
-
-      <div class="activity-item">
-        <div class="activity-icon accent">
-          <i class="fa-solid fa-palette"></i>
-        </div>
-        <div class="activity-content">
-          <p class="activity-text"><strong>Lakshmi Martinez</strong> uploaded new wireframes</p>
-          <span class="activity-time">Yesterday at 10:00 AM</span>
-        </div>
-      </div>
-
-      <div class="activity-item">
-        <div class="activity-icon green">
-          <i class="fa-solid fa-user-plus"></i>
-        </div>
-        <div class="activity-content">
-          <p class="activity-text"><strong>Víctor Esquivel</strong> joined the project</p>
-          <span class="activity-time">Mar 16 at 9:00 AM</span>
-        </div>
-      </div>
-    </div>
+    <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
   </div>
 </div>
+
+
+<!-- MODAL: Caso 4.2 — Edición -->
+<div class="modal-overlay" id="modalEditProject">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Project</h2>
+      <button class="modal-close" type="button" id="btnCloseEdit">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form action="/project-manager/project/<%= project.id_project %>/edit" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="form-field">
+        <label class="form-label" for="editProjectName">Project Name *</label>
+        <input type="text" id="editProjectName" name="project_name"
+          class="form-input" value="<%= project.project_name %>"
+          required maxlength="150" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="editProjectDesc">Description</label>
+        <textarea id="editProjectDesc" name="description"
+          rows="3" maxlength="500"><%= project.description || '' %></textarea>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="editProjectStatus">Status</label>
+        <select id="editProjectStatus" name="status" class="form-select">
+          <option value="active"    <%= project.status === 'active'    ? 'selected' : '' %>>Active</option>
+          <option value="inactive"  <%= project.status === 'inactive'  ? 'selected' : '' %>>On Hold</option>
+          <option value="completed" <%= project.status === 'completed' ? 'selected' : '' %>>Completed</option>
+        </select>
+      </div>
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="editStartDate">Start Date</label>
+          <input type="date" id="editStartDate" name="start_date" class="form-input"
+            value="<%= project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="editEndDate">End Date</label>
+          <input type="date" id="editEndDate" name="end_date" class="form-input"
+            value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
+        </div>
+      </div>
+
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelEdit">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- MODAL: Caso 4.4 — Fechas -->
+<div class="modal-overlay" id="modalSetDates">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-header">
+      <h2>Set Project Dates</h2>
+      <button class="modal-close" type="button" id="btnCloseDates">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form action="/project-manager/project/<%= project.id_project %>/dates" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="datesStart">Start Date *</label>
+          <input type="date" id="datesStart" name="start_date" class="form-input" required
+            value="<%= project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="datesEnd">End Date *</label>
+          <input type="date" id="datesEnd" name="end_date" class="form-input" required
+            value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
+        </div>
+      </div>
+
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelDates">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-calendar-check"></i> Confirm Dates
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+  // Convierte fecha Date de MySQL a string YYYY-MM-DD de forma segura
+  function toDateInput(val) {
+    if (!val) return '';
+    const d = new Date(val);
+    if (isNaN(d)) return '';
+    return d.toISOString().split('T')[0];
+  }
+
+  function openModal(modal)  { modal.classList.add('active'); }
+  function closeModal(modal) { modal.classList.remove('active'); }
+
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this);
+    });
+  });
+
+  // Modal Edit (4.2)
+  const modalEdit = document.getElementById('modalEditProject');
+  document.getElementById('btnEditProject').addEventListener('click', () => openModal(modalEdit));
+  document.getElementById('btnCloseEdit').addEventListener('click',   () => closeModal(modalEdit));
+  document.getElementById('btnCancelEdit').addEventListener('click',  () => closeModal(modalEdit));
+
+  // Modal Dates (4.4)
+  const modalDates = document.getElementById('modalSetDates');
+  document.getElementById('btnEditDates').addEventListener('click',   () => openModal(modalDates));
+  document.getElementById('btnCloseDates').addEventListener('click',  () => closeModal(modalDates));
+  document.getElementById('btnCancelDates').addEventListener('click', () => closeModal(modalDates));
+
+  // Si hay error, abrir el modal que corresponde automáticamente
+  <% if (error) { %>
+    const isDateError = <%= JSON.stringify(error) %>.toLowerCase().includes('fecha');
+    if (isDateError) {
+      openModal(document.getElementById('modalSetDates'));
+    } else {
+      openModal(document.getElementById('modalEditProject'));
+    }
+  <% } %>
+
+  // Auto-dismiss alerts
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => el.style.display = 'none', 4000);
+  });
+</script>

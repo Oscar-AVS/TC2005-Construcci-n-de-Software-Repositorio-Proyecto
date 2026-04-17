@@ -1,152 +1,218 @@
 <h1 id="pageTitle" class="page-title">Projects</h1>
 
+<% if (success) { %>
+ <div class="alert alert-success">
+   <i class="fa-solid fa-circle-check"></i> <%= success %>
+ </div>
+<% } %>
+<% if (error) { %>
+ <div class="alert alert-error">
+   <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
+ </div>
+<% } %>
+
 <!-- Action Bar -->
 <div class="action-bar">
   <div class="search-box">
     <i class="fa-solid fa-search"></i>
-    <input type="text" placeholder="Search projects..." class="search-input" />
+    <input type="text" placeholder="Search projects..." class="search-input" id="searchInput" />
   </div>
-
   <div class="action-buttons">
-    <select class="form-select filter-select">
+    <select class="form-select filter-select" id="statusFilter">
       <option value="">All Status</option>
       <option value="active">Active</option>
-      <option value="on-hold">On Hold</option>
+      <option value="inactive">On Hold</option>
       <option value="completed">Completed</option>
     </select>
-    <button class="btn-submit" type="button">
+    <button class="btn-submit" type="button" id="btnNewProject">
       <i class="fa-solid fa-plus"></i> New Project
     </button>
   </div>
-</div>
+ </div>
+ 
+ <!-- Projects Grid -->
+ <div class="projects-grid" id="projectsGrid">
+  <% if (projects.length === 0) { %>
+    <p style="color: var(--text-secondary); padding: 1rem 0;">No hay proyectos registrados aún.</p>
+  <% } %>
+ 
+  <% projects.forEach(project => { %>
+    <div class="project-card"
+      data-status="<%= project.status %>"
+      data-name="<%= project.project_name.toLowerCase() %>">
+ 
+      <div class="project-card-header">
+        <div class="project-card-status <%= project.status %>"><%= project.status %></div>
+        <div class="project-card-actions">
+          <button class="btn-icon btn-delete-project" title="Delete"
+            data-id="<%= project.id_project %>"
+            data-name="<%= project.project_name %>">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+ 
+      <h3 class="project-card-title"><%= project.project_name %></h3>
+      <p class="project-card-desc"><%= project.description || 'Sin descripción.' %></p>
+ 
+      <div class="project-card-dates">
+        <div class="date-item">
+          <i class="fa-solid fa-calendar-plus"></i>
+          <span>Started: <%= project.start_date
+            ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—' %></span>
+        </div>
+        <div class="date-item">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Due: <%= project.end_date
+            ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—' %></span>
+        </div>
+      </div>
+ 
+      <% if (project.team_name) { %>
+        <div class="project-card-team">
+          <span class="team-label"><i class="fa-solid fa-users"></i> <%= project.team_name %></span>
+        </div>
+      <% } %>
+ 
+      <a href="/project-manager/project/<%= project.id_project %>" class="project-card-link">
+        View Details <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  <% }) %>
+ </div>
 
-<!-- Projects Grid -->
-<div class="projects-grid">
-  <!-- Project Card 1 -->
-  <div class="project-card">
-    <div class="project-card-header">
-      <div class="project-card-status active">Active</div>
-      <div class="project-card-actions">
-        <button class="btn-icon" title="Edit">
-          <i class="fa-solid fa-pen"></i>
+ <!-- MODAL: Caso 4.1 — Alta de proyecto -->
+<div class="modal-overlay" id="modalCreateProject">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>New Project</h2>
+      <button class="modal-close" type="button" id="btnCloseCreate">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+ 
+    <form action="/project-manager/projects/create" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectName">Project Name *</label>
+        <input type="text" id="newProjectName" name="project_name"
+          class="form-input" placeholder="e.g. Platform Redesign"
+          required maxlength="150" />
+      </div>
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectDesc">Description</label>
+        <textarea id="newProjectDesc" name="description"
+          rows="3" maxlength="500"
+          placeholder="What is this project about?"></textarea>
+      </div>
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectStatus">Status</label>
+        <select id="newProjectStatus" name="status" class="form-select">
+          <option value="active">Active</option>
+          <option value="inactive">On Hold</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+ 
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="newStartDate">Start Date</label>
+          <input type="date" id="newStartDate" name="start_date" class="form-input" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="newEndDate">End Date</label>
+          <input type="date" id="newEndDate" name="end_date" class="form-input" />
+        </div>
+      </div>
+ 
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelCreate">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-plus"></i> Register Project
         </button>
-        <button class="btn-icon" title="More">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
       </div>
-    </div>
-
-    <h3 class="project-card-title">Internal Tools</h3>
-    <p class="project-card-desc">Building internal productivity tools for the engineering team including dashboards and automation scripts.</p>
-
-    <div class="project-card-dates">
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-plus"></i>
-        <span>Started: Feb 15, 2026</span>
-      </div>
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-check"></i>
-        <span>Due: Mar 30, 2026</span>
-      </div>
-    </div>
-
-    <div class="project-card-team">
-      <div class="team-avatars">
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Francisco Arreola" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Lakshmi Martinez" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Oscar Vilchis" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Víctor Esquivel" />
-      </div>
-      <span class="team-label">Mufasa Solutions</span>
-    </div>
-
-    <a href="/project-manager/project/1" class="project-card-link">
-      View Details <i class="fa-solid fa-arrow-right"></i>
-    </a>
+    </form>
   </div>
-
-  <!-- Project Card 2 -->
-  <div class="project-card">
-    <div class="project-card-header">
-      <div class="project-card-status on-hold">On Hold</div>
-      <div class="project-card-actions">
-        <button class="btn-icon" title="Edit">
-          <i class="fa-solid fa-pen"></i>
+ </div>
+ 
+ 
+ <!-- MODAL: Caso 4.3 — Confirmación eliminación -->
+ <div class="modal-overlay" id="modalDeleteProject">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <div class="modal-header" style="justify-content: center; border: none;">
+      <h2>Delete Project</h2>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Are you sure you want to delete <strong id="deleteProjectName"></strong>?
+      This action cannot be undone.
+    </p>
+    <form id="formDeleteProject" method="POST" action="">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="action-row" style="justify-content: center; gap: 16px; margin-top: 16px;">
+        <button type="button" class="btn-draft" id="btnCancelDelete">Cancel</button>
+        <button type="submit" class="btn-submit" style="background: #dc2626;">
+          <i class="fa-solid fa-trash"></i> Confirm Delete
         </button>
-        <button class="btn-icon" title="More">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
       </div>
-    </div>
-
-    <h3 class="project-card-title">API Integration</h3>
-    <p class="project-card-desc">Integrating third-party APIs for payment processing and user authentication services.</p>
-
-    <div class="project-card-dates">
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-plus"></i>
-        <span>Started: Mar 1, 2026</span>
-      </div>
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-check"></i>
-        <span>Due: Apr 15, 2026</span>
-      </div>
-    </div>
-
-    <div class="project-card-team">
-      <div class="team-avatars">
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Oscar Vilchis" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Víctor Esquivel" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Carlos Mendez" />
-      </div>
-      <span class="team-label">Phoenix Team</span>
-    </div>
-
-    <a href="/project-manager/project/2" class="project-card-link">
-      View Details <i class="fa-solid fa-arrow-right"></i>
-    </a>
+    </form>
   </div>
+ </div>
 
-  <!-- Project Card 3 -->
-  <div class="project-card">
-    <div class="project-card-header">
-      <div class="project-card-status completed">Completed</div>
-      <div class="project-card-actions">
-        <button class="btn-icon" title="Edit">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-icon" title="More">
-          <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
-      </div>
-    </div>
-
-    <h3 class="project-card-title">Dashboard Redesign</h3>
-    <p class="project-card-desc">Complete redesign of the analytics dashboard with improved UX and new visualization components.</p>
-
-    <div class="project-card-dates">
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-plus"></i>
-        <span>Started: Jan 10, 2026</span>
-      </div>
-      <div class="date-item">
-        <i class="fa-solid fa-calendar-check"></i>
-        <span>Delivered: Mar 10, 2026</span>
-      </div>
-    </div>
-
-    <div class="project-card-team">
-      <div class="team-avatars">
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Lakshmi Martinez" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Sofia Torres" />
-        <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Member" title="Juan Perez" />
-        <span class="avatar-more">+2</span>
-      </div>
-      <span class="team-label">Delta Squad</span>
-    </div>
-
-    <a href="/project-manager/project/3" class="project-card-link">
-      View Details <i class="fa-solid fa-arrow-right"></i>
-    </a>
-  </div>
-</div>
+ <script>
+  // Filtros en tiempo real
+  const searchInput  = document.getElementById('searchInput');
+  const statusFilter = document.getElementById('statusFilter');
+  const cards        = document.querySelectorAll('.project-card');
+ 
+  function filterCards() {
+    const query  = searchInput.value.toLowerCase().trim();
+    const status = statusFilter.value;
+    cards.forEach(card => {
+      const nameMatch   = card.dataset.name.includes(query);
+      const statusMatch = !status || card.dataset.status === status;
+      card.style.display = (nameMatch && statusMatch) ? '' : 'none';
+    });
+  }
+  searchInput.addEventListener('input', filterCards);
+  statusFilter.addEventListener('change', filterCards);
+ 
+  // Modal helpers — igual que en log.ejs
+  function openModal(modal)  { modal.classList.add('active'); }
+  function closeModal(modal) { modal.classList.remove('active'); }
+ 
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this);
+    });
+  });
+ 
+  // Modal Alta (4.1)
+  const modalCreate = document.getElementById('modalCreateProject');
+  document.getElementById('btnNewProject').addEventListener('click', () => openModal(modalCreate));
+  document.getElementById('btnCloseCreate').addEventListener('click', () => closeModal(modalCreate));
+  document.getElementById('btnCancelCreate').addEventListener('click', () => closeModal(modalCreate));
+ 
+  // Modal Eliminar (4.3)
+  const modalDelete     = document.getElementById('modalDeleteProject');
+  const formDelete      = document.getElementById('formDeleteProject');
+  const deleteNameLabel = document.getElementById('deleteProjectName');
+ 
+  document.querySelectorAll('.btn-delete-project').forEach(btn => {
+    btn.addEventListener('click', () => {
+      deleteNameLabel.textContent = btn.dataset.name;
+      formDelete.action = `/project-manager/projects/${btn.dataset.id}/delete`;
+      openModal(modalDelete);
+    });
+  });
+  document.getElementById('btnCancelDelete').addEventListener('click', () => closeModal(modalDelete));
+ 
+  // Auto-dismiss alerts
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => el.style.display = 'none', 4000);
+  });
+ </script>
