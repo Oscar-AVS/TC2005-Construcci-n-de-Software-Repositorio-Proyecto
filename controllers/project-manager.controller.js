@@ -59,3 +59,23 @@ exports.getProfile = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+exports.postSlack = async (req, res) => {
+  const { slack_user } = req.body;
+  try {
+    await User.updateSlack(req.session.userId, slack_user);
+    const [[user]] = await User.fetchOne(req.session.userId);
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'project-manager',
+      user,
+      error: '',
+      success: 'Slack username updated successfully.',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
