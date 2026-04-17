@@ -162,3 +162,39 @@ exports.getProjectDetail = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+exports.postCreateProject = async (req, res) => {
+  const { project_name, description, status, start_date, end_date } = req.body;
+
+  const renderWithError = async (error) => {
+    const [projects] = await Project.fetchAll();
+    return res.render('project-manager/projects', {
+      title: 'Projects',
+      role: 'project-manager',
+      currentPage: 'projects',
+      projects,
+      error,
+      success: '',
+      csrfToken: req.csrfToken(),
+    });
+  };
+
+  if (!project_name || !project_name.trim()) {
+    return renderWithError('El nombre del proyecto es requerido.');
+  }
+
+  if (start_date && end_date && end_date < start_date) {
+    return renderWithError('La fecha de fin no puede ser anterior a la fecha de inicio.');
+  }
+
+  try {
+    const [[existing]] = await Project.findByName(project_name.trim());
+    if (existing) return renderWithError('Ya existe un proyecto registrado con ese nombre.');
+
+    await Project.create(project_name.trim(), description, status, start_date || null, end_date || null);
+    res.redirect('/project-manager/projects?success=Proyecto+registrado+correctamente');
+  } catch (err) {
+    console.error(err);
+    return renderWithError('No fue posible completar el registro. Intenta nuevamente.');
+  }
+};
