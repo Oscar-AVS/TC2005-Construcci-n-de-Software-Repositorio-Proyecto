@@ -82,3 +82,83 @@
     </div>
   <% }) %>
  </div>
+
+ <!-- MODAL: Caso 4.1 — Alta de proyecto -->
+<div class="modal-overlay" id="modalCreateProject">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>New Project</h2>
+      <button class="modal-close" type="button" id="btnCloseCreate">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+ 
+    <form action="/project-manager/projects/create" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectName">Project Name *</label>
+        <input type="text" id="newProjectName" name="project_name"
+          class="form-input" placeholder="e.g. Platform Redesign"
+          required maxlength="150" />
+      </div>
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectDesc">Description</label>
+        <textarea id="newProjectDesc" name="description"
+          rows="3" maxlength="500"
+          placeholder="What is this project about?"></textarea>
+      </div>
+ 
+      <div class="form-field">
+        <label class="form-label" for="newProjectStatus">Status</label>
+        <select id="newProjectStatus" name="status" class="form-select">
+          <option value="active">Active</option>
+          <option value="inactive">On Hold</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+ 
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="newStartDate">Start Date</label>
+          <input type="date" id="newStartDate" name="start_date" class="form-input" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="newEndDate">End Date</label>
+          <input type="date" id="newEndDate" name="end_date" class="form-input" />
+        </div>
+      </div>
+ 
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelCreate">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-plus"></i> Register Project
+        </button>
+      </div>
+    </form>
+  </div>
+ </div>
+ 
+ 
+ <!-- MODAL: Caso 4.3 — Confirmación eliminación -->
+ <div class="modal-overlay" id="modalDeleteProject">
+  <div class="modal" style="max-width: 400px; text-align: center;">
+    <div class="modal-header" style="justify-content: center; border: none;">
+      <h2>Delete Project</h2>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Are you sure you want to delete <strong id="deleteProjectName"></strong>?
+      This action cannot be undone.
+    </p>
+    <form id="formDeleteProject" method="POST" action="">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="action-row" style="justify-content: center; gap: 16px; margin-top: 16px;">
+        <button type="button" class="btn-draft" id="btnCancelDelete">Cancel</button>
+        <button type="submit" class="btn-submit" style="background: #dc2626;">
+          <i class="fa-solid fa-trash"></i> Confirm Delete
+        </button>
+      </div>
+    </form>
+  </div>
+ </div>
