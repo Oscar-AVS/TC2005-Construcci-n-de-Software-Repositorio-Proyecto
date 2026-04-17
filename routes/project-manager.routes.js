@@ -22,3 +22,6 @@ router.get('/project/:id',      pmController.getProjectDetail);
 
 router.post('/projects/create',     pmController.postCreateProject);  // 4.1
 router.post('/projects/:id/delete', pmController.postDeleteProject);  // 4.3
+
+router.post('/project/:id/edit',  pmController.postEditProject);    // 4.2
+router.post('/project/:id/dates', pmController.postProjectDates);   // 4.4
