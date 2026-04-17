@@ -15,3 +15,7 @@ router.get('/self-review', pmController.getSelfReview);
 router.get('/profile',           pmController.getProfile);
 router.post('/profile/slack',    pmController.postSlack);
 router.post('/profile/password', pmController.postPassword);
+
+// Proyectos
+router.get('/projects',         pmController.getProjects);
+router.get('/project/:id',      pmController.getProjectDetail);
