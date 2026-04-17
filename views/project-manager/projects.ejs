@@ -10,3 +10,75 @@
    <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
  </div>
 <% } %>
+
+<!-- Action Bar -->
+<div class="action-bar">
+  <div class="search-box">
+    <i class="fa-solid fa-search"></i>
+    <input type="text" placeholder="Search projects..." class="search-input" id="searchInput" />
+  </div>
+  <div class="action-buttons">
+    <select class="form-select filter-select" id="statusFilter">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">On Hold</option>
+      <option value="completed">Completed</option>
+    </select>
+    <button class="btn-submit" type="button" id="btnNewProject">
+      <i class="fa-solid fa-plus"></i> New Project
+    </button>
+  </div>
+ </div>
+ 
+ <!-- Projects Grid -->
+ <div class="projects-grid" id="projectsGrid">
+  <% if (projects.length === 0) { %>
+    <p style="color: var(--text-secondary); padding: 1rem 0;">No hay proyectos registrados aún.</p>
+  <% } %>
+ 
+  <% projects.forEach(project => { %>
+    <div class="project-card"
+      data-status="<%= project.status %>"
+      data-name="<%= project.project_name.toLowerCase() %>">
+ 
+      <div class="project-card-header">
+        <div class="project-card-status <%= project.status %>"><%= project.status %></div>
+        <div class="project-card-actions">
+          <button class="btn-icon btn-delete-project" title="Delete"
+            data-id="<%= project.id_project %>"
+            data-name="<%= project.project_name %>">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+ 
+      <h3 class="project-card-title"><%= project.project_name %></h3>
+      <p class="project-card-desc"><%= project.description || 'Sin descripción.' %></p>
+ 
+      <div class="project-card-dates">
+        <div class="date-item">
+          <i class="fa-solid fa-calendar-plus"></i>
+          <span>Started: <%= project.start_date
+            ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—' %></span>
+        </div>
+        <div class="date-item">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Due: <%= project.end_date
+            ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—' %></span>
+        </div>
+      </div>
+ 
+      <% if (project.team_name) { %>
+        <div class="project-card-team">
+          <span class="team-label"><i class="fa-solid fa-users"></i> <%= project.team_name %></span>
+        </div>
+      <% } %>
+ 
+      <a href="/project-manager/project/<%= project.id_project %>" class="project-card-link">
+        View Details <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  <% }) %>
+ </div>
