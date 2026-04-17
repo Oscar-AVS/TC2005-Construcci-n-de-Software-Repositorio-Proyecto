@@ -237,3 +237,57 @@ exports.postEditProject = async (req, res) => {
     res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+el+proyecto`);
   }
 };
+
+exports.postDeleteProject = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=El+proyecto+no+está+disponible');
+
+    await Project.delete(id);
+    res.redirect('/project-manager/projects?success=Proyecto+eliminado+correctamente');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/project-manager/projects?error=No+fue+posible+eliminar+el+proyecto');
+  }
+};
+
+exports.postProjectDates = async (req, res) => {
+  const { id } = req.params;
+  const { start_date, end_date } = req.body;
+
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=El+proyecto+no+fue+encontrado');
+
+    if (!start_date || !end_date) {
+      return res.render('project-manager/project-detail', {
+        title: project.project_name,
+        role: 'project-manager',
+        currentPage: 'projects',
+        project,
+        error: 'Ambas fechas son requeridas.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    if (end_date < start_date) {
+      return res.render('project-manager/project-detail', {
+        title: project.project_name,
+        role: 'project-manager',
+        currentPage: 'projects',
+        project,
+        error: 'La fecha de fin no puede ser anterior a la fecha de inicio.',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    await Project.updateDates(id, start_date, end_date);
+    res.redirect(`/project-manager/project/${id}?success=Fechas+actualizadas+correctamente`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`);
+  }
+};
