@@ -48,4 +48,12 @@ module.exports = class Project {
     );
   }
 
+  static create(project_name, description, status, start_date, end_date) {
+    return db.execute(
+      `INSERT INTO project (project_name, description, status, start_date, end_date)
+       VALUES (?, ?, ?, ?, ?)`,
+      [project_name, description || null, status || 'active', start_date || null, end_date || null]
+    );
+  }
+
 };
