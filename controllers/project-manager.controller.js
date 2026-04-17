@@ -198,3 +198,42 @@ exports.postCreateProject = async (req, res) => {
     return renderWithError('No fue posible completar el registro. Intenta nuevamente.');
   }
 };
+
+exports.postEditProject = async (req, res) => {
+  const { id } = req.params;
+  const { project_name, description, status, start_date, end_date } = req.body;
+
+  const renderWithError = async (project, error) => {
+    return res.render('project-manager/project-detail', {
+      title: project.project_name,
+      role: 'project-manager',
+      currentPage: 'projects',
+      project,
+      error,
+      success: '',
+      csrfToken: req.csrfToken(),
+    });
+  };
+
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=El+proyecto+no+está+disponible');
+
+    if (!project_name || !project_name.trim()) {
+      return renderWithError(project, 'El nombre del proyecto es requerido.');
+    }
+
+    if (start_date && end_date && end_date < start_date) {
+      return renderWithError(project, 'La fecha de fin no puede ser anterior a la fecha de inicio.');
+    }
+
+    const [[duplicate]] = await Project.findByNameExcluding(project_name.trim(), id);
+    if (duplicate) return renderWithError(project, 'Ya existe otro proyecto con ese nombre.');
+
+    await Project.update(id, project_name.trim(), description, status, start_date || null, end_date || null);
+    res.redirect(`/project-manager/project/${id}?success=Proyecto+actualizado+correctamente`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+el+proyecto`);
+  }
+};
