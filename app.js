@@ -102,6 +102,10 @@ const managerRoutes = require('./routes/manager.routes');
 const adminRoutes = require('./routes/admin.routes');
 const projectManagerRoutes = require('./routes/project-manager.routes');
 const reportRoutes = require('./routes/report.routes');
+const slackRoutes = require('./routes/slack.routes');
+
+// Slack webhook — mounted BEFORE csrf (external calls have no CSRF token)
+app.use('/api/slack', slackRoutes);
 
 app.get('/', (req, res) => res.redirect('/login'));
 app.use('/', csrfProtection, usersRoutes);

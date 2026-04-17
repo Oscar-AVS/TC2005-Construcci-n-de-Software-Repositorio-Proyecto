@@ -167,7 +167,7 @@ CREATE TABLE `log` (
 CREATE TABLE `log_project` (
   `id_log` int(11) NOT NULL,
   `id_project` int(11) NOT NULL,
-  `id_team` int(11) NOT NULL
+  `id_team` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

@@ -128,6 +128,13 @@ module.exports = class User {
       [id_user]
     );
   }
+  static findBySlackUser(slack_user) {
+    return db.execute(
+      'SELECT * FROM user WHERE slack_user = ?',
+      [slack_user]
+    );
+  }
+
   static updateSlack(id_user, slack_user) {
     return db.execute(
       'UPDATE user SET slack_user = ? WHERE id_user = ?',
