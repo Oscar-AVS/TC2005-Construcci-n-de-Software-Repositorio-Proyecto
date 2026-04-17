@@ -155,7 +155,7 @@ exports.postLog = (req, res) => {
   const { completed, planned, blocker } = req.body;
   let id_projects = req.body.id_projects;
 
-  if (!id_projects) return res.status(400).send('At least one project is required');
+  if (!id_projects) return res.redirect('/employee/log?error=noproject');
   if (!Array.isArray(id_projects)) id_projects = [id_projects];
 
   Log.create(activeUserId, completed, planned)
