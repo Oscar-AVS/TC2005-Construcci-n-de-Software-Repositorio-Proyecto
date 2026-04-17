@@ -84,6 +84,10 @@ const exportPDF = async (req, res) => {
     console.error('Error fetching report data:', err);
     return res.status(500).json({ error: 'Error fetching report data.' });
   }
+  if (!summary || !summary.overallAssessment) {
+  return res.status(400).send('No AI summary generated yet. Please generate the summary before exporting the PDF.');
+}
+
 
   if (!data.equipo || !data.proyecto) {
     return res.status(404).json({
