@@ -6,24 +6,23 @@
 const db = require('../util/database');
 
 module.exports = class Achievement {
-  static countAllByUser(id_user) {
-    return db.execute(
-      `SELECT COUNT(*) as total
-       FROM achievement
-       WHERE id_user = ?`,
-      [id_user]
-    );
+  static countAllByUser(id_user, filters = {}) {
+    let query = `SELECT COUNT(*) as total FROM achievement WHERE id_user = ?`;
+    const params = [id_user];
+    if (filters.date_from) { query += ' AND DATE(created_at) >= ?'; params.push(filters.date_from); }
+    if (filters.date_to)   { query += ' AND DATE(created_at) <= ?'; params.push(filters.date_to); }
+    return db.execute(query, params);
   }
 
-  static fetchAllByUser(id_user, limit = 10, offset = 0) {
-    return db.execute(
-      `SELECT id_achievement, title, description, created_at, validation_status
-       FROM achievement
-       WHERE id_user = ?
-       ORDER BY created_at DESC
-       LIMIT ? OFFSET ?`,
-      [id_user, limit.toString(), offset.toString()]
-    );
+  static fetchAllByUser(id_user, filters = {}, limit = 10, offset = 0) {
+    let query = `SELECT id_achievement, title, description, created_at, validation_status
+       FROM achievement WHERE id_user = ?`;
+    const params = [id_user];
+    if (filters.date_from) { query += ' AND DATE(created_at) >= ?'; params.push(filters.date_from); }
+    if (filters.date_to)   { query += ' AND DATE(created_at) <= ?'; params.push(filters.date_to); }
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit.toString(), offset.toString());
+    return db.execute(query, params);
   }
 
   static create(id_user, title, description, created_at) {

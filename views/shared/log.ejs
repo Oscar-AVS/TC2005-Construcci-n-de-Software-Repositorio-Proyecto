@@ -161,8 +161,8 @@
       <div class="entry-card">
         <div class="entry-card-header">
           <div class="entry-meta">
-            <span class="entry-project-tag"><%= log.project_names %></span>
-            <span class="entry-project-tag blue"><%= log.team_names %></span>
+            <span class="entry-project-tag"><i class="fa-solid fa-folder-open"></i> <%= log.project_names %></span>
+            <span class="entry-project-tag blue"><i class="fa-solid fa-users"></i> <%= log.team_names %></span>
           </div>
           <div class="entry-actions">
             <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>

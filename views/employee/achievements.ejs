@@ -69,34 +69,36 @@
     <h2>Filter Achievements</h2>
   </div>
   <div class="report-card-body">
-    <div class="filter-row">
-      <div class="filter-group">
-        <label class="form-label" for="achQuickFilter">Quick Filters</label>
-        <select id="achQuickFilter" class="form-select">
-          <option value="">Select a filter</option>
-          <option value="LAST_WEEK">Last Week</option>
-          <option value="LAST_MONTH">Last Month</option>
-          <option value="Q1">Q1 (Jan - Mar)</option>
-          <option value="Q2">Q2 (Apr - Jun)</option>
-          <option value="Q3">Q3 (Jul - Sep)</option>
-          <option value="Q4">Q4 (Oct - Dec)</option>
-        </select>
-      </div>
+    <form method="GET" action="/employee/achievements">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="form-label" for="achQuickFilter">Quick Filters</label>
+          <select id="achQuickFilter" class="form-select">
+            <option value="">Select a filter</option>
+            <option value="LAST_WEEK">Last Week</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="Q1">Q1 (Jan - Mar)</option>
+            <option value="Q2">Q2 (Apr - Jun)</option>
+            <option value="Q3">Q3 (Jul - Sep)</option>
+            <option value="Q4">Q4 (Oct - Dec)</option>
+          </select>
+        </div>
 
-      <div class="filter-group">
-        <label class="form-label" for="achFilterFrom">From</label>
-        <input type="date" id="achFilterFrom" class="form-input" />
-      </div>
+        <div class="filter-group">
+          <label class="form-label" for="achFilterFrom">From</label>
+          <input type="date" id="achFilterFrom" name="date_from" class="form-input" value="<%= filters.date_from || '' %>" />
+        </div>
 
-      <div class="filter-group">
-        <label class="form-label" for="achFilterTo">To</label>
-        <input type="date" id="achFilterTo" class="form-input" />
-      </div>
+        <div class="filter-group">
+          <label class="form-label" for="achFilterTo">To</label>
+          <input type="date" id="achFilterTo" name="date_to" class="form-input" value="<%= filters.date_to || '' %>" />
+        </div>
 
-      <button class="btn-submit btn-filter-submit" type="button" onclick="applyAchievementFilter()">
-        <i class="fa-solid fa-filter"></i> Filter
-      </button>
-    </div>
+        <button class="btn-submit btn-filter-submit" type="submit">
+          <i class="fa-solid fa-filter"></i> Filter
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -104,7 +106,7 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>My Achievements</h2>
-    <span class="item-count" id="achievementCount"><%= achievements.length %> total</span>
+    <span class="item-count" id="achievementCount"><%= totalRecords %> total</span>
   </div>
 
   <div class="report-card-body">
@@ -164,12 +166,12 @@
       <!-- Pagination -->
       <% if (totalPages > 1) { %>
         <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid #e1e4e8;">
-          <a href="?page=<%= page - 1 %>" 
+          <a href="?page=<%= page - 1 %>&date_from=<%= filters.date_from || '' %>&date_to=<%= filters.date_to || '' %>"
              class="btn-draft" <%= !hasPrevPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
             <i class="fa-solid fa-chevron-left"></i> Previous
           </a>
           <span style="color: #5f6b85; font-size: 14px; font-weight: 500;">Page <%= page %> of <%= totalPages %></span>
-          <a href="?page=<%= page + 1 %>" 
+          <a href="?page=<%= page + 1 %>&date_from=<%= filters.date_from || '' %>&date_to=<%= filters.date_to || '' %>"
              class="btn-draft" <%= !hasNextPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
             Next <i class="fa-solid fa-chevron-right"></i>
           </a>
@@ -351,22 +353,6 @@
       showMsg('Unexpected error.', 'error');
       closeEditModal();
     }
-  }
-
-  function applyAchievementFilter() {
-    const from = document.getElementById('achFilterFrom').value;
-    const to = document.getElementById('achFilterTo').value;
-    const cards = document.querySelectorAll('.achievement-card[data-date]');
-    let visible = 0;
-
-    cards.forEach(card => {
-      const date = card.dataset.date;
-      const inRange = (!from || date >= from) && (!to || date <= to);
-      card.style.display = inRange ? '' : 'none';
-      if (inRange) visible++;
-    });
-
-    document.getElementById('achievementCount').textContent = `${visible} total`;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
