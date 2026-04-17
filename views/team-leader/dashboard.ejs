@@ -22,7 +22,7 @@
         <i class="fa-solid fa-users"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">3</p>
+        <p class="stat-value"><%= summary.totalMembers %></p>
         <p class="stat-label">Team Members</p>
       </div>
     </div>
@@ -32,7 +32,7 @@
         <i class="fa-solid fa-clipboard-list"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">37</p>
+        <p class="stat-value"><%= summary.entriesThisWeek %></p>
         <p class="stat-label">Entries This Week</p>
       </div>
     </div>
@@ -42,7 +42,7 @@
         <i class="fa-solid fa-trophy"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">5</p>
+        <p class="stat-value"><%= summary.totalAchievements %></p>
         <p class="stat-label">Achievements</p>
       </div>
     </div>
@@ -52,7 +52,7 @@
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">2</p>
+        <p class="stat-value"><%= summary.totalBlockers %></p>
         <p class="stat-label">Active Blockers</p>
       </div>
     </div>
@@ -89,7 +89,6 @@
                     <p class="blocker-project"><%= blocker.project_name %></p>
                   </div>
 
-          
                   <div style="display: flex; flex-direction: column; align-items: end; gap: 8px;">
                     <span class="blocker-date"><%= new Date(blocker.created_at).toLocaleDateString('en-GB') %></span>
 
@@ -110,7 +109,7 @@
         </div>
       </div>
 
-            <!-- Pending Achievements -->
+      <!-- Pending Achievements -->
       <div class="report-card">
         <div class="report-card-header">
           <div class="header-with-icon success">
@@ -173,49 +172,30 @@
 
         <div class="report-card-body">
           <div class="members-overview">
-
-            <div class="member-row">
-              <div class="member-info-mini">
-                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-                <div>
-                  <p class="member-name-mini">Francisco Arreola</p>
-                  <p class="member-role-mini">Full Stack Developer</p>
+            <% if (teamMembersOverview && teamMembersOverview.length > 0) { %>
+              <% teamMembersOverview.forEach(member => { %>
+                <div class="member-row">
+                  <div class="member-info-mini">
+                    <img
+                      src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                      alt="<%= member.full_name %>"
+                    />
+                    <div>
+                      <p class="member-name-mini"><%= member.full_name %></p>
+                      <p class="member-role-mini"><%= member.email %></p>
+                    </div>
+                  </div>
+                  <div class="member-week-stats">
+                    <span class="week-entries"><%= member.entries_this_week %> entries</span>
+                    <span class="member-status-badge <%= member.member_status === 'Blocked' ? 'blocked' : 'ok' %>">
+                      <%= member.member_status %>
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div class="member-week-stats">
-                <span class="week-entries">15 entries</span>
-                <span class="member-status-badge ok">On Track</span>
-              </div>
-            </div>
-
-            <div class="member-row">
-              <div class="member-info-mini">
-                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-                <div>
-                  <p class="member-name-mini">Lakshmi Martinez Jara</p>
-                  <p class="member-role-mini">UI/UX Designer</p>
-                </div>
-              </div>
-              <div class="member-week-stats">
-                <span class="week-entries">12 entries</span>
-                <span class="member-status-badge blocked">Blocked</span>
-              </div>
-            </div>
-
-            <div class="member-row">
-              <div class="member-info-mini">
-                <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-                <div>
-                  <p class="member-name-mini">Oscar Vilchis</p>
-                  <p class="member-role-mini">Backend Developer</p>
-                </div>
-              </div>
-              <div class="member-week-stats">
-                <span class="week-entries">10 entries</span>
-                <span class="member-status-badge blocked">Blocked</span>
-              </div>
-            </div>
-
+              <% }) %>
+            <% } else { %>
+              <p>No team members found.</p>
+            <% } %>
           </div>
         </div>
       </div>
@@ -234,57 +214,40 @@
 
         <div class="report-card-body">
           <div class="activity-feed">
-
-            <div class="feed-item">
-              <div class="feed-icon green">
-                <i class="fa-solid fa-check"></i>
-              </div>
-              <div class="feed-content">
-                <p class="feed-text"><span class="feed-author">Lakshmi Martinez Jara</span> submitted daily report</p>
-                <p class="feed-meta">Dashboard Redesign • 5:30 PM</p>
-              </div>
-            </div>
-
-            <div class="feed-item">
-              <div class="feed-icon yellow">
-                <i class="fa-solid fa-exclamation"></i>
-              </div>
-              <div class="feed-content">
-                <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> reported a blocker</p>
-                <p class="feed-meta">API Integration • 4:15 PM</p>
-              </div>
-            </div>
-
-            <div class="feed-item">
-              <div class="feed-icon accent">
-                <i class="fa-solid fa-trophy"></i>
-              </div>
-              <div class="feed-content">
-                <p class="feed-text"><span class="feed-author">Francisco Arreola</span> added an achievement</p>
-                <p class="feed-meta">Internal Tools • 2:00 PM</p>
-              </div>
-            </div>
-
-            <div class="feed-item">
-              <div class="feed-icon green">
-                <i class="fa-solid fa-check"></i>
-              </div>
-              <div class="feed-content">
-                <p class="feed-text"><span class="feed-author">Oscar Vilchis</span> submitted daily report</p>
-                <p class="feed-meta">API Integration • Yesterday</p>
-              </div>
-            </div>
-
-            <div class="feed-item">
-              <div class="feed-icon green">
-                <i class="fa-solid fa-check"></i>
-              </div>
-              <div class="feed-content">
-                <p class="feed-text"><span class="feed-author">Francisco Arreola</span> submitted daily report</p>
-                <p class="feed-meta">Internal Tools • Yesterday</p>
-              </div>
-            </div>
-
+            <% if (recentActivity && recentActivity.length > 0) { %>
+              <% recentActivity.forEach(activity => { %>
+                <div class="feed-item">
+                  <div class="feed-icon
+                    <%= activity.activity_type === 'log' ? 'green' : activity.activity_type === 'blocker' ? 'yellow' : 'accent' %>">
+                    <i class="fa-solid
+                      <%= activity.activity_type === 'log' ? 'fa-check' : activity.activity_type === 'blocker' ? 'fa-exclamation' : 'fa-trophy' %>"></i>
+                  </div>
+                  <div class="feed-content">
+                    <p class="feed-text">
+                      <span class="feed-author"><%= activity.full_name %></span>
+                      <% if (activity.activity_type === 'log') { %>
+                        submitted daily report
+                      <% } else if (activity.activity_type === 'blocker') { %>
+                        reported a blocker
+                      <% } else { %>
+                        added an achievement
+                      <% } %>
+                    </p>
+                    <p class="feed-meta">
+                      <%= activity.project_name || 'General' %> •
+                      <%= new Date(activity.activity_date).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) %>
+                    </p>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p>No recent activity found.</p>
+            <% } %>
           </div>
         </div>
       </div>
