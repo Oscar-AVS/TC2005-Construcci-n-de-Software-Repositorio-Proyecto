@@ -19,8 +19,8 @@
 
           <div class="role-permissions">
             <% if (r.users.length > 0) { %>
-              <% r.users.forEach(u => { %>
-                <div class="permission-item" style="gap: 10px;">
+              <% r.users.forEach((u, uIdx) => { %>
+                <div class="permission-item" data-user-idx="<%= uIdx %>" style="gap: 10px;">
                   <div style="width: 32px; height: 32px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; flex-shrink: 0;">
                     <%= u.full_name.charAt(0).toUpperCase() %>
                   </div>
@@ -34,8 +34,48 @@
               <p style="color: #5f6b85; font-size: 14px;">No users assigned.</p>
             <% } %>
           </div>
+
+          <div class="role-pager" style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid #f3f4f6; margin-top: 4px;">
+            <button class="role-pager-prev" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">&#8592; Prev</button>
+            <span class="role-pager-info" style="font-size: 13px; color: #5f6b85; font-weight: 600;"></span>
+            <button class="role-pager-next" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Next &#8594;</button>
+          </div>
         </div>
       <% }) %>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  const PER_PAGE = 10;
+  document.querySelectorAll('.role-card').forEach(function (card) {
+    var items = Array.from(card.querySelectorAll('.permission-item'));
+    if (items.length <= PER_PAGE) return;
+
+    var pager = card.querySelector('.role-pager');
+    var prevBtn = pager.querySelector('.role-pager-prev');
+    var nextBtn = pager.querySelector('.role-pager-next');
+    var info = pager.querySelector('.role-pager-info');
+    var totalPages = Math.ceil(items.length / PER_PAGE);
+    var page = 1;
+
+    function render() {
+      items.forEach(function (item, i) {
+        item.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+      });
+      info.textContent = 'Page ' + page + ' of ' + totalPages;
+      prevBtn.style.opacity = page === 1 ? '0.4' : '1';
+      prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
+      nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
+      nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+    }
+
+    prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+    nextBtn.addEventListener('click', function () { if (page < totalPages) { page++; render(); } });
+
+    pager.style.display = 'flex';
+    render();
+  });
+})();
+</script>

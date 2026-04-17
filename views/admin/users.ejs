@@ -179,6 +179,11 @@
         <% }) %>
       </tbody>
     </table>
+    <div id="users-pagination" style="display: none; align-items: center; justify-content: center; gap: 12px; padding: 16px 24px; border-top: 1px solid #f3f4f6;">
+      <button id="users-prev" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">&#8592; Prev</button>
+      <span id="users-page-info" style="font-size: 13px; color: #5f6b85; font-weight: 600;"></span>
+      <button id="users-next" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Next &#8594;</button>
+    </div>
   </div>
 </div>
 
@@ -503,4 +508,36 @@
   document.getElementById('deleteUserModal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('deleteUserModal')) closeDeleteUserModal();
   });
+
+  (function () {
+    var PER_PAGE = 10;
+    var tbody = document.querySelector('.users-table-card tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    if (rows.length <= PER_PAGE) return;
+
+    var pagination = document.getElementById('users-pagination');
+    var prevBtn = document.getElementById('users-prev');
+    var nextBtn = document.getElementById('users-next');
+    var info = document.getElementById('users-page-info');
+    var totalPages = Math.ceil(rows.length / PER_PAGE);
+    var page = 1;
+
+    function render() {
+      rows.forEach(function (row, i) {
+        row.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+      });
+      info.textContent = 'Page ' + page + ' of ' + totalPages;
+      prevBtn.style.opacity = page === 1 ? '0.4' : '1';
+      prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
+      nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
+      nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+    }
+
+    prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+    nextBtn.addEventListener('click', function () { if (page < totalPages) { page++; render(); } });
+
+    pagination.style.display = 'flex';
+    render();
+  })();
 </script>

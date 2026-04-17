@@ -110,13 +110,6 @@ function saveAndRedirect(req, res, role, rememberMe) {
     req.session.cookie.maxAge = 1000 * 60 * 60 * 24;
   }
 
-  console.log('SESSION BEFORE SAVE:', {
-    userId: req.session.userId,
-    role: req.session.role,
-    fullName: req.session.fullName,
-    teamId: req.session.teamId,
-  });
-
   return new Promise((resolve, reject) => {
     req.session.save((err) => {
       if (err) {

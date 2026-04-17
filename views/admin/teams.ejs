@@ -86,8 +86,8 @@
                 Members (<%= team.members.length %>)
               </p>
               <% if (team.members.length > 0) { %>
-                <% team.members.forEach(m => { %>
-                  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                <% team.members.forEach((m, mIdx) => { %>
+                  <div class="team-member-item" data-member-idx="<%= mIdx %>" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
                     <div style="width: 30px; height: 30px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12px; flex-shrink: 0;">
                       <%= m.full_name.charAt(0).toUpperCase() %>
                     </div>
@@ -100,6 +100,12 @@
               <% } else { %>
                 <p style="color: #9ca3af; font-size: 13px; font-style: italic; margin: 0;">No members assigned.</p>
               <% } %>
+
+              <div class="team-member-pager" style="display: none; align-items: center; justify-content: space-between; padding: 8px 0 0 0; margin-top: 4px;">
+                <button class="team-member-pager-prev" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">&#8592; Prev</button>
+                <span class="team-member-pager-info" style="font-size: 12px; color: #5f6b85; font-weight: 600;"></span>
+                <button class="team-member-pager-next" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">Next &#8594;</button>
+              </div>
             </div>
 
             <div class="team-card-footer">
@@ -112,6 +118,12 @@
       <% } else { %>
         <p>No teams found.</p>
       <% } %>
+    </div>
+
+    <div id="teams-pagination" style="display: none; align-items: center; justify-content: center; gap: 12px; padding: 16px 0; border-top: 1px solid #f3f4f6; margin-top: 8px;">
+      <button id="teams-prev" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">&#8592; Prev</button>
+      <span id="teams-page-info" style="font-size: 13px; color: #5f6b85; font-weight: 600;"></span>
+      <button id="teams-next" style="border: 1px solid #e5e7eb; background: #fff; color: #374151; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Next &#8594;</button>
     </div>
   </div>
 </div>
@@ -188,3 +200,66 @@
 </div>
 
 <script src="/js/modules/teams.js"></script>
+<script>
+(function () {
+  var PER_PAGE = 6;
+  var cards = Array.from(document.querySelectorAll('.teams-grid .team-card'));
+  if (cards.length <= PER_PAGE) return;
+
+  var pagination = document.getElementById('teams-pagination');
+  var prevBtn = document.getElementById('teams-prev');
+  var nextBtn = document.getElementById('teams-next');
+  var info = document.getElementById('teams-page-info');
+  var totalPages = Math.ceil(cards.length / PER_PAGE);
+  var page = 1;
+
+  function render() {
+    cards.forEach(function (card, i) {
+      card.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+    });
+    info.textContent = 'Page ' + page + ' of ' + totalPages;
+    prevBtn.style.opacity = page === 1 ? '0.4' : '1';
+    prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
+    nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
+    nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+  }
+
+  prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+  nextBtn.addEventListener('click', function () { if (page < totalPages) { page++; render(); } });
+
+  pagination.style.display = 'flex';
+  render();
+})();
+
+(function () {
+  var PER_PAGE = 5;
+  document.querySelectorAll('.team-card').forEach(function (card) {
+    var items = Array.from(card.querySelectorAll('.team-member-item'));
+    if (items.length <= PER_PAGE) return;
+
+    var pager = card.querySelector('.team-member-pager');
+    var prevBtn = pager.querySelector('.team-member-pager-prev');
+    var nextBtn = pager.querySelector('.team-member-pager-next');
+    var info = pager.querySelector('.team-member-pager-info');
+    var totalPages = Math.ceil(items.length / PER_PAGE);
+    var page = 1;
+
+    function render() {
+      items.forEach(function (item, i) {
+        item.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? 'flex' : 'none';
+      });
+      info.textContent = 'Page ' + page + ' of ' + totalPages;
+      prevBtn.style.opacity = page === 1 ? '0.4' : '1';
+      prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
+      nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
+      nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+    }
+
+    prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+    nextBtn.addEventListener('click', function () { if (page < totalPages) { page++; render(); } });
+
+    pager.style.display = 'flex';
+    render();
+  });
+})();
+</script>
