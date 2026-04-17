@@ -34,4 +34,18 @@ module.exports = class Project {
     );
   }
 
+  static findByName(project_name) {
+    return db.execute(
+      `SELECT id_project FROM project WHERE project_name = ?`,
+      [project_name]
+    );
+  }
+  
+  static findByNameExcluding(project_name, id_project) {
+    return db.execute(
+      `SELECT id_project FROM project WHERE project_name = ? AND id_project != ?`,
+      [project_name, id_project]
+    );
+  }
+
 };
