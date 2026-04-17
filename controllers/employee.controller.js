@@ -28,6 +28,23 @@ exports.getDashboard = async (req, res) => {
     const [[orgActiveBlockers]] = await Blocker.countAllActive();
     const [orgWeekRows] = await Log.countByWeekAll(orgWeekOffset);
     const [orgWeekLogs] = await Log.fetchByWeekAll(orgWeekOffset);
+    
+    // Fetch unique teams for the filter dropdown
+    const Team = require('../models/team.model');
+    const [allTeamsRaw] = await Team.fetchAll();
+    
+    // Deduplicate teams since fetchAll has joins that might cause duplicate rows
+    const uniqueTeamsMap = new Map();
+    allTeamsRaw.forEach(team => {
+      if (!uniqueTeamsMap.has(team.id_team)) {
+        uniqueTeamsMap.set(team.id_team, {
+          id_team: team.id_team,
+          team_name: team.team_name,
+          description: team.description
+        });
+      }
+    });
+    const teams = Array.from(uniqueTeamsMap.values());
 
     const weeklyData = [0, 0, 0, 0, 0];
     weekRows.forEach((row) => {
@@ -79,6 +96,7 @@ exports.getDashboard = async (req, res) => {
       orgActiveBlockers: Number(orgActiveBlockers.count),
       orgWeeklyData,
       orgLogsByDay,
+      teams,
     });
   } catch (err) {
     console.log(err);

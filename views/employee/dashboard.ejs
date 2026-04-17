@@ -6,6 +6,7 @@
   window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
   window.orgWeeklyData = <%- JSON.stringify(orgWeeklyData) %>;
   window.orgLogsByDay = <%- JSON.stringify(orgLogsByDay) %>;
+  window.teamsData = <%- JSON.stringify(teams) %>;
 </script>
 
 <div class="view-mode-toggle">
@@ -170,15 +171,23 @@
     <div class="report-card-header">
       <div class="header-title-group">
         <h2 id="orgFeedTitle">Team Activity Feed</h2>
+        <span class="activity-date" id="orgActivityDate" style="margin-left: 12px; font-weight: 500; font-size: 14px; color: var(--text-muted);">
+          <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+        </span>
       </div>
       <select id="teamFilter" class="team-filter-select">
         <option value="">All Teams</option>
-        <option value="mufasa">Mufasa Solutions</option>
-        <option value="phoenix">Phoenix Team</option>
-        <option value="delta">Delta Squad</option>
+        <% teams.forEach(team => { %>
+          <option value="<%= team.team_name %>"><%= team.team_name %></option>
+        <% }) %>
       </select>
     </div>
     <div class="report-card-body">
+      <div class="activities-summary">
+        <span class="summary-item">
+          <span class="summary-count" id="orgLoggedCount"><%= orgTodayLogsCount %></span> logged
+        </span>
+      </div>
       <div class="team-activity-feed" id="teamActivityFeed"></div>
     </div>
   </div>

@@ -151,14 +151,23 @@ const TabsModule = (() => {
     },
   };
 
-  const teamMeta = {
-    mufasa: { name: 'Mufasa Solutions', project: 'Internal Tools' },
-    phoenix: { name: 'Phoenix Team', project: 'API Integration' },
-    delta: { name: 'Delta Squad', project: 'Dashboard Redesign' },
+  const getTeamMeta = (teamName) => {
+    const teams = window.teamsData || [];
+    const team = teams.find(t => t.team_name.toLowerCase() === teamName.toLowerCase());
+    if (team) {
+      return { name: team.team_name, project: team.description || 'General Project' };
+    }
+    return { name: teamName, project: 'General Project' };
   };
 
-  const getDateForDay = (dayIndex) => {
+  const getDateForDay = (dayIndex, isOrg = false) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const offsetStr = isOrg ? urlParams.get('orgWeekOffset') : urlParams.get('weekOffset');
+    const weeksAgo = parseInt(offsetStr) || 0;
+
     const today = new Date();
+    today.setDate(today.getDate() - (weeksAgo * 7));
+
     const currentDay = today.getDay();
     const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(today);
@@ -204,7 +213,7 @@ const TabsModule = (() => {
         : "Today's Activities";
     }
     if (dateEl) {
-      dateEl.textContent = getDateForDay(dayIndex);
+      dateEl.textContent = getDateForDay(dayIndex, false);
     }
     if (countEl) countEl.textContent = logs.length;
 
@@ -234,7 +243,7 @@ const TabsModule = (() => {
   const renderOrgActivities = (dayIndex) => {
     const feed = byId('teamActivityFeed');
     const titleEl = byId('orgFeedTitle');
-    const dateEl = byId('orgFeedDate');
+    const dateEl = byId('orgActivityDate');
     const teamFilter = byId('teamFilter');
     const selectedTeam = teamFilter ? teamFilter.value : '';
 
@@ -246,16 +255,15 @@ const TabsModule = (() => {
         : 'Team Activity Feed';
     }
     if (dateEl) {
-      dateEl.textContent = selectedOrgDayIndex !== null
-        ? getDateForDay(dayIndex)
-        : '';
-      dateEl.style.display = selectedOrgDayIndex !== null ? 'inline' : 'none';
+      dateEl.textContent = getDateForDay(dayIndex, true);
     }
 
     let html = '';
     
     // Group window.orgLogsByDay[dayIndex] by team
     const logs = (window.orgLogsByDay && window.orgLogsByDay[dayIndex]) || [];
+    const orgLoggedCountEl = byId('orgLoggedCount');
+    if (orgLoggedCountEl) orgLoggedCountEl.textContent = logs.length;
     const groupedData = {};
     logs.forEach(log => {
       // If no team, we can put them in an "Other" category or just skip.
@@ -263,12 +271,12 @@ const TabsModule = (() => {
       const teamNamesArr = log.team_names ? log.team_names.split(', ') : ['Unassigned'];
       teamNamesArr.forEach(teamName => {
         if (!groupedData[teamName]) {
-          groupedData[teamName] = { name: teamName, project: 'General', items: [] };
+          const meta = getTeamMeta(teamName);
+          groupedData[teamName] = { name: meta.name, project: meta.project, items: [] };
         }
         groupedData[teamName].items.push({
           author: log.full_name,
           desc: log.completed,
-          time: new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           blocker: false // Assuming false for logs without block info retrieved.
         });
       });
@@ -318,7 +326,6 @@ const TabsModule = (() => {
                 <p class="activity-author">${act.author}</p>
                 <p class="activity-desc">${isBlocker ? '<i class="fa-solid fa-triangle-exclamation"></i> ' : ''}${act.desc}</p>
               </div>
-              <span class="activity-time">${act.time}</span>
             </li>
           `;
         });
