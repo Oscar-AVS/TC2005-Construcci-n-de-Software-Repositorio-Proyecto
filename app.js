@@ -153,7 +153,7 @@ app.get('/', (req, res) => res.redirect('/login'));
  * Routes.
  */
 app.use('/', csrfProtection, usersRoutes);
-app.use('/employee', isAuth, requireRole('employee'), csrfProtection, employeeRoutes);
+app.use('/employee', isAuth, requireRole('employee', 'admin'), csrfProtection, employeeRoutes);
 app.use('/team-leader', isAuth, requireRole('team-leader'), csrfProtection, teamLeaderRoutes);
 app.use('/manager', isAuth, requireRole('manager'), csrfProtection, managerRoutes);
 app.use('/admin', isAuth, requireRole('admin'), csrfProtection, adminRoutes);

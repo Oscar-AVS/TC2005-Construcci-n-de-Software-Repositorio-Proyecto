@@ -1,117 +1,313 @@
 <h1 id="pageTitle" class="page-title">System Dashboard</h1>
 
-<div class="stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-blue" aria-hidden="true">
-      <i class="fa-solid fa-users"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value"><%= totalUsers %></p>
-      <p class="stat-label">Total Users</p>
-    </div>
-  </div>
+<script>
+  window.personalWeeklyData = <%- JSON.stringify(weeklyData) %>;
+  window.logsByDay = <%- JSON.stringify(logsByDay) %>;
+  window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
+  window.orgWeeklyData = <%- JSON.stringify(orgWeeklyData) %>;
+  window.orgLogsByDay = <%- JSON.stringify(orgLogsByDay) %>;
+  window.teamsData = <%- JSON.stringify(teams) %>;
+</script>
 
-  <div class="stat-card">
-    <div class="stat-icon stat-icon-accent" aria-hidden="true">
-      <i class="fa-solid fa-people-group"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value"><%= totalTeams %></p>
-      <p class="stat-label">Active Teams</p>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-icon" style="background: #fff7ed; color: #f39c12;" aria-hidden="true">
-      <i class="fa-solid fa-clock"></i>
-    </div>
-    <div class="stat-info">
-      <p class="stat-value"><%= pendingApprovals %></p>
-      <p class="stat-label">Pending Approvals</p>
-    </div>
-  </div>
+<!-- Dashboard Tabs -->
+<div class="dashboard-tabs">
+  <button type="button" class="dashboard-tab active" data-tab="system-dashboard">
+    <i class="fa-solid fa-gauge-high"></i> System Dashboard
+  </button>
+  <button type="button" class="dashboard-tab" data-tab="activity">
+    <i class="fa-solid fa-chart-line"></i> Activity
+  </button>
 </div>
 
-<div class="dashboard-grid">
+<!-- =============================================
+     TAB 1: SYSTEM DASHBOARD
+     ============================================= -->
+<div class="tab-content active" id="tab-system-dashboard">
 
-  <div class="dashboard-column">
-    <div class="report-card">
-      <div class="report-card-header">
-        <h2>Users by Role</h2>
+  <div class="stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue" aria-hidden="true">
+        <i class="fa-solid fa-users"></i>
       </div>
-      <div class="report-card-body">
-        <div class="role-breakdown">
-          <%
-            const roleColors = {
-              'admin': '#e74c3c',
-              'manager': '#9b59b6',
-              'team-leader': '#3498db',
-              'employee': '#27ae60',
-              'project-manager': '#f39c12'
-            };
-          %>
-          <% roleStats.forEach(r => { %>
-            <% const pct = totalUsers > 0 ? Math.round((r.count / totalUsers) * 100) : 0; %>
-            <% const color = roleColors[r.role_name] || '#95a5a6'; %>
-            <div class="role-breakdown-item" style="margin-bottom: 16px;">
-              <div class="role-breakdown-info">
-                <span class="role-breakdown-label" style="font-size: 14px; font-weight: 600; color: #1f2a44;">
-                  <%= r.role_name.charAt(0).toUpperCase() + r.role_name.slice(1).replace(/-/g, ' ') %>
-                </span>
-                <span class="role-breakdown-count" style="font-size: 14px; font-weight: 700; color: #1f2a44;">
-                  <%= r.count %>
-                </span>
-              </div>
-              <div class="role-breakdown-bar" style="height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin-top: 6px;">
-                <div style="width: <%= pct %>%; background: <%= color %>; height: 100%; border-radius: 999px; transition: width 0.3s;"></div>
-              </div>
-            </div>
-          <% }) %>
-        </div>
+      <div class="stat-info">
+        <p class="stat-value"><%= totalUsers %></p>
+        <p class="stat-label">Total Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-accent" aria-hidden="true">
+        <i class="fa-solid fa-people-group"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value"><%= totalTeams %></p>
+        <p class="stat-label">Active Teams</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fff7ed; color: #f39c12;" aria-hidden="true">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div class="stat-info">
+        <p class="stat-value"><%= pendingApprovals %></p>
+        <p class="stat-label">Pending Approvals</p>
       </div>
     </div>
   </div>
 
-  <div class="dashboard-column">
-    <div class="report-card">
-      <div class="report-card-header">
-        <h2>Recent Users</h2>
-        <a href="/admin/users" class="view-all-link">View all</a>
-      </div>
-      <div class="report-card-body">
-        <div class="recent-users-list">
-          <% recentUsers.forEach(u => { %>
-            <div class="recent-user-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0;">
-                <%= u.full_name.charAt(0).toUpperCase() %>
+  <div class="dashboard-grid">
+
+    <div class="dashboard-column">
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Users by Role</h2>
+        </div>
+        <div class="report-card-body">
+          <div class="role-breakdown">
+            <%
+              const roleColors = {
+                'admin': '#e74c3c',
+                'manager': '#9b59b6',
+                'team-leader': '#3498db',
+                'employee': '#27ae60',
+                'project-manager': '#f39c12'
+              };
+            %>
+            <% roleStats.forEach(r => { %>
+              <% const pct = totalUsers > 0 ? Math.round((r.count / totalUsers) * 100) : 0; %>
+              <% const color = roleColors[r.role_name] || '#95a5a6'; %>
+              <div class="role-breakdown-item" style="margin-bottom: 16px;">
+                <div class="role-breakdown-info">
+                  <span class="role-breakdown-label" style="font-size: 14px; font-weight: 600; color: #1f2a44;">
+                    <%= r.role_name.charAt(0).toUpperCase() + r.role_name.slice(1).replace(/-/g, ' ') %>
+                  </span>
+                  <span class="role-breakdown-count" style="font-size: 14px; font-weight: 700; color: #1f2a44;">
+                    <%= r.count %>
+                  </span>
+                </div>
+                <div class="role-breakdown-bar" style="height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin-top: 6px;">
+                  <div style="width: <%= pct %>%; background: <%= color %>; height: 100%; border-radius: 999px; transition: width 0.3s;"></div>
+                </div>
               </div>
-              <div style="flex: 1;">
-                <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1f2a44;"><%= u.full_name %></p>
-                <p style="margin: 0; font-size: 12px; color: #5f6b85;"><%= u.role_name ? u.role_name.charAt(0).toUpperCase() + u.role_name.slice(1).replace(/-/g, ' ') : 'No role' %></p>
-              </div>
-            </div>
-          <% }) %>
+            <% }) %>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="report-card" style="margin-top: 0;">
-      <div class="report-card-header">
-        <h2>Quick Actions</h2>
+    <div class="dashboard-column">
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Recent Users</h2>
+          <a href="/admin/users" class="view-all-link">View all</a>
+        </div>
+        <div class="report-card-body">
+          <div class="recent-users-list">
+            <% recentUsers.forEach(u => { %>
+              <div class="recent-user-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0;">
+                  <%= u.full_name.charAt(0).toUpperCase() %>
+                </div>
+                <div style="flex: 1;">
+                  <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1f2a44;"><%= u.full_name %></p>
+                  <p style="margin: 0; font-size: 12px; color: #5f6b85;"><%= u.role_name ? u.role_name.charAt(0).toUpperCase() + u.role_name.slice(1).replace(/-/g, ' ') : 'No role' %></p>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
       </div>
-      <div class="report-card-body">
-        <div class="quick-actions">
-          <a href="/admin/users" class="quick-action-btn">
-            <i class="fa-solid fa-user-plus"></i>
-            <span>Add User</span>
-          </a>
-          <a href="/admin/teams" class="quick-action-btn">
-            <i class="fa-solid fa-people-group"></i>
-            <span>New Team</span>
-          </a>
+
+      <div class="report-card" style="margin-top: 0;">
+        <div class="report-card-header">
+          <h2>Quick Actions</h2>
+        </div>
+        <div class="report-card-body">
+          <div class="quick-actions">
+            <a href="/admin/users" class="quick-action-btn">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Add User</span>
+            </a>
+            <a href="/admin/teams" class="quick-action-btn">
+              <i class="fa-solid fa-people-group"></i>
+              <span>New Team</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
+
+  </div>
+
+</div>
+
+<!-- =============================================
+     TAB 2: ACTIVITY (Personal / Organization)
+     ============================================= -->
+<div class="tab-content" id="tab-activity">
+
+  <div class="view-mode-toggle">
+    <button type="button" class="view-mode-btn active" data-view="personal">
+      <i class="fa-solid fa-user"></i> Personal
+    </button>
+    <button type="button" class="view-mode-btn" data-view="organization">
+      <i class="fa-solid fa-building"></i> Organization
+    </button>
+  </div>
+
+  <!-- PERSONAL VIEW -->
+  <div class="activity-view active" id="view-personal">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-accent" aria-hidden="true">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value" id="statCompletedPersonal"><%= completedToday %></p>
+          <p class="stat-label">Completed today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue" aria-hidden="true">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value"><%= weeklyTotal %></p>
+          <p class="stat-label">Logs this week</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value"><%= activeBlockers %></p>
+          <p class="stat-label">Active blockers</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="media-row single-chart-row">
+      <div class="media-card chart-card">
+        <div class="media-card-header">
+          <div>
+            <p class="media-card-title">Weekly Activity</p>
+            <p class="media-card-sub">Click a bar to see that day's tasks</p>
+          </div>
+        </div>
+        <div class="chart-area">
+          <canvas id="personalActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-card-header">
+        <h2 id="personalActivitiesTitle">Today's Activities</h2>
+        <span class="report-date" id="personalActivitiesDate">
+          <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+        </span>
+      </div>
+      <div class="report-card-body">
+        <div class="activities-summary">
+          <span class="summary-item">
+            <span class="summary-count" id="loggedCount"><%= completedToday %></span> logged
+          </span>
+          <span class="summary-divider">•</span>
+          <span class="summary-item">
+            <span class="summary-count"><%= activeBlockers %></span> active blockers
+          </span>
+        </div>
+        <ul class="activity-list" id="personalActivityList">
+          <% if (todayLogs.length > 0) { %>
+            <% todayLogs.forEach(log => { %>
+              <li class="activity-item">
+                <span class="activity-text"><%= log.completed %></span>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li class="activity-item">
+              <span class="activity-text" style="color: var(--text-muted);">No activities logged today.</span>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ORGANIZATION VIEW -->
+  <div class="activity-view" id="view-organization">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue" aria-hidden="true">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value"><%= orgActiveUsers %></p>
+          <p class="stat-label">Active employees</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-accent" aria-hidden="true">
+          <i class="fa-solid fa-clipboard-list"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value"><%= orgTodayLogsCount %></p>
+          <p class="stat-label">Logs today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow" aria-hidden="true">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-info">
+          <p class="stat-value"><%= orgActiveBlockers %></p>
+          <p class="stat-label">Active blockers</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="media-row single-chart-row">
+      <div class="media-card chart-card">
+        <div class="media-card-header">
+          <div>
+            <p class="media-card-title">Organization Activity</p>
+            <p class="media-card-sub">Click a bar to see that day's team activities</p>
+          </div>
+        </div>
+        <div class="chart-area">
+          <canvas id="orgActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="header-title-group">
+          <h2 id="orgFeedTitle">Team Activity Feed</h2>
+          <span class="report-date" id="orgActivityDate" style="display: none;"></span>
+        </div>
+        <select id="teamFilter" class="team-filter-select">
+          <option value="">All Teams</option>
+          <% teams.forEach(team => { %>
+            <option value="<%= team.team_name %>"><%= team.team_name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="report-card-body">
+        <div class="activities-summary">
+          <span class="summary-item">
+            <span class="summary-count" id="orgLoggedCount"><%= orgTodayLogsCount %></span> logged
+          </span>
+        </div>
+        <div class="team-activity-feed" id="teamActivityFeed"></div>
+      </div>
+    </div>
+
   </div>
 
 </div>

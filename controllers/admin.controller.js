@@ -5,23 +5,26 @@
 
 const User = require('../models/user.model');
 const Team = require('../models/team.model');
+const Log = require('../models/log.model');
+const Blocker = require('../models/blocker.model');
 const db = require('../util/database');
 const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const weekOffset = parseInt(req.query.weekOffset) || 0;
+  const orgWeekOffset = parseInt(req.query.orgWeekOffset) || 0;
+
   try {
     const [[{ totalUsers }]] = await db.query(
       `SELECT COUNT(*) AS totalUsers FROM user WHERE status = 'active'`
     );
-
     const [[{ totalTeams }]] = await db.query(
       `SELECT COUNT(*) AS totalTeams FROM team`
     );
-
     const [[{ pendingApprovals }]] = await db.query(
       `SELECT COUNT(*) AS pendingApprovals FROM user WHERE status = 'pending'`
     );
-
     const [roleStats] = await db.query(
       `SELECT r.role_name, COUNT(ur.id_user) AS count
       FROM role r
@@ -30,7 +33,6 @@ exports.getDashboard = async (req, res) => {
       GROUP BY r.id_role, r.role_name
       ORDER BY r.id_role`
     );
-
     const [recentUsers] = await db.query(
       `SELECT u.full_name, r.role_name, u.id_user
       FROM user u
@@ -41,6 +43,58 @@ exports.getDashboard = async (req, res) => {
       LIMIT 4`
     );
 
+    const [weekRows] = await Log.countByWeek(activeUserId, weekOffset);
+    const [todayLogs] = await Log.fetchToday(activeUserId);
+    const [weekLogs] = await Log.fetchByWeek(activeUserId, weekOffset);
+    const [[blockerRow]] = await Blocker.countActiveByUser(activeUserId);
+
+    const [[orgActiveUsers]] = await User.countActive();
+    const [[orgTodayLogsCount]] = await Log.countTodayAll();
+    const [[orgActiveBlockers]] = await Blocker.countAllActive();
+    const [orgWeekRows] = await Log.countByWeekAll(orgWeekOffset);
+    const [orgWeekLogs] = await Log.fetchByWeekAll(orgWeekOffset);
+
+    const [allTeamsRaw] = await Team.fetchAll();
+    const uniqueTeamsMap = new Map();
+    allTeamsRaw.forEach(team => {
+      if (!uniqueTeamsMap.has(team.id_team)) {
+        uniqueTeamsMap.set(team.id_team, {
+          id_team: team.id_team,
+          team_name: team.team_name,
+          description: team.description,
+        });
+      }
+    });
+    const teams = Array.from(uniqueTeamsMap.values());
+
+    const weeklyData = [0, 0, 0, 0, 0];
+    weekRows.forEach(row => {
+      if (row.weekday <= 4) weeklyData[row.weekday] = Number(row.count);
+    });
+
+    const orgWeeklyData = [0, 0, 0, 0, 0];
+    orgWeekRows.forEach(row => {
+      if (row.weekday <= 4) orgWeeklyData[row.weekday] = Number(row.count);
+    });
+
+    const logsByDay = [[], [], [], [], []];
+    weekLogs.forEach(log => {
+      if (log.weekday <= 4) {
+        logsByDay[log.weekday].push({ id_log: log.id_log, completed: log.completed, created_at: log.created_at });
+      }
+    });
+
+    const orgLogsByDay = [[], [], [], [], [], [], []];
+    orgWeekLogs.forEach(log => {
+      orgLogsByDay[log.weekday].push({
+        id_log: log.id_log,
+        full_name: log.full_name,
+        completed: log.completed,
+        created_at: log.created_at,
+        team_names: log.team_names,
+      });
+    });
+
     res.render('admin/dashboard', {
       currentPage: 'dashboard',
       role: 'admin',
@@ -49,6 +103,18 @@ exports.getDashboard = async (req, res) => {
       pendingApprovals,
       roleStats,
       recentUsers,
+      weeklyData,
+      logsByDay,
+      todayLogs,
+      completedToday: todayLogs.length,
+      weeklyTotal: weeklyData.reduce((a, b) => a + b, 0),
+      activeBlockers: Number(blockerRow.count),
+      orgActiveUsers: Number(orgActiveUsers.count),
+      orgTodayLogsCount: Number(orgTodayLogsCount.count),
+      orgActiveBlockers: Number(orgActiveBlockers.count),
+      orgWeeklyData,
+      orgLogsByDay,
+      teams,
     });
   } catch (err) {
     console.error('getDashboard error:', err);

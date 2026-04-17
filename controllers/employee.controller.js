@@ -133,7 +133,7 @@ exports.getLog = async (req, res) => {
 
     res.render('shared/log', {
       currentPage: 'log',
-      role: 'employee',
+      role: req.session.role,
       logs: logsWithBlockers,
       projects,
       filters,
@@ -251,7 +251,7 @@ exports.getAchievements = async (req, res) => {
 
     res.render('employee/achievements', {
       currentPage: 'achievements',
-      role: 'employee',
+      role: req.session.role,
       achievements,
       projects,
       filters,
@@ -327,7 +327,7 @@ exports.editAchievement = async (req, res) => {
 exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
-    role: 'employee',
+    role: req.session.role,
     csrfToken: req.csrfToken(),
   });
 };
@@ -432,7 +432,7 @@ exports.getProjects = (req, res) => {
     .then(([rows]) => {
       res.render('employee/projects', {
         currentPage: 'projects',
-        role: 'employee',
+        role: req.session.role,
         projects: rows,
       });
     })
