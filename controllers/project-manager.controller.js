@@ -40,3 +40,22 @@ exports.getSelfReview = (req, res) => {
     currentPage: 'self-review',
   });
 };
+
+exports.getProfile = async (req, res) => {
+  try {
+    const [[user]] = await User.fetchOne(req.session.userId);
+    if (!user) return res.status(404).send('User not found');
+
+    res.render('shared/profile', {
+      currentPage: 'profile',
+      role: 'project-manager',
+      user,
+      error: '',
+      success: '',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
