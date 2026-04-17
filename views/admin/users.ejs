@@ -105,9 +105,19 @@
 
 <!-- Users Table -->
 <div class="report-card users-table-card" style="margin-top: 24px;">
-  <div class="report-card-header">
+  <div class="report-card-header" style="flex-wrap: wrap; gap: 12px;">
     <h2>All Users</h2>
-    <span class="item-count"><%= users.length %> users</span>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <input
+        type="text"
+        id="userSearchInput"
+        class="form-input"
+        placeholder="Search by name, email or role..."
+        autocomplete="off"
+        style="min-width: 240px;"
+      />
+      <span class="item-count" id="usersCountLabel"><%= users.length %> users</span>
+    </div>
   </div>
   <div class="report-card-body" style="padding: 0;">
     <table class="users-table">
@@ -513,31 +523,62 @@
     var PER_PAGE = 10;
     var tbody = document.querySelector('.users-table-card tbody');
     if (!tbody) return;
-    var rows = Array.from(tbody.querySelectorAll('tr'));
-    if (rows.length <= PER_PAGE) return;
 
+    var allRows = Array.from(tbody.querySelectorAll('tr'));
     var pagination = document.getElementById('users-pagination');
     var prevBtn = document.getElementById('users-prev');
     var nextBtn = document.getElementById('users-next');
     var info = document.getElementById('users-page-info');
-    var totalPages = Math.ceil(rows.length / PER_PAGE);
+    var countLabel = document.getElementById('usersCountLabel');
+    var searchInput = document.getElementById('userSearchInput');
+    var activeRows = allRows;
     var page = 1;
+    var searchTimeout;
 
     function render() {
-      rows.forEach(function (row, i) {
-        row.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+      var totalPages = Math.max(1, Math.ceil(activeRows.length / PER_PAGE));
+      if (page > totalPages) page = 1;
+
+      allRows.forEach(function (row) { row.style.display = 'none'; });
+      activeRows.slice((page - 1) * PER_PAGE, page * PER_PAGE).forEach(function (row) {
+        row.style.display = '';
       });
-      info.textContent = 'Page ' + page + ' of ' + totalPages;
-      prevBtn.style.opacity = page === 1 ? '0.4' : '1';
-      prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
-      nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
-      nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+
+      if (activeRows.length <= PER_PAGE) {
+        pagination.style.display = 'none';
+      } else {
+        pagination.style.display = 'flex';
+        info.textContent = 'Page ' + page + ' of ' + totalPages;
+        prevBtn.style.opacity = page === 1 ? '0.4' : '1';
+        prevBtn.style.cursor = page === 1 ? 'default' : 'pointer';
+        nextBtn.style.opacity = page === totalPages ? '0.4' : '1';
+        nextBtn.style.cursor = page === totalPages ? 'default' : 'pointer';
+      }
+
+      if (countLabel) {
+        countLabel.textContent = activeRows.length + ' user' + (activeRows.length !== 1 ? 's' : '');
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () {
+          var query = searchInput.value.trim().toLowerCase();
+          activeRows = query
+            ? allRows.filter(function (row) { return row.textContent.toLowerCase().includes(query); })
+            : allRows;
+          page = 1;
+          render();
+        }, 250);
+      });
     }
 
     prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
-    nextBtn.addEventListener('click', function () { if (page < totalPages) { page++; render(); } });
+    nextBtn.addEventListener('click', function () {
+      if (page < Math.ceil(activeRows.length / PER_PAGE)) { page++; render(); }
+    });
 
-    pagination.style.display = 'flex';
     render();
   })();
 </script>
