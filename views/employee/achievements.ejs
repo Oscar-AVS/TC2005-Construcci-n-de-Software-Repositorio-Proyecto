@@ -63,6 +63,43 @@
   </div>
 </div>
 
+<!-- Achievements Filter -->
+<div class="report-card reports-filters-card">
+  <div class="report-card-header">
+    <h2>Filter Achievements</h2>
+  </div>
+  <div class="report-card-body">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="achQuickFilter">Quick Filters</label>
+        <select id="achQuickFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="Q1">Q1 (Jan - Mar)</option>
+          <option value="Q2">Q2 (Apr - Jun)</option>
+          <option value="Q3">Q3 (Jul - Sep)</option>
+          <option value="Q4">Q4 (Oct - Dec)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="achFilterFrom">From</label>
+        <input type="date" id="achFilterFrom" class="form-input" />
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="achFilterTo">To</label>
+        <input type="date" id="achFilterTo" class="form-input" />
+      </div>
+
+      <button class="btn-submit btn-filter-submit" type="button" onclick="applyAchievementFilter()">
+        <i class="fa-solid fa-filter"></i> Filter
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Achievements List -->
 <div class="report-card">
   <div class="report-card-header">
@@ -80,7 +117,7 @@
         </div>
       <% } else { %>
         <% achievements.forEach(a => { %>
-          <div class="achievement-card" id="achievement-<%= a.id_achievement %>">
+          <div class="achievement-card" id="achievement-<%= a.id_achievement %>" data-date="<%= new Date(a.created_at).toISOString().split('T')[0] %>">
             <div class="achievement-icon">
               <i class="fa-solid fa-trophy"></i>
             </div>
@@ -315,6 +352,63 @@
       closeEditModal();
     }
   }
+
+  function applyAchievementFilter() {
+    const from = document.getElementById('achFilterFrom').value;
+    const to = document.getElementById('achFilterTo').value;
+    const cards = document.querySelectorAll('.achievement-card[data-date]');
+    let visible = 0;
+
+    cards.forEach(card => {
+      const date = card.dataset.date;
+      const inRange = (!from || date >= from) && (!to || date <= to);
+      card.style.display = inRange ? '' : 'none';
+      if (inRange) visible++;
+    });
+
+    document.getElementById('achievementCount').textContent = `${visible} total`;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const achQuickFilter = document.getElementById('achQuickFilter');
+    const achFilterFrom = document.getElementById('achFilterFrom');
+    const achFilterTo = document.getElementById('achFilterTo');
+
+    achQuickFilter.addEventListener('change', () => {
+      const val = achQuickFilter.value;
+      const year = new Date().getFullYear();
+      let startDate = '', endDate = '';
+
+      switch (val) {
+        case 'LAST_WEEK': {
+          const today = new Date();
+          const last = new Date();
+          last.setDate(today.getDate() - 7);
+          startDate = last.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        }
+        case 'LAST_MONTH': {
+          const today = new Date();
+          const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          const last = new Date(today.getFullYear(), today.getMonth(), 0);
+          startDate = first.toISOString().split('T')[0];
+          endDate = last.toISOString().split('T')[0];
+          break;
+        }
+        case 'Q1': startDate = `${year}-01-01`; endDate = `${year}-03-31`; break;
+        case 'Q2': startDate = `${year}-04-01`; endDate = `${year}-06-30`; break;
+        case 'Q3': startDate = `${year}-07-01`; endDate = `${year}-09-30`; break;
+        case 'Q4': startDate = `${year}-10-01`; endDate = `${year}-12-31`; break;
+      }
+
+      achFilterFrom.value = startDate;
+      achFilterTo.value = endDate;
+    });
+
+    achFilterFrom.addEventListener('change', () => { achQuickFilter.value = ''; });
+    achFilterTo.addEventListener('change', () => { achQuickFilter.value = ''; });
+  });
 
   async function executeDelete() {
     if (!currentDeleteId) return;

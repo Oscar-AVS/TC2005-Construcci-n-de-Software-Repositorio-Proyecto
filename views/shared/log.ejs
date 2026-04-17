@@ -77,6 +77,19 @@
     <form action="/employee/log" method="GET">
       <div class="filter-row">
         <div class="filter-group">
+          <label class="form-label" for="logQuickFilter">Quick Filters</label>
+          <select id="logQuickFilter" class="form-select">
+            <option value="">Select a filter</option>
+            <option value="LAST_WEEK">Last Week</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="Q1">Q1 (Jan - Mar)</option>
+            <option value="Q2">Q2 (Apr - Jun)</option>
+            <option value="Q3">Q3 (Jul - Sep)</option>
+            <option value="Q4">Q4 (Oct - Dec)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
           <label class="form-label" for="filterProject">Project</label>
           <select id="filterProject" name="id_project" class="form-select">
             <option value="">All Projects</option>
@@ -98,7 +111,9 @@
           <input type="date" id="filterDateTo" name="date_to" class="form-input" value="<%= filters.date_to || '' %>" />
         </div>
 
-        <button class="btn-submit" type="submit">Filter</button>
+        <button class="btn-submit btn-filter-submit" type="submit">
+          <i class="fa-solid fa-filter"></i> Filter
+        </button>
       </div>
     </form>
   </div>
@@ -390,6 +405,47 @@
   document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
   });
+
+  const logQuickFilter = document.getElementById('logQuickFilter');
+  const filterDateFrom = document.getElementById('filterDateFrom');
+  const filterDateTo = document.getElementById('filterDateTo');
+
+  if (logQuickFilter && filterDateFrom && filterDateTo) {
+    logQuickFilter.addEventListener('change', () => {
+      const val = logQuickFilter.value;
+      const year = new Date().getFullYear();
+      let startDate = '', endDate = '';
+
+      switch (val) {
+        case 'LAST_WEEK': {
+          const today = new Date();
+          const lastWeek = new Date();
+          lastWeek.setDate(today.getDate() - 7);
+          startDate = lastWeek.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        }
+        case 'LAST_MONTH': {
+          const today = new Date();
+          const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          const last = new Date(today.getFullYear(), today.getMonth(), 0);
+          startDate = first.toISOString().split('T')[0];
+          endDate = last.toISOString().split('T')[0];
+          break;
+        }
+        case 'Q1': startDate = `${year}-01-01`; endDate = `${year}-03-31`; break;
+        case 'Q2': startDate = `${year}-04-01`; endDate = `${year}-06-30`; break;
+        case 'Q3': startDate = `${year}-07-01`; endDate = `${year}-09-30`; break;
+        case 'Q4': startDate = `${year}-10-01`; endDate = `${year}-12-31`; break;
+      }
+
+      filterDateFrom.value = startDate;
+      filterDateTo.value = endDate;
+    });
+
+    filterDateFrom.addEventListener('change', () => { logQuickFilter.value = ''; });
+    filterDateTo.addEventListener('change', () => { logQuickFilter.value = ''; });
+  }
 
   function rebuildEditSelects() {
     const cont = document.getElementById('editProjectSelects');

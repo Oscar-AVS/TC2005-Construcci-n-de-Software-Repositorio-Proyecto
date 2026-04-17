@@ -1,13 +1,26 @@
 <h1 id="pageTitle" class="page-title">Self-Review</h1>
 
 <!-- Period Selection -->
-<div class="report-card">
+<div class="report-card reports-filters-card">
   <div class="report-card-header">
     <h2>Review Period</h2>
   </div>
 
   <div class="report-card-body">
     <div class="filter-row">
+      <div class="filter-group">
+        <label class="form-label" for="srQuickFilter">Quick Filters</label>
+        <select id="srQuickFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="Q1">Q1 (Jan - Mar)</option>
+          <option value="Q2">Q2 (Apr - Jun)</option>
+          <option value="Q3">Q3 (Jul - Sep)</option>
+          <option value="Q4">Q4 (Oct - Dec)</option>
+        </select>
+      </div>
+
       <div class="filter-group">
         <label class="form-label" for="periodFrom">From</label>
         <input type="date" id="periodFrom" class="form-input" />
@@ -18,20 +31,10 @@
         <input type="date" id="periodTo" class="form-input" />
       </div>
 
-      <button class="btn-generate-ai" type="button" onclick="generateSelfReview()" style="align-self: flex-end;">
+      <button class="btn-generate-ai" type="button" onclick="generateSelfReview()">
         <i class="fa-solid fa-sparkles"></i>
         Generate Review
       </button>
-    </div>
-
-    <!-- Date Shortcuts -->
-    <div class="date-shortcuts" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-      <button type="button" class="btn-draft" onclick="setDates('lastWeek')" style="padding: 4px 10px; font-size: 12px;">Last Week</button>
-      <button type="button" class="btn-draft" onclick="setDates('lastMonth')" style="padding: 4px 10px; font-size: 12px;">Last Month</button>
-      <button type="button" class="btn-draft" onclick="setDates('q1')" style="padding: 4px 10px; font-size: 12px;">Q1</button>
-      <button type="button" class="btn-draft" onclick="setDates('q2')" style="padding: 4px 10px; font-size: 12px;">Q2</button>
-      <button type="button" class="btn-draft" onclick="setDates('q3')" style="padding: 4px 10px; font-size: 12px;">Q3</button>
-      <button type="button" class="btn-draft" onclick="setDates('q4')" style="padding: 4px 10px; font-size: 12px;">Q4</button>
     </div>
   </div>
 </div>
@@ -343,14 +346,30 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Automatically save on any edit to the textareas
     const textareas = ['doneWell', 'contributions', 'challenges', 'growth'];
     textareas.forEach(id => {
       document.getElementById(id).addEventListener('input', saveDraft);
     });
 
-    // Try to load any existing draft
     loadDraft();
+
+    const srQuickFilter = document.getElementById('srQuickFilter');
+    const periodFrom = document.getElementById('periodFrom');
+    const periodTo = document.getElementById('periodTo');
+
+    const quickFilterMap = {
+      LAST_WEEK: 'lastWeek',
+      LAST_MONTH: 'lastMonth',
+      Q1: 'q1', Q2: 'q2', Q3: 'q3', Q4: 'q4'
+    };
+
+    srQuickFilter.addEventListener('change', () => {
+      const mapped = quickFilterMap[srQuickFilter.value];
+      if (mapped) setDates(mapped);
+    });
+
+    periodFrom.addEventListener('change', () => { srQuickFilter.value = ''; });
+    periodTo.addEventListener('change', () => { srQuickFilter.value = ''; });
   });
 
   function openClearDraftModal() {
