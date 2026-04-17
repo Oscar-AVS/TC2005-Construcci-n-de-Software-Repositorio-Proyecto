@@ -56,4 +56,13 @@ module.exports = class Project {
     );
   }
 
+  static update(id_project, project_name, description, status, start_date, end_date) {
+    return db.execute(
+      `UPDATE project
+       SET project_name = ?, description = ?, status = ?, start_date = ?, end_date = ?
+       WHERE id_project = ?`,
+      [project_name, description || null, status, start_date || null, end_date || null, id_project]
+    );
+  }
+
 };
