@@ -99,6 +99,8 @@
 
 
     <script>
+    let aiSummaryGenerated = false;
+
         function showReportMessage(message, type = 'info') {
           const messageBox = document.getElementById('reportMessage');
           messageBox.textContent = message;
@@ -231,7 +233,14 @@
             return;
           }
 
+          if (!aiSummaryGenerated) {
+  showReportMessage('No AI summary generated yet. Please generate the summary before exporting the PDF.', 'error');
+  return;
+}
+
           showReportMessage('Exporting PDF report...', 'info');
+
+          
 
           const url = `/manager/reports/export-pdf?idEquipo=${idEquipo}&idProyecto=${idProyecto}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
           window.location.href = url;
@@ -337,6 +346,7 @@
       });
 
       document.getElementById('aiLoading').style.display = 'none';
+      aiSummaryGenerated = true;
       showReportMessage('AI summary generated successfully.', 'success');
       document.getElementById('aiResult').style.display = 'block';
     } catch (err) {
@@ -375,10 +385,31 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const reportTeam = document.getElementById('reportTeam');
     const generateButton = document.getElementById('generateReportBtn');
     const quarterSelect = document.getElementById('quarterSelect');
     const reportFrom = document.getElementById('reportFrom');
     const reportTo = document.getElementById('reportTo');
+
+    function resetSummaryState() {
+  aiSummaryGenerated = false;
+}
+
+if (quarterSelect) {
+  quarterSelect.addEventListener('change', resetSummaryState);
+}
+
+if (reportFrom) {
+  reportFrom.addEventListener('change', resetSummaryState);
+}
+
+if (reportTo) {
+  reportTo.addEventListener('change', resetSummaryState);
+}
+
+if (reportTeam) {
+  reportTeam.addEventListener('change', resetSummaryState);
+}
 
     if (generateButton) {
       generateButton.addEventListener('click', generateReport);
