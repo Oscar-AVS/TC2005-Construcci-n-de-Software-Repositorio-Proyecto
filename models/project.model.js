@@ -125,6 +125,41 @@ module.exports = class Project {
     );
   }
 
+  static fetchAssignedUsers(id_project) {
+    return db.execute(
+      `SELECT u.id_user, u.full_name, u.email,
+              t.team_name,
+              ua.assigned_at
+       FROM user_assignment ua
+       JOIN user u ON ua.id_user = u.id_user
+       LEFT JOIN team t ON ua.id_team = t.id_team
+       WHERE ua.id_project = ?
+       ORDER BY ua.assigned_at DESC`,
+      [id_project]
+    );
+  }
+  
+  static assignUser(id_project, id_user, id_team, assigned_by) {
+    return db.execute(
+      `INSERT INTO user_assignment (id_user, id_project, id_team, assigned_by) VALUES (?, ?, ?, ?)`,
+      [id_user, id_project, id_team || null, assigned_by]
+    );
+  }
+  
+  static isUserAssigned(id_project, id_user) {
+    return db.execute(
+      `SELECT id_user FROM user_assignment WHERE id_project = ? AND id_user = ?`,
+      [id_project, id_user]
+    );
+  }
+  
+  static removeUser(id_project, id_user) {
+    return db.execute(
+      `DELETE FROM user_assignment WHERE id_project = ? AND id_user = ?`,
+      [id_project, id_user]
+    );
+  }
+
 };
 
 

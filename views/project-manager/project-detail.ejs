@@ -58,7 +58,7 @@
     <button class="btn-draft" type="button" id="btnEditProject" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-pen"></i> Edit Project
     </button>
-    <button class="btn-submit" type="button" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
+    <button class="btn-submit" type="button" id="btnAssignUser" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-user-plus"></i> Add Member
     </button>
     <button class="btn-draft" type="button" id="btnEditProgress" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
@@ -127,6 +127,39 @@
                 class="btn-icon btn-danger"
                 title="Remove team"
                 onclick="return confirm('Remove team <%= team.team_name %> from this project?')">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </form>
+          </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Team Members</h2>
+      <span class="item-count"><%= users.length %> member<%= users.length !== 1 ? 's' : '' %></span>
+    </div>
+    <div class="report-card-body">
+      <% if (users.length === 0) { %>
+        <p style="color: var(--text-secondary); font-size: 14px;">No members assigned yet.</p>
+      <% } else { %>
+        <ul class="members-list">
+          <% users.forEach(user => { %>
+          <li class="member-item">
+            <div class="member-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="member-info">
+              <span class="member-name"><%= user.full_name %></span>
+              <span class="member-role"><%= user.team_name || 'No team' %></span>
+            </div>
+            <form action="/project-manager/project/<%= project.id_project %>/users/<%= user.id_user %>/remove" method="POST" style="margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button type="submit" class="btn-icon btn-danger" title="Remove member"
+                onclick="return confirm('Remove <%= user.full_name %> from this project?')">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </form>
@@ -365,6 +398,50 @@
     </form>
   </div>
 </div>
+
+<!-- MODAL: Caso 4.7 - Asigna usuarios -->
+<div class="modal-overlay" id="modalAssignUser">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h2>Add Member</h2>
+      <button class="modal-close" type="button" id="btnCloseAssignUser">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form action="/project-manager/project/<%= project.id_project %>/users/assign" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="form-field">
+        <label class="form-label" for="selectUser">User *</label>
+        <select id="selectUser" name="id_user" class="form-select" required>
+          <option value="">Select a user...</option>
+          <%
+            const assignedUserIds = users.map(u => String(u.id_user));
+          %>
+          <% allUsers.forEach(u => { %>
+            <% if (!assignedUserIds.includes(String(u.id))) { %>
+            <option value="<%= u.id %>"><%= u.full_name %> — <%= u.role || 'No role' %></option>
+            <% } %>
+          <% }) %>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="selectUserTeam">Team (optional)</label>
+        <select id="selectUserTeam" name="id_team" class="form-select">
+          <option value="">No specific team</option>
+          <% teams.forEach(team => { %>
+          <option value="<%= team.id_team %>"><%= team.team_name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelAssignUser">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-user-plus"></i> Add Member
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
  
  <script>
   // Convierte fecha Date de MySQL a string YYYY-MM-DD de forma segura
@@ -385,6 +462,7 @@
       if (e.target === this) closeModal(this);
     });
   });
+
  
  
   // Modal Edit (4.2)
@@ -406,16 +484,22 @@
   document.getElementById('btnCloseProgress').addEventListener('click',  () => closeModal(modalProgress));
   document.getElementById('btnCancelProgress').addEventListener('click', () => closeModal(modalProgress));
 
-  // Modal Progress (4.6)
+  // Modal Teams (4.6)
   const modalAssignTeam = document.getElementById('modalAssignTeam');
   document.getElementById('btnAssignTeam').addEventListener('click',       () => openModal(modalAssignTeam));
   document.getElementById('btnCloseAssignTeam').addEventListener('click',  () => closeModal(modalAssignTeam));
   document.getElementById('btnCancelAssignTeam').addEventListener('click', () => closeModal(modalAssignTeam));
+
+  // Modal Users (4.7)
+  const modalAssignUser = document.getElementById('modalAssignUser');
+  document.getElementById('btnAssignUser').addEventListener('click',       () => openModal(modalAssignUser));
+  document.getElementById('btnCloseAssignUser').addEventListener('click',  () => closeModal(modalAssignUser));
+  document.getElementById('btnCancelAssignUser').addEventListener('click', () => closeModal(modalAssignUser));
  
  
   // Si hay error, abrir el modal que corresponde automáticamente
   <% if (error) { %>
-    const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
+  const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
 
   if (errMsg.includes('fecha')) {
     openModal(document.getElementById('modalSetDates'));
@@ -423,6 +507,8 @@
     openModal(document.getElementById('modalEditProgress'));
   } else if (errMsg.includes('team')) {
     openModal(document.getElementById('modalAssignTeam'));
+  } else if (errMsg.includes('user') || errMsg.includes('member')) {
+    openModal(document.getElementById('modalAssignUser'));
   } else {
     openModal(document.getElementById('modalEditProject'));
   }
