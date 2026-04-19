@@ -81,4 +81,13 @@ module.exports = class Project {
     );
   }
 
+  static updateProgressStatus(id_project, progress_status, progress_percentage) {
+    return db.execute(
+      `UPDATE project
+       SET progress_status = ?, progress_percentage = ?, last_progress_update = NOW()
+       WHERE id_project = ?`,
+      [progress_status, progress_percentage, id_project]
+    );
+  }
+
 };

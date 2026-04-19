@@ -2,23 +2,26 @@
   <a href="/project-manager/projects" class="btn-back">
     <i class="fa-solid fa-arrow-left"></i> Back to Projects
   </a>
-</div>
-
-<h1 id="pageTitle" class="page-title"><%= project.project_name %></h1>
-
-<% if (success) { %>
+ </div>
+ 
+ 
+ <h1 id="pageTitle" class="page-title"><%= project.project_name %></h1>
+ 
+ 
+ <% if (success) { %>
   <div class="alert alert-success">
     <i class="fa-solid fa-circle-check"></i> <%= success %>
   </div>
-<% } %>
-<% if (error) { %>
+ <% } %>
+ <% if (error) { %>
   <div class="alert alert-error">
     <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
   </div>
-<% } %>
-
-<!-- Project Header -->
-<div class="project-detail-header">
+ <% } %>
+ 
+ 
+ <!-- Project Header -->
+ <div class="project-detail-header">
   <div class="project-detail-info">
     <span class="project-status <%= project.status %>"><%= project.status %></span>
     <div class="project-dates-inline">
@@ -33,7 +36,19 @@
         Due: <%= project.end_date
           ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : 'Not set' %>
-      </span>
+          <%
+          const progressLabels = {
+            not_started: 'Not Started',
+            in_progress: 'In Progress',
+            on_hold:     'On Hold',
+            at_risk:     'At Risk',
+            completed:   'Completed'
+          };
+        %>
+        <span class="project-progress-badge <%= project.progress_status %>">
+          <i class="fa-solid fa-chart-simple"></i>
+          <%= progressLabels[project.progress_status] || project.progress_status %> · <%= project.progress_percentage || 0 %>%
+        </span>
     </div>
   </div>
   <div class="project-detail-actions">
@@ -46,11 +61,30 @@
     <button class="btn-submit" type="button">
       <i class="fa-solid fa-user-plus"></i> Add Member
     </button>
+    <button class="btn-draft" type="button" id="btnEditProgress">
+      <i class="fa-solid fa-chart-simple"></i> Progress
+    </button>
   </div>
+ </div>
+ 
+ <!-- Barra Progreso -->
+ <div class="report-card" style="padding: 16px 24px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">Overall Progress</span>
+    <span style="font-size:13px; font-weight:700; color:var(--text-primary);"><%= project.progress_percentage || 0 %>%</span>
+  </div>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" style="width: <%= project.progress_percentage || 0 %>%;"></div>
+  </div>
+  <% if (project.last_progress_update) { %>
+  <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">
+    Last updated: <%= new Date(project.last_progress_update).toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' }) %>
+  </p>
+  <% } %>
 </div>
 
-<!-- Description -->
-<div class="report-card">
+ <!-- Description -->
+ <div class="report-card">
   <div class="report-card-header">
     <h2>Description</h2>
   </div>
@@ -59,10 +93,11 @@
       <%= project.description || 'This project has no description yet.' %>
     </p>
   </div>
-</div>
-
-<!-- Two Column -->
-<div class="project-detail-grid">
+ </div>
+ 
+ 
+ <!-- Two Column -->
+ <div class="project-detail-grid">
   <div class="report-card">
     <div class="report-card-header">
       <h2>Team Members</h2>
@@ -71,7 +106,8 @@
       <p style="color: var(--text-secondary); font-size: 14px;">No members assigned yet.</p>
     </div>
   </div>
-
+ 
+ 
   <div class="report-card">
     <div class="report-card-header">
       <h2>Active Blockers</h2>
@@ -81,10 +117,11 @@
       <p style="color: var(--text-secondary); font-size: 14px;">No active blockers.</p>
     </div>
   </div>
-</div>
-
-<!-- Recent Activity -->
-<div class="report-card">
+ </div>
+ 
+ 
+ <!-- Recent Activity -->
+ <div class="report-card">
   <div class="report-card-header">
     <h2>Recent Activity</h2>
     <a href="/project-manager/reports" class="btn-link">View Full Report</a>
@@ -92,11 +129,11 @@
   <div class="report-card-body">
     <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
   </div>
-</div>
-
-
-<!-- MODAL: Caso 4.2 — Edición -->
-<div class="modal-overlay" id="modalEditProject">
+ </div>
+ 
+ 
+ <!-- MODAL: Caso 4.2 — Edición -->
+ <div class="modal-overlay" id="modalEditProject">
   <div class="modal">
     <div class="modal-header">
       <h2>Edit Project</h2>
@@ -104,23 +141,27 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
+ 
+ 
     <form action="/project-manager/project/<%= project.id_project %>/edit" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
+ 
+ 
       <div class="form-field">
         <label class="form-label" for="editProjectName">Project Name *</label>
         <input type="text" id="editProjectName" name="project_name"
           class="form-input" value="<%= project.project_name %>"
           required maxlength="150" />
       </div>
-
+ 
+ 
       <div class="form-field">
         <label class="form-label" for="editProjectDesc">Description</label>
         <textarea id="editProjectDesc" name="description"
           rows="3" maxlength="500"><%= project.description || '' %></textarea>
       </div>
-
+ 
+ 
       <div class="form-field">
         <label class="form-label" for="editProjectStatus">Status</label>
         <select id="editProjectStatus" name="status" class="form-select">
@@ -129,7 +170,8 @@
           <option value="completed" <%= project.status === 'completed' ? 'selected' : '' %>>Completed</option>
         </select>
       </div>
-
+ 
+ 
       <div class="form-row-grid">
         <div class="form-field">
           <label class="form-label" for="editStartDate">Start Date</label>
@@ -142,7 +184,8 @@
             value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
         </div>
       </div>
-
+ 
+ 
       <div class="action-row" style="justify-content: flex-end; gap: 12px;">
         <button type="button" class="btn-draft" id="btnCancelEdit">Cancel</button>
         <button type="submit" class="btn-submit">
@@ -151,11 +194,11 @@
       </div>
     </form>
   </div>
-</div>
-
-
-<!-- MODAL: Caso 4.4 — Fechas -->
-<div class="modal-overlay" id="modalSetDates">
+ </div>
+ 
+ 
+ <!-- MODAL: Caso 4.4 — Fechas -->
+ <div class="modal-overlay" id="modalSetDates">
   <div class="modal" style="max-width: 420px;">
     <div class="modal-header">
       <h2>Set Project Dates</h2>
@@ -163,10 +206,12 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
+ 
+ 
     <form action="/project-manager/project/<%= project.id_project %>/dates" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
+ 
+ 
       <div class="form-row-grid">
         <div class="form-field">
           <label class="form-label" for="datesStart">Start Date *</label>
@@ -179,7 +224,8 @@
             value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
         </div>
       </div>
-
+ 
+ 
       <div class="action-row" style="justify-content: flex-end; gap: 12px;">
         <button type="button" class="btn-draft" id="btnCancelDates">Cancel</button>
         <button type="submit" class="btn-submit">
@@ -188,10 +234,54 @@
       </div>
     </form>
   </div>
+ </div>
+ 
+ <!-- MODAL: Caso 4.5 -->
+ <div class="modal-overlay" id="modalEditProgress">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h2>Update Progress</h2>
+      <button class="modal-close" type="button" id="btnCloseProgress">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form action="/project-manager/project/<%= project.id_project %>/progress" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="form-field">
+        <label class="form-label" for="progressStatus">Status *</label>
+        <select id="progressStatus" name="progress_status" class="form-select" required>
+          <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
+          <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+          <option value="on_hold"     <%= project.progress_status === 'on_hold'     ? 'selected' : '' %>>On Hold</option>
+          <option value="at_risk"     <%= project.progress_status === 'at_risk'     ? 'selected' : '' %>>At Risk</option>
+          <option value="completed"   <%= project.progress_status === 'completed'   ? 'selected' : '' %>>Completed</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Progress Percentage *</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="progressRange" min="0" max="100" step="5"
+            value="<%= project.progress_percentage || 0 %>"
+            style="flex:1;"
+            oninput="document.getElementById('progressPct').value = this.value" />
+          <input type="number" id="progressPct" name="progress_percentage"
+            class="form-input" min="0" max="100" style="width:72px; text-align:center;"
+            value="<%= project.progress_percentage || 0 %>"
+            oninput="document.getElementById('progressRange').value = this.value"
+            required />
+        </div>
+      </div>
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelProgress">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-floppy-disk"></i> Save
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
-
-
-<script>
+ 
+ <script>
   // Convierte fecha Date de MySQL a string YYYY-MM-DD de forma segura
   function toDateInput(val) {
     if (!val) return '';
@@ -199,40 +289,56 @@
     if (isNaN(d)) return '';
     return d.toISOString().split('T')[0];
   }
-
+ 
+ 
   function openModal(modal)  { modal.classList.add('active'); }
   function closeModal(modal) { modal.classList.remove('active'); }
-
+ 
+ 
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', function(e) {
       if (e.target === this) closeModal(this);
     });
   });
-
+ 
+ 
   // Modal Edit (4.2)
   const modalEdit = document.getElementById('modalEditProject');
   document.getElementById('btnEditProject').addEventListener('click', () => openModal(modalEdit));
   document.getElementById('btnCloseEdit').addEventListener('click',   () => closeModal(modalEdit));
   document.getElementById('btnCancelEdit').addEventListener('click',  () => closeModal(modalEdit));
-
+ 
+ 
   // Modal Dates (4.4)
   const modalDates = document.getElementById('modalSetDates');
   document.getElementById('btnEditDates').addEventListener('click',   () => openModal(modalDates));
   document.getElementById('btnCloseDates').addEventListener('click',  () => closeModal(modalDates));
   document.getElementById('btnCancelDates').addEventListener('click', () => closeModal(modalDates));
 
+  // Modal Progress (4.5)
+  const modalProgress = document.getElementById('modalEditProgress');
+  document.getElementById('btnEditProgress').addEventListener('click',   () => openModal(modalProgress));
+  document.getElementById('btnCloseProgress').addEventListener('click',  () => closeModal(modalProgress));
+  document.getElementById('btnCancelProgress').addEventListener('click', () => closeModal(modalProgress));
+ 
+ 
   // Si hay error, abrir el modal que corresponde automáticamente
   <% if (error) { %>
-    const isDateError = <%= JSON.stringify(error) %>.toLowerCase().includes('fecha');
-    if (isDateError) {
-      openModal(document.getElementById('modalSetDates'));
-    } else {
-      openModal(document.getElementById('modalEditProject'));
-    }
+    const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
+    
+    if (errMsg.includes('fecha')) {
+    openModal(document.getElementById('modalSetDates'));
+  } else if (errMsg.includes('progress') || errMsg.includes('percentage')) {
+    openModal(document.getElementById('modalEditProgress'));
+  } else {
+    openModal(document.getElementById('modalEditProject'));
+  }
   <% } %>
-
+ 
+ 
   // Auto-dismiss alerts
   document.querySelectorAll('.alert').forEach(el => {
     setTimeout(() => el.style.display = 'none', 4000);
   });
-</script>
+ </script>
+ 

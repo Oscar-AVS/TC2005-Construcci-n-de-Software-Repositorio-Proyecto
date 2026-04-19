@@ -39,5 +39,6 @@ router.post('/projects/:id/delete', pmController.postDeleteProject);  // 4.3
 
 router.post('/project/:id/edit',  pmController.postEditProject);    // 4.2
 router.post('/project/:id/dates', pmController.postProjectDates);   // 4.4
+router.post('/project/:id/progress', pmController.postProjectProgressStatus); // 4.5
 
 module.exports = router;

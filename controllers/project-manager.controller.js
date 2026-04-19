@@ -302,3 +302,26 @@ exports.postProjectDates = async (req, res) => {
     res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`);
   }
 };
+
+exports.postProjectProgressStatus = async (req, res) => {
+  const { id } = req.params;
+  const { progress_status, progress_percentage } = req.body;
+  const VALID_STATUSES = ['not_started', 'in_progress', 'on_hold', 'at_risk', 'completed'];
+  const pct = parseInt(progress_percentage, 10);
+
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    if (!progress_status || !VALID_STATUSES.includes(progress_status)) {
+      return res.redirect(`/project-manager/project/${id}?error=Invalid+progress+status+selected`);
+    }
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      return res.redirect(`/project-manager/project/${id}?error=Percentage+must+be+between+0+and+100`);
+    }
+    await Project.updateProgressStatus(id, progress_status, pct);
+    res.redirect(`/project-manager/project/${id}?success=Progress+status+updated+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+update+progress+status`);
+  }
+};
