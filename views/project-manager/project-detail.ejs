@@ -51,18 +51,21 @@
         </span>
     </div>
   </div>
-  <div class="project-detail-actions">
-    <button class="btn-draft" type="button" id="btnEditDates">
+  <div class="project-detail-actions" style="display:flex; flex-wrap:wrap; gap:12px;">
+    <button class="btn-draft" type="button" id="btnEditDates" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-calendar-days"></i> Set Dates
     </button>
-    <button class="btn-draft" type="button" id="btnEditProject">
+    <button class="btn-draft" type="button" id="btnEditProject" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-pen"></i> Edit Project
     </button>
-    <button class="btn-submit" type="button">
+    <button class="btn-submit" type="button" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-user-plus"></i> Add Member
     </button>
-    <button class="btn-draft" type="button" id="btnEditProgress">
+    <button class="btn-draft" type="button" id="btnEditProgress" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-chart-simple"></i> Progress
+    </button>
+    <button class="btn-draft" type="button" id="btnAssignTeam" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
+      <i class="fa-solid fa-users"></i> Assign Team
     </button>
   </div>
  </div>
@@ -97,17 +100,43 @@
  
  
  <!-- Two Column -->
- <div class="project-detail-grid">
+<div class="project-detail-grid">
   <div class="report-card">
     <div class="report-card-header">
-      <h2>Team Members</h2>
+      <h2>Assigned Teams</h2>
+      <span class="item-count"><%= teams.length %> team<%= teams.length !== 1 ? 's' : '' %></span>
     </div>
     <div class="report-card-body">
-      <p style="color: var(--text-secondary); font-size: 14px;">No members assigned yet.</p>
+      <% if (teams.length === 0) { %>
+        <p style="color: var(--text-secondary); font-size: 14px;">No teams assigned yet.</p>
+      <% } else { %>
+        <ul class="members-list">
+          <% teams.forEach(team => { %>
+          <li class="member-item">
+            <div class="member-avatar">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="member-info">
+              <span class="member-name"><%= team.team_name %></span>
+              <span class="member-role"><%= team.leader_name ? 'Lead: ' + team.leader_name : 'No leader assigned' %></span>
+            </div>
+            <form action="/project-manager/project/<%= project.id_project %>/teams/<%= team.id_team %>/remove" method="POST" style="margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button
+                type="submit"
+                class="btn-icon btn-danger"
+                title="Remove team"
+                onclick="return confirm('Remove team <%= team.team_name %> from this project?')">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </form>
+          </li>
+          <% }) %>
+        </ul>
+      <% } %>
     </div>
   </div>
- 
- 
+
   <div class="report-card">
     <div class="report-card-header">
       <h2>Active Blockers</h2>
@@ -117,7 +146,7 @@
       <p style="color: var(--text-secondary); font-size: 14px;">No active blockers.</p>
     </div>
   </div>
- </div>
+</div>
  
  
  <!-- Recent Activity -->
@@ -237,7 +266,7 @@
  </div>
  
  <!-- MODAL: Caso 4.5 -->
- <div class="modal-overlay" id="modalEditProgress">
+<div class="modal-overlay" id="modalEditProgress">
   <div class="modal" style="max-width: 440px;">
     <div class="modal-header">
       <h2>Update Progress</h2>
@@ -245,36 +274,92 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
+
     <form action="/project-manager/project/<%= project.id_project %>/progress" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
       <div class="form-field">
         <label class="form-label" for="progressStatus">Status *</label>
         <select id="progressStatus" name="progress_status" class="form-select" required>
           <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
           <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
-          <option value="on_hold"     <%= project.progress_status === 'on_hold'     ? 'selected' : '' %>>On Hold</option>
-          <option value="at_risk"     <%= project.progress_status === 'at_risk'     ? 'selected' : '' %>>At Risk</option>
-          <option value="completed"   <%= project.progress_status === 'completed'   ? 'selected' : '' %>>Completed</option>
+          <option value="on_hold"     <%= project.progress_status === 'on_hold' ? 'selected' : '' %>>On Hold</option>
+          <option value="at_risk"     <%= project.progress_status === 'at_risk' ? 'selected' : '' %>>At Risk</option>
+          <option value="completed"   <%= project.progress_status === 'completed' ? 'selected' : '' %>>Completed</option>
         </select>
       </div>
+
       <div class="form-field">
         <label class="form-label">Progress Percentage *</label>
         <div style="display:flex; align-items:center; gap:12px;">
-          <input type="range" id="progressRange" min="0" max="100" step="5"
+          <input
+            type="range"
+            id="progressRange"
+            min="0"
+            max="100"
+            step="5"
             value="<%= project.progress_percentage || 0 %>"
-            style="flex:1;"
+            style="flex:1; accent-color:#f97316;"
             oninput="document.getElementById('progressPct').value = this.value" />
-          <input type="number" id="progressPct" name="progress_percentage"
-            class="form-input" min="0" max="100" style="width:72px; text-align:center;"
+
+          <input
+            type="number"
+            id="progressPct"
+            name="progress_percentage"
+            class="form-input"
+            min="0"
+            max="100"
+            style="width:72px; text-align:center;"
             value="<%= project.progress_percentage || 0 %>"
             oninput="document.getElementById('progressRange').value = this.value"
             required />
         </div>
       </div>
+
       <div class="action-row" style="justify-content: flex-end; gap: 12px;">
         <button type="button" class="btn-draft" id="btnCancelProgress">Cancel</button>
         <button type="submit" class="btn-submit">
           <i class="fa-solid fa-floppy-disk"></i> Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Caso 4.6 - Asigna equipos -->
+<div class="modal-overlay" id="modalAssignTeam">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h2>Assign Team</h2>
+      <button class="modal-close" type="button" id="btnCloseAssignTeam">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form action="/project-manager/project/<%= project.id_project %>/teams/assign" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="form-field">
+        <label class="form-label" for="selectTeam">Team *</label>
+        <select id="selectTeam" name="id_team" class="form-select" required>
+          <option value="">Select a team...</option>
+          <%
+            const assignedTeamIds = teams.map(t => String(t.id_team));
+          %>
+          <% allTeams.forEach(team => { %>
+            <% if (!assignedTeamIds.includes(String(team.id_team))) { %>
+            <option value="<%= team.id_team %>"><%= team.team_name %></option>
+            <% } %>
+          <% }) %>
+        </select>
+        <% if (allTeams.length > 0 && allTeams.length === teams.length) { %>
+          <p style="font-size:12px; color:var(--text-secondary); margin-top:6px;">
+            All teams are already assigned to this project.
+          </p>
+        <% } %>
+      </div>
+      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn-draft" id="btnCancelAssignTeam">Cancel</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-users"></i> Assign
         </button>
       </div>
     </form>
@@ -320,20 +405,28 @@
   document.getElementById('btnEditProgress').addEventListener('click',   () => openModal(modalProgress));
   document.getElementById('btnCloseProgress').addEventListener('click',  () => closeModal(modalProgress));
   document.getElementById('btnCancelProgress').addEventListener('click', () => closeModal(modalProgress));
+
+  // Modal Progress (4.6)
+  const modalAssignTeam = document.getElementById('modalAssignTeam');
+  document.getElementById('btnAssignTeam').addEventListener('click',       () => openModal(modalAssignTeam));
+  document.getElementById('btnCloseAssignTeam').addEventListener('click',  () => closeModal(modalAssignTeam));
+  document.getElementById('btnCancelAssignTeam').addEventListener('click', () => closeModal(modalAssignTeam));
  
  
   // Si hay error, abrir el modal que corresponde automáticamente
   <% if (error) { %>
     const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
-    
-    if (errMsg.includes('fecha')) {
+
+  if (errMsg.includes('fecha')) {
     openModal(document.getElementById('modalSetDates'));
   } else if (errMsg.includes('progress') || errMsg.includes('percentage')) {
     openModal(document.getElementById('modalEditProgress'));
+  } else if (errMsg.includes('team')) {
+    openModal(document.getElementById('modalAssignTeam'));
   } else {
     openModal(document.getElementById('modalEditProject'));
   }
-  <% } %>
+<% } %>
  
  
   // Auto-dismiss alerts

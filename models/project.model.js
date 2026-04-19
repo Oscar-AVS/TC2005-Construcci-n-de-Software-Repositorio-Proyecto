@@ -90,4 +90,41 @@ module.exports = class Project {
     );
   }
 
+  static fetchAssignedTeams(id_project) {
+    return db.execute(
+      `SELECT t.id_team, t.team_name, t.description,
+              u.full_name AS leader_name,
+              pt.assigned_at
+       FROM project_team pt
+       JOIN team t ON pt.id_team = t.id_team
+       LEFT JOIN user u ON t.id_leader = u.id_user
+       WHERE pt.id_project = ?
+       ORDER BY pt.assigned_at DESC`,
+      [id_project]
+    );
+  }
+  
+  static assignTeam(id_project, id_team, assigned_by) {
+    return db.execute(
+      `INSERT INTO project_team (id_project, id_team, assigned_by) VALUES (?, ?, ?)`,
+      [id_project, id_team, assigned_by]
+    );
+  }
+  
+  static isTeamAssigned(id_project, id_team) {
+    return db.execute(
+      `SELECT id_project FROM project_team WHERE id_project = ? AND id_team = ?`,
+      [id_project, id_team]
+    );
+  }
+  
+  static removeTeam(id_project, id_team) {
+    return db.execute(
+      `DELETE FROM project_team WHERE id_project = ? AND id_team = ?`,
+      [id_project, id_team]
+    );
+  }
+
 };
+
+

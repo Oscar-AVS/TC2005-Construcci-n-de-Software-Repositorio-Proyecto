@@ -3,6 +3,7 @@
  */
 const User    = require('../models/user.model');
 const Project = require('../models/project.model');
+const Team = require('../models/team.model');
 const bcrypt  = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
@@ -157,13 +158,21 @@ exports.getProjects = async (req, res) => {
 exports.getProjectDetail = async (req, res) => {
   try {
     const [[project]] = await Project.fetchOne(req.params.id);
-    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+
+    if (!project) {
+      return res.redirect('/project-manager/projects?error=Project+not+found');
+    }
+
+    const [teams] = await Project.fetchAssignedTeams(req.params.id);
+    const [allTeams] = await Team.fetchAll();
 
     res.render('project-manager/project-detail', {
       title: project.project_name,
       role: 'project-manager',
       currentPage: 'projects',
       project,
+      teams,
+      allTeams,
       error: req.query.error || '',
       success: req.query.success || '',
       csrfToken: req.csrfToken(),
@@ -207,6 +216,36 @@ exports.postCreateProject = async (req, res) => {
   } catch (err) {
     console.error(err);
     return renderWithError('No fue posible completar el registro. Intenta nuevamente.');
+  }
+};
+
+exports.postAssignTeam = async (req, res) => {
+  const { id } = req.params;
+  const { id_team } = req.body;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    if (!id_team) return res.redirect(`/project-manager/project/${id}?error=Please+select+a+team`);
+    const [[already]] = await Project.isTeamAssigned(id, id_team);
+    if (already) return res.redirect(`/project-manager/project/${id}?error=This+team+is+already+assigned+to+the+project`);
+    await Project.assignTeam(id, id_team, req.session.userId);
+    res.redirect(`/project-manager/project/${id}?success=Team+assigned+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+assign+the+team`);
+  }
+};
+
+exports.postRemoveTeam = async (req, res) => {
+  const { id, id_team } = req.params;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    await Project.removeTeam(id, id_team);
+    res.redirect(`/project-manager/project/${id}?success=Team+removed+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+team`);
   }
 };
 

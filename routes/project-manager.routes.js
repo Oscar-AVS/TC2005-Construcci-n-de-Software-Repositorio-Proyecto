@@ -41,4 +41,7 @@ router.post('/project/:id/edit',  pmController.postEditProject);    // 4.2
 router.post('/project/:id/dates', pmController.postProjectDates);   // 4.4
 router.post('/project/:id/progress', pmController.postProjectProgressStatus); // 4.5
 
+router.post('/project/:id/teams/assign',          pmController.postAssignTeam);  // 4.6
+router.post('/project/:id/teams/:id_team/remove', pmController.postRemoveTeam);  // 4.6
+
 module.exports = router;
