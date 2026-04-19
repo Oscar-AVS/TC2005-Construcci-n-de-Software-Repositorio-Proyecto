@@ -160,6 +160,23 @@ module.exports = class Project {
     );
   }
 
+  static fetchActivity(id_project, limit = 50) {
+    return db.execute(
+      `SELECT l.id_log, l.completed, l.planned, l.created_at,
+              u.full_name,
+              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+       FROM log l
+       JOIN log_project lp ON l.id_log = lp.id_log
+       JOIN user u ON l.id_user = u.id_user
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       WHERE lp.id_project = ?
+       GROUP BY l.id_log
+       ORDER BY l.created_at DESC
+       LIMIT ?`,
+      [id_project, limit.toString()]
+    );
+  }
+
 };
 
 

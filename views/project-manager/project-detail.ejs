@@ -186,12 +186,33 @@
  <div class="report-card">
   <div class="report-card-header">
     <h2>Recent Activity</h2>
-    <a href="/project-manager/reports" class="btn-link">View Full Report</a>
   </div>
   <div class="report-card-body">
-    <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
+    <% if (activity.length === 0) { %>
+      <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
+    <% } else { %>
+      <div class="activity-log-list">
+        <% activity.forEach(log => { %>
+        <div class="activity-log-item">
+          <div class="log-date">
+            <%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) %>
+          </div>
+          <div class="log-entries">
+            <div class="log-entry">
+              <span class="log-time">
+                <%= new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
+              </span>
+              <span class="log-text">
+                <strong><%= log.full_name %></strong> — <%= log.completed %>
+              </span>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    <% } %>
   </div>
- </div>
+</div>
  
  
  <!-- MODAL: Caso 4.2 — Edición -->
@@ -418,8 +439,10 @@
             const assignedUserIds = users.map(u => String(u.id_user));
           %>
           <% allUsers.forEach(u => { %>
-            <% if (!assignedUserIds.includes(String(u.id))) { %>
-            <option value="<%= u.id %>"><%= u.full_name %> — <%= u.role || 'No role' %></option>
+            <% if (!assignedUserIds.includes(String(u.id_user))) { %>
+              <option value="<%= u.id_user %>">
+                <%= u.full_name %> — <%= u.role || 'No role' %>
+              </option>
             <% } %>
           <% }) %>
         </select>

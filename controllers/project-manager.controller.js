@@ -167,6 +167,7 @@ exports.getProjectDetail = async (req, res) => {
     const [allTeams] = await Team.fetchAll();
     const [users] = await Project.fetchAssignedUsers(req.params.id);
     const [allUsers] = await User.fetchAll();
+    const [activity] = await Project.fetchActivity(req.params.id); 
 
     res.render('project-manager/project-detail', {
       title: project.project_name,
@@ -177,6 +178,7 @@ exports.getProjectDetail = async (req, res) => {
       allTeams,
       users,
       allUsers,
+      activity,
       error: req.query.error || '',
       success: req.query.success || '',
       csrfToken: req.csrfToken(),
