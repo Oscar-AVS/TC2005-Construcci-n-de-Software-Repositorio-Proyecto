@@ -1,0 +1,130 @@
+<h1 id="pageTitle" class="page-title">Organizational Blockers</h1>
+
+<% if (success) { %>
+<div class="alert alert-success">
+  <i class="fa-solid fa-circle-check"></i> <%= success %>
+</div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-error">
+  <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
+</div>
+<% } %>
+
+<!-- Filters -->
+<div class="report-card filters-card">
+  <div class="report-card-header">
+    <h2>Filter Blockers</h2>
+  </div>
+  <div class="report-card-body">
+    <form action="/project-manager/blockers" method="GET">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="form-label" for="filterProject">Project</label>
+          <select id="filterProject" name="id_project" class="form-select">
+            <option value="">All Projects</option>
+            <% projects.forEach(p => { %>
+            <option value="<%= p.id_project %>" <%= filters.id_project == p.id_project ? 'selected' : '' %>>
+              <%= p.project_name %>
+            </option>
+            <% }) %>
+          </select>
+        </div>
+        <button class="btn-submit" type="submit">
+          <i class="fa-solid fa-filter"></i> Filter
+        </button>
+        <a href="/project-manager/blockers" class="btn-draft">
+          <i class="fa-solid fa-xmark"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Stats -->
+<%
+  const totalB    = blockers.length;
+  const pendingB  = blockers.filter(b => b.resolution_status === 'pending').length;
+  const criticalB = blockers.filter(b => b.severity === 'critical' && b.resolution_status === 'pending').length;
+  const resolvedB = blockers.filter(b => b.resolution_status === 'resolved').length;
+%>
+<div class="pm-stats-row">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-circle-exclamation"></i></div>
+    <div class="stat-info">
+      <p class="stat-value"><%= totalB %></p>
+      <p class="stat-label">Total Blockers</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-yellow"><i class="fa-solid fa-clock"></i></div>
+    <div class="stat-info">
+      <p class="stat-value"><%= pendingB %></p>
+      <p class="stat-label">Pending</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value"><%= criticalB %></p>
+      <p class="stat-label">Critical Active</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #d1fae5; color: #10b981;">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value"><%= resolvedB %></p>
+      <p class="stat-label">Resolved</p>
+    </div>
+  </div>
+</div>
+
+<!-- Blockers List -->
+<div class="report-card">
+  <div class="report-card-header">
+    <h2>Detected Blockers</h2>
+    <span class="item-count"><%= blockers.length %> blocker<%= blockers.length !== 1 ? 's' : '' %></span>
+  </div>
+  <div class="report-card-body">
+    <% if (blockers.length === 0) { %>
+      <p style="color: var(--text-secondary); font-size: 14px;">No blockers found.</p>
+    <% } else { %>
+      <div class="blockers-list">
+        <% blockers.forEach(blocker => { %>
+        <div class="blocker-item <%= blocker.severity %>">
+          <div class="blocker-priority">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
+          <div class="blocker-content">
+            <p class="blocker-title"><%= blocker.description %></p>
+            <div class="blocker-meta">
+              <% if (blocker.project_name) { %>
+              <span class="blocker-project"><%= blocker.project_name %></span>
+              <% } %>
+              <span class="blocker-author"><%= blocker.reporter_name %></span>
+              <span class="blocker-project"><%= blocker.team_names || 'No team' %></span>
+              <span class="tag tag-<%= blocker.severity %>"><%= blocker.severity %></span>
+              <span class="tag <%= blocker.resolution_status === 'resolved' ? 'tag-resolved' : 'tag-pending' %>">
+                <%= blocker.resolution_status %>
+              </span>
+              <span class="blocker-date">
+                <%= new Date(blocker.detected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+              </span>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.alert').forEach(el => {
+  setTimeout(() => el.style.display = 'none', 4000);
+});
+</script>

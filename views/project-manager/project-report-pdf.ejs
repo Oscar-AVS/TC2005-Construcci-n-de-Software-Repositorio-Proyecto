@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1e293b; }
+    .header { background: #1e293b; color: #fff; padding: 28px 36px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .header p  { font-size: 12px; color: #94a3b8; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .badge.active    { background: #d1fae5; color: #065f46; }
+    .badge.inactive  { background: #fef3c7; color: #92400e; }
+    .badge.completed { background: #dbeafe; color: #1e40af; }
+    .progress-track { background: #e2e8f0; border-radius: 99px; height: 10px; width: 100%; overflow: hidden; margin: 4px 0; }
+    .progress-fill  { height: 100%; background: #3b82f6; border-radius: 99px; }
+    .section { padding: 24px 36px; }
+    .section + .section { border-top: 1px solid #e2e8f0; }
+    .section h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid #3b82f6; display: inline-block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    th { background: #f1f5f9; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .4px; padding: 8px 12px; text-align: left; }
+    td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+    tr:last-child td { border-bottom: none; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+    .tag.pending  { background: #fef3c7; color: #92400e; }
+    .tag.resolved { background: #d1fae5; color: #065f46; }
+    .tag.critical { background: #fee2e2; color: #991b1b; }
+    .tag.high     { background: #ffedd5; color: #9a3412; }
+    .tag.medium   { background: #fef3c7; color: #92400e; }
+    .tag.low      { background: #f0fdf4; color: #166534; }
+    .no-data { color: #94a3b8; font-style: italic; font-size: 12px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
+    .summary-card .value { font-size: 22px; font-weight: 700; color: #1e293b; }
+    .summary-card .label { font-size: 11px; color: #64748b; }
+    .footer { padding: 16px 36px; background: #f8fafc; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1><%= project.project_name %></h1>
+      <p>Project Progress Report</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="font-size:12px; color:#cbd5e1;">Generated on</p>
+      <p style="font-size:13px; font-weight:600; color:#fff;">
+        <%= new Date(generatedAt).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' }) %>
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Project Summary</h2>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">General Status</div>
+        <div style="margin-top:4px;"><span class="badge <%= project.status %>"><%= project.status %></span></div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Progress</div>
+        <div class="value"><%= project.progress_percentage || 0 %>%</div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:<%= project.progress_percentage || 0 %>%;"></div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <%
+          const labels = { not_started:'Not Started', in_progress:'In Progress', on_hold:'On Hold', at_risk:'At Risk', completed:'Completed' };
+        %>
+        <div class="label">Progress Status</div>
+        <div class="value" style="font-size:14px; margin-top:6px;"><%= labels[project.progress_status] || '—' %></div>
+      </div>
+    </div>
+    <% if (project.description) { %>
+    <p style="font-size:13px; color:#475569; line-height:1.6; margin-bottom:12px;"><%= project.description %></p>
+    <% } %>
+    <table style="max-width:400px;">
+      <tr>
+        <td style="color:#64748b; font-weight:600; border:none; width:120px;">Start Date</td>
+        <td style="border:none;"><%= project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', {day:'numeric',month:'long',year:'numeric'}) : '—' %></td>
+      </tr>
+      <tr>
+        <td style="color:#64748b; font-weight:600; border:none;">Due Date</td>
+        <td style="border:none;"><%= project.end_date ? new Date(project.end_date).toLocaleDateString('en-US', {day:'numeric',month:'long',year:'numeric'}) : '—' %></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Assigned Teams</h2>
+    <% if (!teams || teams.length === 0) { %>
+      <p class="no-data">No teams assigned.</p>
+    <% } else { %>
+      <table>
+        <thead><tr><th>Team</th><th>Leader</th><th>Assigned On</th></tr></thead>
+        <tbody>
+          <% teams.forEach(t => { %>
+          <tr>
+            <td><%= t.team_name %></td>
+            <td><%= t.leader_name || '—' %></td>
+            <td><%= new Date(t.assigned_at).toLocaleDateString('en-US') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="section">
+    <h2>Team Members</h2>
+    <% if (!users || users.length === 0) { %>
+      <p class="no-data">No members assigned.</p>
+    <% } else { %>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Team</th></tr></thead>
+        <tbody>
+          <% users.forEach(u => { %>
+          <tr>
+            <td><%= u.full_name %></td>
+            <td><%= u.email %></td>
+            <td><%= u.team_name || '—' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="section">
+    <h2>Organizational Blockers</h2>
+    <% if (!blockers || blockers.length === 0) { %>
+      <p class="no-data">No blockers recorded.</p>
+    <% } else { %>
+      <table>
+        <thead><tr><th>Description</th><th>Severity</th><th>Status</th><th>Reported By</th><th>Date</th></tr></thead>
+        <tbody>
+          <% blockers.forEach(b => { %>
+          <tr>
+            <td><%= b.description %></td>
+            <td><span class="tag <%= b.severity %>"><%= b.severity %></span></td>
+            <td><span class="tag <%= b.resolution_status %>"><%= b.resolution_status %></span></td>
+            <td><%= b.reporter_name %></td>
+            <td><%= new Date(b.detected_at).toLocaleDateString('en-US') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="section">
+    <h2>Recent Activity</h2>
+    <% if (!activity || activity.length === 0) { %>
+      <p class="no-data">No activity recorded.</p>
+    <% } else { %>
+      <table>
+        <thead><tr><th>Date</th><th>Member</th><th>Completed</th></tr></thead>
+        <tbody>
+          <% activity.slice(0, 30).forEach(log => { %>
+          <tr>
+            <td style="white-space:nowrap;"><%= new Date(log.created_at).toLocaleDateString('en-US', {day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td><%= log.full_name %></td>
+            <td><%= log.completed.substring(0, 120) %><%= log.completed.length > 120 ? '…' : '' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% if (activity.length > 30) { %>
+        <p style="font-size:11px; color:#94a3b8; margin-top:8px;">Showing 30 of <%= activity.length %> entries.</p>
+      <% } %>
+    <% } %>
+  </div>
+
+  <div class="footer">
+    <span>Mufasa — Project Report: <%= project.project_name %></span>
+    <span>Generated: <%= new Date(generatedAt).toLocaleString('en-US') %></span>
+  </div>
+
+</body>
+</html>
