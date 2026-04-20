@@ -156,7 +156,7 @@ exports.postSignup = (req, res) => {
 
   bcrypt.hash(password, 12)
     .then((hashedPassword) => {
-      return User.createPending(full_name, email, email, hashedPassword);
+      return User.createPending(full_name, email, hashedPassword);
     })
     .then(([result]) => {
       return User.assignRole(result.insertId, 4);

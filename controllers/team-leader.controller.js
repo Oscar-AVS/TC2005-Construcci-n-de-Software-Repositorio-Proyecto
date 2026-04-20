@@ -358,7 +358,7 @@ exports.searchAvailableUsers = async (req, res) => {
 
     const [users] = await db.query(
       `
-      SELECT 
+      SELECT
         u.id_user,
         u.full_name,
         u.email
@@ -371,12 +371,11 @@ exports.searchAvailableUsers = async (req, res) => {
       AND (
         u.full_name LIKE ?
         OR u.email LIKE ?
-        OR u.username LIKE ?
       )
       ORDER BY u.full_name ASC
       LIMIT 10
       `,
-      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+      [teamId, `%${search}%`, `%${search}%`]
     );
 
     res.status(200).json(users);
@@ -404,12 +403,11 @@ exports.findTeamMembers = async (req, res) => {
         AND (
           u.full_name LIKE ?
           OR u.email LIKE ?
-          OR u.username LIKE ?
         )
       ORDER BY u.full_name ASC
       LIMIT 10
       `,
-      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+      [teamId, `%${search}%`, `%${search}%`]
     );
 
     res.status(200).json(members);
@@ -607,7 +605,7 @@ exports.resolveBlocker = async (req, res) => {
     const { id_blocker } = req.body;
 
     await db.query(
-      'UPDATE blocker SET resolution_status = ? WHERE id_blocker = ?',
+      'UPDATE blocker SET resolution_status = ?, resolved_at = NOW() WHERE id_blocker = ?',
       ['resolved', id_blocker]
     );
 

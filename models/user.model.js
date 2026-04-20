@@ -37,7 +37,7 @@ module.exports = class User {
 
   static fetchAll() {
     return db.execute(
-      `SELECT u.id_user AS id, u.full_name, u.email, u.username, u.is_active, u.status,
+      `SELECT u.id_user AS id, u.full_name, u.email, u.status,
         r.role_name AS role, ur.id_role,
         GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR '||') AS team
        FROM user u
@@ -46,15 +46,15 @@ module.exports = class User {
        LEFT JOIN user_team ut ON u.id_user = ut.id_user
        LEFT JOIN team t ON ut.id_team = t.id_team
        WHERE u.status != 'pending'
-       GROUP BY u.id_user, u.full_name, u.email, u.username, u.is_active, u.status, r.role_name, ur.id_role
+       GROUP BY u.id_user, u.full_name, u.email, u.status, r.role_name, ur.id_role
        ORDER BY u.id_user DESC`
     );
   }
 
-  static create(full_name, email, username, password) {
+  static create(full_name, email, password) {
     return db.execute(
-      `INSERT INTO user (full_name, email, username, password) VALUES (?, ?, ?, ?)`,
-      [full_name, email, username, password]
+      `INSERT INTO user (full_name, email, password) VALUES (?, ?, ?)`,
+      [full_name, email, password]
     );
   }
 
@@ -65,10 +65,10 @@ module.exports = class User {
     );
   }
 
-  static update(id_user, full_name, email, username) {
+  static update(id_user, full_name, email) {
     return db.execute(
-      `UPDATE user SET full_name = ?, email = ?, username = ? WHERE id_user = ?`,
-      [full_name, email, username, id_user]
+      `UPDATE user SET full_name = ?, email = ? WHERE id_user = ?`,
+      [full_name, email, id_user]
     );
   }
 
@@ -88,7 +88,7 @@ module.exports = class User {
 
   static fetchPending() {
     return db.execute(
-      `SELECT id_user, full_name, email, username, status
+      `SELECT id_user, full_name, email, status
        FROM user
        WHERE status = 'pending'
        ORDER BY id_user DESC`
@@ -103,22 +103,22 @@ module.exports = class User {
 
   static approve(id_user) {
     return db.execute(
-      `UPDATE user SET status = 'active', is_active = 1 WHERE id_user = ?`,
+      `UPDATE user SET status = 'active' WHERE id_user = ?`,
       [id_user]
     );
   }
 
   static rejectUser(id_user) {
     return db.execute(
-      `UPDATE user SET status = 'inactive', is_active = 0 WHERE id_user = ?`,
+      `UPDATE user SET status = 'inactive' WHERE id_user = ?`,
       [id_user]
     );
   }
 
-  static createPending(full_name, email, username, password) {
+  static createPending(full_name, email, password) {
     return db.execute(
-      `INSERT INTO user (full_name, email, username, password, status, is_active) VALUES (?, ?, ?, ?, 'pending', 0)`,
-      [full_name, email, username, password]
+      `INSERT INTO user (full_name, email, password, status) VALUES (?, ?, ?, 'pending')`,
+      [full_name, email, password]
     );
   }
 
@@ -151,7 +151,7 @@ module.exports = class User {
 
   static countActive() {
     return db.execute(
-      `SELECT COUNT(*) AS count FROM user WHERE is_active = 1 AND status = 'active'`
+      `SELECT COUNT(*) AS count FROM user WHERE status = 'active'`
     );
   }
 };

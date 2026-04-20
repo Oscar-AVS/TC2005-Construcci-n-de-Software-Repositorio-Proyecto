@@ -2,8 +2,8 @@
   <% if (projects.length > 0) { %>
     <% for (let project of projects) { %>
       <div class="project-card">
-        <div class="project-status <%= project.status %>">
-          <%= project.status.charAt(0).toUpperCase() + project.status.slice(1) %>
+        <div class="project-status <%= project.progress_status %>">
+          <%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
         </div>
         <div class="project-content">
           <h3 class="project-title"><%= project.project_name %></h3>

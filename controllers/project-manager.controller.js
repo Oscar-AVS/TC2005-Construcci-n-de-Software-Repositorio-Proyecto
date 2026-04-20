@@ -175,7 +175,7 @@ exports.getProjectDetail = async (req, res) => {
 };
 
 exports.postCreateProject = async (req, res) => {
-  const { project_name, description, status, start_date, end_date } = req.body;
+  const { project_name, description, progress_status, start_date, end_date } = req.body;
 
   const renderWithError = async (error) => {
     const [projects] = await Project.fetchAll();
@@ -202,7 +202,7 @@ exports.postCreateProject = async (req, res) => {
     const [[existing]] = await Project.findByName(project_name.trim());
     if (existing) return renderWithError('Ya existe un proyecto registrado con ese nombre.');
 
-    await Project.create(project_name.trim(), description, status, start_date || null, end_date || null);
+    await Project.create(project_name.trim(), description, progress_status, start_date || null, end_date || null);
     res.redirect('/project-manager/projects?success=Proyecto+registrado+correctamente');
   } catch (err) {
     console.error(err);
@@ -212,7 +212,7 @@ exports.postCreateProject = async (req, res) => {
 
 exports.postEditProject = async (req, res) => {
   const { id } = req.params;
-  const { project_name, description, status, start_date, end_date } = req.body;
+  const { project_name, description, progress_status, start_date, end_date } = req.body;
 
   const renderWithError = async (project, error) => {
     return res.render('project-manager/project-detail', {
@@ -241,7 +241,7 @@ exports.postEditProject = async (req, res) => {
     const [[duplicate]] = await Project.findByNameExcluding(project_name.trim(), id);
     if (duplicate) return renderWithError(project, 'Ya existe otro proyecto con ese nombre.');
 
-    await Project.update(id, project_name.trim(), description, status, start_date || null, end_date || null);
+    await Project.update(id, project_name.trim(), description, progress_status, start_date || null, end_date || null);
     res.redirect(`/project-manager/project/${id}?success=Proyecto+actualizado+correctamente`);
   } catch (err) {
     console.error(err);

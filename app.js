@@ -15,6 +15,7 @@ const db = require('./util/database');
 const User = require('./models/user.model');
 
 const isAuth = require('./util/is-auth');
+const auditContext = require('./middleware/audit-context');
 const { requireRole } = require('./util/is-auth');
 
 const usersRoutes = require('./routes/users.routes');
@@ -140,6 +141,8 @@ app.use((req, res, next) => {
   res.locals.role = req.session.role || '';
   next();
 });
+
+app.use(auditContext);
 
 // Slack webhook — mounted BEFORE csrf (external calls have no CSRF token)
 app.use('/api/slack', slackRoutes);

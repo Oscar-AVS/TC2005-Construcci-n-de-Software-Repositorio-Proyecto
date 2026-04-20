@@ -21,15 +21,27 @@ module.exports = class Blocker {
   }
 
   static updateStatus(id_blocker, resolution_status) {
+    if (resolution_status === 'resolved') {
+      return db.execute(
+        'UPDATE blocker SET resolution_status = ?, resolved_at = NOW() WHERE id_blocker = ?',
+        [resolution_status, id_blocker]
+      );
+    }
     return db.execute(
-      'UPDATE blocker SET resolution_status = ? WHERE id_blocker = ?',
+      'UPDATE blocker SET resolution_status = ?, resolved_at = NULL WHERE id_blocker = ?',
       [resolution_status, id_blocker]
     );
   }
 
   static update(id_blocker, description, resolution_status) {
+    if (resolution_status === 'resolved') {
+      return db.execute(
+        'UPDATE blocker SET description = ?, resolution_status = ?, resolved_at = NOW() WHERE id_blocker = ?',
+        [description, resolution_status, id_blocker]
+      );
+    }
     return db.execute(
-      'UPDATE blocker SET description = ?, resolution_status = ? WHERE id_blocker = ?',
+      'UPDATE blocker SET description = ?, resolution_status = ?, resolved_at = NULL WHERE id_blocker = ?',
       [description, resolution_status, id_blocker]
     );
   }

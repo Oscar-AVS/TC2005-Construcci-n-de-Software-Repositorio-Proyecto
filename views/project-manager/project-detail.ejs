@@ -20,7 +20,7 @@
 <!-- Project Header -->
 <div class="project-detail-header">
   <div class="project-detail-info">
-    <span class="project-status <%= project.status %>"><%= project.status %></span>
+    <span class="project-status <%= project.progress_status %>"><%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
     <div class="project-dates-inline">
       <span>
         <i class="fa-solid fa-calendar-plus"></i>
@@ -123,10 +123,13 @@
 
       <div class="form-field">
         <label class="form-label" for="editProjectStatus">Status</label>
-        <select id="editProjectStatus" name="status" class="form-select">
-          <option value="active"    <%= project.status === 'active'    ? 'selected' : '' %>>Active</option>
-          <option value="inactive"  <%= project.status === 'inactive'  ? 'selected' : '' %>>On Hold</option>
-          <option value="completed" <%= project.status === 'completed' ? 'selected' : '' %>>Completed</option>
+        <select id="editProjectStatus" name="progress_status" class="form-select">
+          <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
+          <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+          <option value="on_hold"     <%= project.progress_status === 'on_hold'     ? 'selected' : '' %>>On Hold</option>
+          <option value="at_risk"     <%= project.progress_status === 'at_risk'     ? 'selected' : '' %>>At Risk</option>
+          <option value="completed"   <%= project.progress_status === 'completed'   ? 'selected' : '' %>>Completed</option>
+          <option value="archived"    <%= project.progress_status === 'archived'    ? 'selected' : '' %>>Archived</option>
         </select>
       </div>
 
