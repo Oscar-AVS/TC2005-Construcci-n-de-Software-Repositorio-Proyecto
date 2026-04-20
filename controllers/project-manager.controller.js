@@ -3,6 +3,7 @@
  */
 const User    = require('../models/user.model');
 const Project = require('../models/project.model');
+const Team = require('../models/team.model');
 const bcrypt  = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
@@ -157,13 +158,27 @@ exports.getProjects = async (req, res) => {
 exports.getProjectDetail = async (req, res) => {
   try {
     const [[project]] = await Project.fetchOne(req.params.id);
-    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+
+    if (!project) {
+      return res.redirect('/project-manager/projects?error=Project+not+found');
+    }
+
+    const [teams] = await Project.fetchAssignedTeams(req.params.id);
+    const [allTeams] = await Team.fetchAll();
+    const [users] = await Project.fetchAssignedUsers(req.params.id);
+    const [allUsers] = await User.fetchAll();
+    const [activity] = await Project.fetchActivity(req.params.id); 
 
     res.render('project-manager/project-detail', {
       title: project.project_name,
       role: 'project-manager',
       currentPage: 'projects',
       project,
+      teams,
+      allTeams,
+      users,
+      allUsers,
+      activity,
       error: req.query.error || '',
       success: req.query.success || '',
       csrfToken: req.csrfToken(),
@@ -207,6 +222,36 @@ exports.postCreateProject = async (req, res) => {
   } catch (err) {
     console.error(err);
     return renderWithError('No fue posible completar el registro. Intenta nuevamente.');
+  }
+};
+
+exports.postAssignTeam = async (req, res) => {
+  const { id } = req.params;
+  const { id_team } = req.body;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    if (!id_team) return res.redirect(`/project-manager/project/${id}?error=Please+select+a+team`);
+    const [[already]] = await Project.isTeamAssigned(id, id_team);
+    if (already) return res.redirect(`/project-manager/project/${id}?error=This+team+is+already+assigned+to+the+project`);
+    await Project.assignTeam(id, id_team, req.session.userId);
+    res.redirect(`/project-manager/project/${id}?success=Team+assigned+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+assign+the+team`);
+  }
+};
+
+exports.postRemoveTeam = async (req, res) => {
+  const { id, id_team } = req.params;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    await Project.removeTeam(id, id_team);
+    res.redirect(`/project-manager/project/${id}?success=Team+removed+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+team`);
   }
 };
 
@@ -300,5 +345,58 @@ exports.postProjectDates = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`);
+  }
+};
+
+exports.postProjectProgressStatus = async (req, res) => {
+  const { id } = req.params;
+  const { progress_status, progress_percentage } = req.body;
+  const VALID_STATUSES = ['not_started', 'in_progress', 'on_hold', 'at_risk', 'completed'];
+  const pct = parseInt(progress_percentage, 10);
+
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    if (!progress_status || !VALID_STATUSES.includes(progress_status)) {
+      return res.redirect(`/project-manager/project/${id}?error=Invalid+progress+status+selected`);
+    }
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      return res.redirect(`/project-manager/project/${id}?error=Percentage+must+be+between+0+and+100`);
+    }
+    await Project.updateProgressStatus(id, progress_status, pct);
+    res.redirect(`/project-manager/project/${id}?success=Progress+status+updated+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+update+progress+status`);
+  }
+};
+
+exports.postAssignUser = async (req, res) => {
+  const { id } = req.params;
+  const { id_user, id_team } = req.body;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    if (!id_user) return res.redirect(`/project-manager/project/${id}?error=Please+select+a+user`);
+    const [[already]] = await Project.isUserAssigned(id, id_user);
+    if (already) return res.redirect(`/project-manager/project/${id}?error=This+user+is+already+assigned+to+the+project`);
+    await Project.assignUser(id, id_user, id_team || null, req.session.userId);
+    res.redirect(`/project-manager/project/${id}?success=Member+added+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+assign+the+user`);
+  }
+};
+
+exports.postRemoveUser = async (req, res) => {
+  const { id, id_user } = req.params;
+  try {
+    const [[project]] = await Project.fetchOne(id);
+    if (!project) return res.redirect('/project-manager/projects?error=Project+not+found');
+    await Project.removeUser(id, id_user);
+    res.redirect(`/project-manager/project/${id}?success=Member+removed+successfully`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+user`);
   }
 };
