@@ -156,18 +156,49 @@
           </div>
 
           <div class="goal-actions">
-            <button
-              class="btn-icon edit-goal-button"
-              type="button"
-              title="Edit"
-              data-goal-id="<%= goal.id_goal %>"
-            >
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
+  <div class="goal-link-project">
+    <select
+      class="form-select link-project-select"
+      data-goal-id="<%= goal.id_goal %>"
+      <%= availableProjects.length === 0 ? 'disabled' : '' %>
+    >
+      <option value="">
+        <%= availableProjects.length === 0 ? 'No projects available' : 'Link to project...' %>
+      </option>
+      <% availableProjects.forEach((project) => { %>
+        <option value="<%= project.id_project %>">
+          <%= project.project_name %>
+        </option>
+      <% }) %>
+    </select>
+
+    <button
+      class="btn-draft link-project-button"
+      type="button"
+      data-goal-id="<%= goal.id_goal %>"
+      <%= availableProjects.length === 0 ? 'disabled' : '' %>
+    >
+      Link
+    </button>
+  </div>
+
+  <button
+    class="btn-icon edit-goal-button"
+    type="button"
+    title="Edit"
+    data-goal-id="<%= goal.id_goal %>"
+  >
+    <i class="fa-solid fa-pen"></i>
+  </button>
+
+  <button
+    class="btn-icon btn-danger"
+    type="button"
+    title="Delete"
+  >
+    <i class="fa-solid fa-trash"></i>
+  </button>
+</div>
         </div>
       <% }); %>
     </div>
