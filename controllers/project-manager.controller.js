@@ -1,6 +1,9 @@
 /**
  * Project Manager Controller
  */
+
+const PDFDocument = require('pdfkit');
+const { getProjectReportData } = require('../models/Report.model');
 const User    = require('../models/user.model');
 const Project = require('../models/project.model');
 const Team = require('../models/team.model');
@@ -432,5 +435,216 @@ exports.getBlockers = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
+  }
+};
+
+// CU 4.9 — Progress report PDF export
+exports.exportProjectReportPDF = async (req, res) => {
+  const { id } = req.params;
+
+  let data;
+  try {
+    data = await getProjectReportData(id);
+  } catch (err) {
+    console.error('Error fetching project report data:', err);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Error+fetching+report+data`
+    );
+  }
+
+  if (!data.proyecto) {
+    return res.redirect(
+      `/project-manager/project/${id}?error=Project+not+found`
+    );
+  }
+
+  if (!data.bitacoras.length && !data.bloqueos.length) {
+    return res.redirect(
+      `/project-manager/project/${id}?error=Not+enough+data+to+generate+the+report`
+    );
+  }
+
+  try {
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="report-${data.proyecto.project_name.replace(/\s+/g, '-')}-${Date.now()}.pdf"`
+    );
+
+    doc.pipe(res);
+
+    // Header 
+    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#EFF6FF', '#3b82f6');
+
+    doc.fillColor('#3b82f6')
+      .fontSize(20)
+      .text('Project Progress Report', 60, 50, { align: 'center', width: 475 });
+
+    doc.fillColor('#64748b')
+      .fontSize(10)
+      .text('Mufasa — Project Management Platform', 60, 80, { align: 'center', width: 475 });
+
+    doc.fillColor('#1e293b').fontSize(10);
+    doc.text(`Project: ${data.proyecto.project_name}`, 60, 108, { width: 160 });
+    doc.text(`Status: ${data.proyecto.status}`, 240, 108, { width: 120 });
+    doc.text(`Progress: ${data.proyecto.progress_percentage || 0}%`, 380, 108, { width: 140 });
+
+    doc.y = 150;
+    doc.moveDown(1.2);
+
+    // Progress bar
+    const barX = 50;
+    const barY = doc.y;
+    const barWidth = 495;
+    const barHeight = 12;
+    const fillWidth = Math.round((data.proyecto.progress_percentage || 0) / 100 * barWidth);
+
+    doc.roundedRect(barX, barY, barWidth, barHeight, 6).fillAndStroke('#e2e8f0', '#e2e8f0');
+    if (fillWidth > 0) {
+      doc.roundedRect(barX, barY, fillWidth, barHeight, 6).fillAndStroke('#3b82f6', '#3b82f6');
+    }
+
+    doc.y = barY + barHeight + 6;
+
+    const progressLabels = {
+      not_started: 'Not Started',
+      in_progress:  'In Progress',
+      on_hold:      'On Hold',
+      at_risk:      'At Risk',
+      completed:    'Completed',
+    };
+    doc.fontSize(9).fillColor('#64748b')
+      .text(`Progress status: ${progressLabels[data.proyecto.progress_status] || '—'}   |   Start: ${data.proyecto.start_date ? new Date(data.proyecto.start_date).toLocaleDateString('en-US') : '—'}   |   Due: ${data.proyecto.end_date ? new Date(data.proyecto.end_date).toLocaleDateString('en-US') : '—'}`, { align: 'center' });
+
+    doc.moveDown(1);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveDown(0.8);
+
+    // Description
+    if (data.proyecto.description) {
+      doc.fontSize(13).fillColor('#3b82f6').text('Description');
+      doc.moveDown(0.3);
+      doc.fontSize(10).fillColor('#475569').text(data.proyecto.description, { width: 470 });
+      doc.moveDown(0.8);
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+      doc.moveDown(0.8);
+    }
+
+    // Assigned Teams 
+    doc.fontSize(13).fillColor('#3b82f6').text('Assigned Teams');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#1e293b');
+    if (data.equipos.length === 0) {
+      doc.fillColor('#94a3b8').text('No teams assigned.');
+    } else {
+      data.equipos.forEach((t) => {
+        doc.fillColor('#1e293b').text(`• ${t.team_name}`, { continued: true });
+        doc.fillColor('#64748b').text(`  —  Lead: ${t.leader_name || '—'}`);
+      });
+    }
+    doc.moveDown(0.8);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveDown(0.8);
+
+    // Team Members
+    doc.fontSize(13).fillColor('#3b82f6').text('Team Members');
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    if (data.miembros.length === 0) {
+      doc.fillColor('#94a3b8').text('No members assigned.');
+    } else {
+      data.miembros.forEach((m) => {
+        doc.fillColor('#1e293b').text(`• ${m.full_name}`, { continued: true });
+        doc.fillColor('#64748b').text(`  —  ${m.email}  |  ${m.team_name || 'No team'}`);
+      });
+    }
+    doc.moveDown(0.8);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveDown(0.8);
+
+    // Blockers
+    doc.fontSize(13).fillColor('#3b82f6').text('Organizational Blockers');
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    if (data.bloqueos.length === 0) {
+      doc.fillColor('#94a3b8').text('No blockers recorded.');
+    } else {
+      data.bloqueos.forEach((b) => {
+        doc.fillColor('#1e293b').text(`• ${b.reporter_name}:`, { continued: true });
+        doc.fillColor('#475569').text(` ${b.description}`);
+        doc.fontSize(9).fillColor('#94a3b8')
+          .text(`  Severity: ${b.severity || '—'}   |   Status: ${b.resolution_status}   |   ${new Date(b.detected_at).toLocaleDateString('en-US')}`, { indent: 10 });
+        doc.fontSize(10);
+        doc.moveDown(0.3);
+      });
+    }
+    doc.moveDown(0.5);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveDown(0.8);
+
+    // Goals 
+    doc.fontSize(13).fillColor('#3b82f6').text('Project Goals');
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    if (data.metas.length === 0) {
+      doc.fillColor('#94a3b8').text('No goals defined for this project.');
+    } else {
+      data.metas.forEach((g) => {
+        doc.fillColor('#1e293b').text(`• ${g.title}`);
+        if (g.description) {
+          doc.fontSize(9).fillColor('#64748b').text(`  ${g.description}`, { indent: 10 });
+          doc.fontSize(10);
+        }
+        doc.moveDown(0.2);
+      });
+    }
+    doc.moveDown(0.8);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveDown(0.8);
+
+    // Recent Activity 
+    doc.fontSize(13).fillColor('#3b82f6').text('Recent Activity');
+    doc.moveDown(0.3);
+    doc.fontSize(10);
+    if (data.bitacoras.length === 0) {
+      doc.fillColor('#94a3b8').text('No activity recorded.');
+    } else {
+      data.bitacoras.slice(0, 30).forEach((b) => {
+        doc.fillColor('#1e293b')
+          .text(`• [${new Date(b.created_at).toLocaleDateString('en-US')}] ${b.full_name}`);
+        if (b.completed) {
+          doc.fontSize(9).fillColor('#475569')
+            .text(`  Completed: ${b.completed}`, { indent: 10, width: 460 });
+        }
+        if (b.planned) {
+          doc.fontSize(9).fillColor('#94a3b8')
+            .text(`  Planned: ${b.planned}`, { indent: 10, width: 460 });
+        }
+        doc.fontSize(10);
+        doc.moveDown(0.3);
+      });
+      if (data.bitacoras.length > 30) {
+        doc.fontSize(9).fillColor('#94a3b8')
+          .text(`Showing 30 of ${data.bitacoras.length} entries.`);
+      }
+    }
+
+    // Footer 
+    doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#3b82f6');
+    doc.moveDown(0.5);
+    doc.fontSize(9).fillColor('#94a3b8')
+      .text(`Report generated on ${new Date().toLocaleDateString('en-US')}`, { align: 'center' });
+
+    doc.end();
+  } catch (err) {
+    console.error('Error generating PDF:', err);
+    if (!res.headersSent) {
+      return res.redirect(
+        `/project-manager/project/${id}?error=Could+not+generate+the+report`
+      );
+    }
   }
 };

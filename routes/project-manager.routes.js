@@ -42,6 +42,7 @@ router.post('/project/:id/teams/assign',          pmController.postAssignTeam); 
 router.post('/project/:id/teams/:id_team/remove', pmController.postRemoveTeam);  // 4.6
 router.post('/project/:id/users/assign',          pmController.postAssignUser);  // 4.7
 router.post('/project/:id/users/:id_user/remove', pmController.postRemoveUser);  // 4.7
+router.post('/project/:id/report/export-pdf', pmController.exportProjectReportPDF); // 4.9
 
 // Bloqueos
 router.get('/blockers', pmController.getBlockers); // 4.10
