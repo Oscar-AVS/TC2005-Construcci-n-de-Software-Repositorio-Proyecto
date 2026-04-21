@@ -2,10 +2,12 @@
  * Project Manager Routes
  */
 
-const express   = require('express');
+const express = require('express');
 const rateLimit = require('express-rate-limit');
-const router    = express.Router();
+const router = express.Router();
+
 const pmController = require('../controllers/project-manager.controller');
+const reportController = require('../controllers/report.controller');
 
 const selfReviewLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -17,34 +19,58 @@ const selfReviewLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const aiSummaryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'Too many AI summary requests. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const pdfExportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'Too many PDF export requests. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Generales
-router.get('/dashboard',   pmController.getDashboard);
-router.get('/reports',     pmController.getReports);
-router.get('/log',         pmController.getLog);
+router.get('/dashboard', pmController.getDashboard);
+router.get('/reports', pmController.getReports);
+router.get('/reports/project-team-range', pmController.getProjectTeamRange);
+router.get('/reports/ai-summary', aiSummaryLimiter, reportController.generateAiSummary);
+router.get('/reports/export-pdf', pdfExportLimiter, reportController.exportPDF);
+
+router.get('/log', pmController.getLog);
 router.get('/self-review', pmController.getSelfReview);
-router.get('/self-review/generate',     selfReviewLimiter, pmController.generateSelfReview);
-router.post('/self-review/export-pdf',  selfReviewLimiter, pmController.exportSelfReviewPDF);
+router.get('/self-review/generate', selfReviewLimiter, pmController.generateSelfReview);
+router.post('/self-review/export-pdf', selfReviewLimiter, pmController.exportSelfReviewPDF);
 
 // Perfil
-router.get('/profile',           pmController.getProfile);
-router.post('/profile/slack',    pmController.postSlack);
+router.get('/profile', pmController.getProfile);
+router.post('/profile/slack', pmController.postSlack);
 router.post('/profile/password', pmController.postPassword);
 
 // Proyectos
-router.get('/projects',         pmController.getProjects);
-router.get('/project/:id',      pmController.getProjectDetail);
-router.post('/projects/create',     pmController.postCreateProject);  // 4.1
-router.post('/projects/:id/delete', pmController.postDeleteProject);  // 4.3
-router.post('/project/:id/edit',  pmController.postEditProject);    // 4.2
-router.post('/project/:id/dates', pmController.postProjectDates);   // 4.4
-router.post('/project/:id/progress', pmController.postProjectProgressStatus); // 4.5
-router.post('/project/:id/teams/assign',          pmController.postAssignTeam);  // 4.6
-router.post('/project/:id/teams/:id_team/remove', pmController.postRemoveTeam);  // 4.6
-router.post('/project/:id/users/assign',          pmController.postAssignUser);  // 4.7
-router.post('/project/:id/users/:id_user/remove', pmController.postRemoveUser);  // 4.7
-router.post('/project/:id/report/export-pdf', pmController.exportProjectReportPDF); // 4.9
+router.get('/projects', pmController.getProjects);
+router.get('/project/:id', pmController.getProjectDetail);
+router.post('/projects/create', pmController.postCreateProject);
+router.post('/projects/:id/delete', pmController.postDeleteProject);
+router.post('/project/:id/edit', pmController.postEditProject);
+router.post('/project/:id/dates', pmController.postProjectDates);
+router.post('/project/:id/progress', pmController.postProjectProgressStatus);
+router.post('/project/:id/teams/assign', pmController.postAssignTeam);
+router.post('/project/:id/teams/:id_team/remove', pmController.postRemoveTeam);
+router.post('/project/:id/users/assign', pmController.postAssignUser);
+router.post('/project/:id/users/:id_user/remove', pmController.postRemoveUser);
+router.post('/project/:id/report/export-pdf', pmController.exportProjectReportPDF);
 
 // Bloqueos
-router.get('/blockers', pmController.getBlockers); // 4.10
+router.get('/blockers', pmController.getBlockers);
 
 module.exports = router;

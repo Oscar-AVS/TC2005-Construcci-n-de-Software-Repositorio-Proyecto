@@ -590,6 +590,33 @@
   color: var(--accent);
 }
 
+.project-range-card {
+  margin-bottom: 24px;
+  border: 1px solid #fde2d8;
+  background: #fff7f3;
+  box-shadow: var(--shadow);
+}
+
+.project-range-card .report-card-body {
+  padding: 18px 28px;
+}
+
+.project-range-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.project-range-text strong {
+  color: var(--text-primary);
+}
+
+.project-range-text .range-date {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* Data table */
 .data-table {
   width: 100%;

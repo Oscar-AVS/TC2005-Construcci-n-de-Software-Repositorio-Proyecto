@@ -1,4 +1,4 @@
-// models/Report.model.js
+// models/report.model.js
 const db = require('../util/database');
 
 const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
@@ -17,7 +17,7 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
      FROM user u
      INNER JOIN user_team ut ON u.id_user = ut.id_user
      WHERE ut.id_team = ?
-     AND u.is_active = 1`,
+       AND u.is_active = 1`,
     [idEquipo]
   );
 
@@ -27,7 +27,7 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
      INNER JOIN user u ON l.id_user = u.id_user
      INNER JOIN log_project lp ON l.id_log = lp.id_log
      WHERE lp.id_project = ?
-     AND DATE(l.created_at) BETWEEN ? AND ?
+       AND DATE(l.created_at) BETWEEN ? AND ?
      ORDER BY l.created_at DESC`,
     [idProyecto, fechaInicio, fechaFin]
   );
@@ -38,7 +38,7 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
      INNER JOIN user u ON a.id_user = u.id_user
      INNER JOIN user_team ut ON u.id_user = ut.id_user
      WHERE ut.id_team = ?
-     AND a.created_at BETWEEN ? AND ?
+       AND DATE(a.created_at) BETWEEN ? AND ?
      ORDER BY a.created_at DESC`,
     [idEquipo, fechaInicio, fechaFin]
   );
@@ -50,7 +50,7 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
      INNER JOIN user u ON l.id_user = u.id_user
      INNER JOIN log_project lp ON l.id_log = lp.id_log
      WHERE lp.id_project = ?
-     AND DATE(l.created_at) BETWEEN ? AND ?
+       AND DATE(l.created_at) BETWEEN ? AND ?
      ORDER BY l.created_at DESC`,
     [idProyecto, fechaInicio, fechaFin]
   );
@@ -59,7 +59,8 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
     `SELECT g.*
      FROM goal g
      INNER JOIN goal_project gp ON g.id_goal = gp.id_goal
-     WHERE gp.id_project = ?`,
+     WHERE gp.id_project = ?
+     ORDER BY g.id_goal DESC`,
     [idProyecto]
   );
 
@@ -70,17 +71,13 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
     bitacoras: logs,
     logros: achievements,
     bloqueos: blockers,
-    metas: goals
+    metas: goals,
   };
 };
 
-
 const getAiSummaryData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
-  const data = await getReportData(idEquipo, idProyecto, fechaInicio, fechaFin);
-  return data;
+  return getReportData(idEquipo, idProyecto, fechaInicio, fechaFin);
 };
-
-module.exports = { getReportData, getAiSummaryData };
 
 const getProjectReportData = async (idProyecto) => {
   const [project] = await db.query(
@@ -154,5 +151,8 @@ const getProjectReportData = async (idProyecto) => {
   };
 };
 
-module.exports = { getReportData, getAiSummaryData, getProjectReportData };
-
+module.exports = {
+  getReportData,
+  getAiSummaryData,
+  getProjectReportData,
+};
