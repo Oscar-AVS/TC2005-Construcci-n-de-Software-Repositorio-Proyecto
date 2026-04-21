@@ -20,9 +20,12 @@
   <div class="action-buttons">
     <select class="form-select filter-select" id="statusFilter">
       <option value="">All Status</option>
-      <option value="active">Active</option>
-      <option value="inactive">On Hold</option>
+      <option value="not_started">Not Started</option>
+      <option value="in_progress">In Progress</option>
+      <option value="on_hold">On Hold</option>
+      <option value="at_risk">At Risk</option>
       <option value="completed">Completed</option>
+      <option value="archived">Archived</option>
     </select>
     <button class="btn-submit" type="button" id="btnNewProject">
       <i class="fa-solid fa-plus"></i> New Project
@@ -38,11 +41,11 @@
  
   <% projects.forEach(project => { %>
     <div class="project-card"
-      data-status="<%= project.status %>"
+      data-status="<%= project.progress_status %>"
       data-name="<%= project.project_name.toLowerCase() %>">
  
       <div class="project-card-header">
-        <div class="project-card-status <%= project.status %>"><%= project.status %></div>
+        <div class="project-card-status <%= project.progress_status %>"><%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></div>
         <div class="project-card-actions">
           <button class="btn-icon btn-delete-project" title="Delete"
             data-id="<%= project.id_project %>"
@@ -112,10 +115,13 @@
  
       <div class="form-field">
         <label class="form-label" for="newProjectStatus">Status</label>
-        <select id="newProjectStatus" name="status" class="form-select">
-          <option value="active">Active</option>
-          <option value="inactive">On Hold</option>
+        <select id="newProjectStatus" name="progress_status" class="form-select">
+          <option value="not_started">Not Started</option>
+          <option value="in_progress">In Progress</option>
+          <option value="on_hold">On Hold</option>
+          <option value="at_risk">At Risk</option>
           <option value="completed">Completed</option>
+          <option value="archived">Archived</option>
         </select>
       </div>
  

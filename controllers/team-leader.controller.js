@@ -13,10 +13,22 @@ const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
   try {
-    const teamId = req.session.teamId;
+    let teamId = req.session.teamId;
 
     if (!teamId) {
-      return res.redirect('/login?error=access_denied');
+      const [[team]] = await User.fetchTeamByLeader(req.session.userId);
+      if (team) {
+        req.session.teamId = team.id_team;
+        await new Promise((resolve, reject) =>
+          req.session.save(err => (err ? reject(err) : resolve()))
+        );
+        teamId = team.id_team;
+      } else {
+        return res.render('team-leader/dashboard', {
+          currentPage: 'dashboard',
+          noTeam: true,
+        });
+      }
     }
 
     const [
@@ -358,7 +370,7 @@ exports.searchAvailableUsers = async (req, res) => {
 
     const [users] = await db.query(
       `
-      SELECT 
+      SELECT
         u.id_user,
         u.full_name,
         u.email
@@ -371,12 +383,11 @@ exports.searchAvailableUsers = async (req, res) => {
       AND (
         u.full_name LIKE ?
         OR u.email LIKE ?
-        OR u.username LIKE ?
       )
       ORDER BY u.full_name ASC
       LIMIT 10
       `,
-      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+      [teamId, `%${search}%`, `%${search}%`]
     );
 
     res.status(200).json(users);
@@ -404,12 +415,11 @@ exports.findTeamMembers = async (req, res) => {
         AND (
           u.full_name LIKE ?
           OR u.email LIKE ?
-          OR u.username LIKE ?
         )
       ORDER BY u.full_name ASC
       LIMIT 10
       `,
-      [teamId, `%${search}%`, `%${search}%`, `%${search}%`]
+      [teamId, `%${search}%`, `%${search}%`]
     );
 
     res.status(200).json(members);
@@ -607,7 +617,7 @@ exports.resolveBlocker = async (req, res) => {
     const { id_blocker } = req.body;
 
     await db.query(
-      'UPDATE blocker SET resolution_status = ? WHERE id_blocker = ?',
+      'UPDATE blocker SET resolution_status = ?, resolved_at = NOW() WHERE id_blocker = ?',
       ['resolved', id_blocker]
     );
 

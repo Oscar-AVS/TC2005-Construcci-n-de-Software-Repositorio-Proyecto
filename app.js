@@ -15,7 +15,7 @@ const db = require('./util/database');
 const User = require('./models/user.model');
 
 const isAuth = require('./util/is-auth');
-const { requireRole } = require('./util/is-auth');
+const { requireRole } = isAuth;
 
 const usersRoutes = require('./routes/users.routes');
 const employeeRoutes = require('./routes/employee.routes');
@@ -141,6 +141,17 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(async (req, res, next) => {
+  if (req.session && req.session.userId) {
+    try {
+      await db.execute('SET @current_user_id = ?', [req.session.userId]);
+    } catch (err) {
+      console.error('Error setting audit context:', err);
+    }
+  }
+  next();
+});
+
 // Slack webhook — mounted BEFORE csrf (external calls have no CSRF token)
 app.use('/api/slack', slackRoutes);
 
@@ -153,7 +164,7 @@ app.get('/', (req, res) => res.redirect('/login'));
  * Routes.
  */
 app.use('/', csrfProtection, usersRoutes);
-app.use('/employee', isAuth, requireRole('employee', 'admin'), csrfProtection, employeeRoutes);
+app.use('/employee', isAuth, requireRole('employee', 'admin', 'team-leader'), csrfProtection, employeeRoutes);
 app.use('/team-leader', isAuth, requireRole('team-leader'), csrfProtection, teamLeaderRoutes);
 app.use('/manager', isAuth, requireRole('manager'), csrfProtection, managerRoutes);
 app.use('/admin', isAuth, requireRole('admin'), csrfProtection, adminRoutes);

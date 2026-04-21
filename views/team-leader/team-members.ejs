@@ -1,129 +1,126 @@
 <h1 id="pageTitle" class="page-title">Team Members</h1>
 
-<div class="report-card">
-  <div class="report-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      <h2><%= teamName %></h2>
+<!-- Toolbar -->
+<div id="toolbar" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+  <span style="font-size: 13px; font-weight: 600; color: #9ca3af; background: #f3f4f6; padding: 4px 12px; border-radius: 20px; white-space: nowrap;">
+    <i class="fa-solid fa-users" style="margin-right: 6px;"></i><%= teamName %>
+  </span>
 
-      <div style="max-width: 360px;">
-        <input
-          type="text"
-          id="teamMemberFinder"
-          class="form-input"
-          placeholder="Find current team members"
-        />
-      </div>
-    </div>
-
-    <button class="btn-submit" type="button" id="toggleAddMemberPanel">
-      <i class="fa-solid fa-plus"></i> Add Member
-    </button>
+  <div style="position: relative; flex: 1; min-width: 200px; max-width: 340px;">
+    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px;"></i>
+    <input
+      type="text"
+      id="teamMemberFinder"
+      class="form-input"
+      placeholder="Search members..."
+      style="padding-left: 36px; width: 100%;"
+    />
   </div>
 
-  <div id="addMemberPanel" class="report-card" style="display: none; margin: 0 0 16px 0; padding: 16px;">
-    <form id="addMemberForm" action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 320px;">
-        <label for="memberSearch" style="font-size: 18px; font-weight: 700; color: #1f2a44;">Add new team member</label>
-
-        <input
-          type="text"
-          id="memberSearch"
-          class="form-input"
-          placeholder="Search by name, email or username"
-          autocomplete="off"
-          style="min-width: 280px;"
-        />
-
-        <input type="hidden" name="id_user" id="selectedUserId" required>
-
-        <div
-          id="memberSuggestions"
-            style="display: none; width: 100%; margin-top: 6px; background: #fff; border: 1px solid #dcdcdc; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden;"
-        ></div>
-
-        <small id="selectedUserLabel" style="color: #5f6b85; min-height: 18px;"></small>
-      </div>
-
-      <div style="display: flex; gap: 8px; align-items: end; padding-top: 30px;">
-        <button class="btn-submit" type="submit">
-          <i class="fa-solid fa-plus"></i> Confirm
-        </button>
-        <button class="btn-secondary" type="button" id="cancelAddMember">Cancel</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="report-card-body">
-    <% if (members && members.length > 0) { %>
-      <% members.forEach(member => { %>
-        <div
-          class="member-card"
-          data-member-id="<%= member.id_user %>"
-          style="display: flex; align-items: center; justify-content: space-between; gap: 20px;"
-        >
-          <div style="display: flex; align-items: center; gap: 18px;">
-            <div class="member-avatar">
-              <img
-                src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
-                alt="<%= member.full_name %>"
-              />
-            </div>
-
-            <div class="member-info">
-              <h3 class="member-name"><%= member.full_name %></h3>
-              <p class="member-role"><%= member.role === 'team-leader' ? 'Team Leader' : member.role === 'project-manager' ? 'Project Manager' : member.role === 'manager' ? 'Manager' : member.role === 'admin' ? 'Administrator' : 'Employee' %></p>
-              <p class="member-email"><%= member.email %></p>
-            </div>
-          </div>
-
-          <div class="member-actions">
-            <form action="/team-leader/team-members/remove" method="POST" class="remove-member-form">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id_user" value="<%= member.id_user %>">
-              <input type="hidden" name="member_name" value="<%= member.full_name %>">
-              <button class="btn-icon btn-danger" type="submit" title="Remove from team">
-                <i class="fa-solid fa-user-minus"></i>
-              </button>
-            </form>
-          </div>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <p>No team members found.</p>
-    <% } %>
-  </div>
+  <button class="btn-submit" type="button" id="toggleAddMemberPanel" style="margin-left: auto; white-space: nowrap;">
+    <i class="fa-solid fa-plus"></i> Add Member
+  </button>
 </div>
 
-<div
-  id="removeMemberModal"
-  style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;"
->
-  <div
-    style="background: #fff; width: min(420px, 90vw); border-radius: 18px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);"
-  >
-    <h3 style="margin: 0 0 10px 0; font-size: 22px; color: #1f2a44;">Remove team member</h3>
-    <p id="removeMemberText" style="margin: 0 0 20px 0; color: #5f6b85; line-height: 1.5;">
+<!-- Add Member Panel -->
+<div id="addMemberPanel" style="display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);">
+  <p style="margin: 0 0 14px 0; font-size: 15px; font-weight: 700; color: #1f2a44;">Add new member</p>
+  <form id="addMemberForm" action="/team-leader/team-members/add" method="POST" style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+    <div style="position: relative; flex: 1; min-width: 260px;">
+      <input
+        type="text"
+        id="memberSearch"
+        class="form-input"
+        placeholder="Search by name or email"
+        autocomplete="off"
+        style="width: 100%;"
+      />
+      <input type="hidden" name="id_user" id="selectedUserId" required>
+      <div id="memberSuggestions" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #dcdcdc; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden; z-index: 100;"></div>
+      <small id="selectedUserLabel" style="display: block; color: #5f6b85; margin-top: 4px; min-height: 18px; font-size: 12px;"></small>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding-top: 2px;">
+      <button class="btn-submit" type="submit"><i class="fa-solid fa-check"></i> Confirm</button>
+      <button class="btn-secondary" type="button" id="cancelAddMember">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<!-- Member List -->
+<div class="report-card" style="overflow: hidden;">
+  <% if (members && members.length > 0) { %>
+    <ul style="list-style: none; margin: 0; padding: 0;">
+      <% members.forEach((member, index) => { %>
+        <%
+          const roleLabel = member.role === 'team-leader'    ? 'Team Leader'
+                          : member.role === 'project-manager' ? 'Project Manager'
+                          : member.role === 'manager'         ? 'Manager'
+                          : member.role === 'admin'           ? 'Admin'
+                          : 'Employee';
+          const roleColor = member.role === 'team-leader'    ? { bg: '#fff7ed', text: '#c2410c' }
+                          : member.role === 'project-manager' ? { bg: '#f0fdf4', text: '#15803d' }
+                          : member.role === 'manager'         ? { bg: '#faf5ff', text: '#7c3aed' }
+                          : member.role === 'admin'           ? { bg: '#fef2f2', text: '#b91c1c' }
+                          : { bg: '#eff6ff', text: '#1d4ed8' };
+        %>
+        <li
+          class="member-card"
+          data-member-id="<%= member.id_user %>"
+          style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; <%= index < members.length - 1 ? 'border-bottom: 1px solid #f3f4f6;' : '' %>"
+        >
+          <div style="display: flex; align-items: center; gap: 16px; min-width: 0;">
+            <div style="background: #fb0202; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 17px; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;">
+              <%= member.full_name.charAt(0).toUpperCase() %>
+            </div>
+            <div style="min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-weight: 700; color: #1f2a44; font-size: 15px;"><%= member.full_name %></span>
+              </div>
+              <p style="margin: 2px 0 0; font-size: 13px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= member.email %></p>
+            </div>
+          </div>
+
+          <form action="/team-leader/team-members/remove" method="POST" class="remove-member-form" style="flex-shrink: 0;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="id_user" value="<%= member.id_user %>">
+            <input type="hidden" name="member_name" value="<%= member.full_name %>">
+            <button type="submit" title="Remove from team" style="display: flex; align-items: center; gap: 6px; border: none; background: transparent; color: #d1d5db; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: background 0.15s, color 0.15s;"
+              onmouseenter="this.style.background='#fef2f2';this.style.color='#b91c1c';"
+              onmouseleave="this.style.background='transparent';this.style.color='#d1d5db';">
+              <i class="fa-solid fa-user-minus"></i>
+            </button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <div style="padding: 48px 24px; text-align: center; color: #9ca3af;">
+      <i class="fa-solid fa-users" style="font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.4;"></i>
+      <p style="margin: 0; font-size: 15px;">No members in this team yet.</p>
+      <p style="margin: 4px 0 0; font-size: 13px;">Click <strong>Add Member</strong> to get started.</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- Remove Confirmation Modal -->
+<div id="removeMemberModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: #fff; width: min(400px, 90vw); border-radius: 18px; padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
+    <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+      <div style="width: 40px; height: 40px; border-radius: 50%; background: #fef2f2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <i class="fa-solid fa-user-minus" style="color: #b91c1c;"></i>
+      </div>
+      <h3 style="margin: 0; font-size: 18px; color: #1f2a44;">Remove team member</h3>
+    </div>
+    <p id="removeMemberText" style="margin: 0 0 24px 0; color: #5f6b85; font-size: 14px; line-height: 1.6;">
       Are you sure you want to remove this member from the team?
     </p>
-
     <div style="display: flex; justify-content: flex-end; gap: 10px;">
-      <button
-        type="button"
-        id="cancelRemoveMember"
-        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
-      >
-        <i class="fa-solid fa-xmark"></i>
-        Cancel
-      </button>
-
-      <button
-        type="button"
-        id="confirmRemoveMember"
-        style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;"
-      >
-        <i class="fa-solid fa-check"></i>
-        Confirm
+      <button type="button" id="cancelRemoveMember" class="btn-secondary">Cancel</button>
+      <button type="button" id="confirmRemoveMember" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #b91c1c; color: #fff; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px;">
+        <i class="fa-solid fa-check"></i> Remove
       </button>
     </div>
   </div>
@@ -131,211 +128,143 @@
 
 <script>
   const toggleAddMemberPanel = document.getElementById('toggleAddMemberPanel');
-  const addMemberPanel = document.getElementById('addMemberPanel');
-  const cancelAddMember = document.getElementById('cancelAddMember');
-  const addMemberForm = document.getElementById('addMemberForm');
-
-  const memberSearch = document.getElementById('memberSearch');
-  const memberSuggestions = document.getElementById('memberSuggestions');
-  const selectedUserId = document.getElementById('selectedUserId');
-  const selectedUserLabel = document.getElementById('selectedUserLabel');
-
-  const teamMemberFinder = document.getElementById('teamMemberFinder');
-  const memberCards = document.querySelectorAll('.member-card');
-
-  const removeMemberModal = document.getElementById('removeMemberModal');
-  const removeMemberText = document.getElementById('removeMemberText');
-  const cancelRemoveMember = document.getElementById('cancelRemoveMember');
-  const confirmRemoveMember = document.getElementById('confirmRemoveMember');
+  const addMemberPanel       = document.getElementById('addMemberPanel');
+  const cancelAddMember      = document.getElementById('cancelAddMember');
+  const addMemberForm        = document.getElementById('addMemberForm');
+  const memberSearch         = document.getElementById('memberSearch');
+  const memberSuggestions    = document.getElementById('memberSuggestions');
+  const selectedUserId       = document.getElementById('selectedUserId');
+  const selectedUserLabel    = document.getElementById('selectedUserLabel');
+  const teamMemberFinder     = document.getElementById('teamMemberFinder');
+  const memberCards          = document.querySelectorAll('.member-card');
+  const removeMemberModal    = document.getElementById('removeMemberModal');
+  const removeMemberText     = document.getElementById('removeMemberText');
+  const cancelRemoveMember   = document.getElementById('cancelRemoveMember');
+  const confirmRemoveMember  = document.getElementById('confirmRemoveMember');
 
   let pendingRemoveForm = null;
-  let searchTimeout;
-  let finderTimeout;
+  let searchTimeout, finderTimeout;
 
-  if (toggleAddMemberPanel && addMemberPanel) {
-    toggleAddMemberPanel.addEventListener('click', () => {
-      addMemberPanel.style.display =
-        addMemberPanel.style.display === 'none' || addMemberPanel.style.display === ''
-          ? 'block'
-          : 'none';
-    });
+  function openAddPanel() {
+    addMemberPanel.style.display = 'block';
+    memberSearch.focus();
   }
 
-  if (cancelAddMember && addMemberPanel) {
-    cancelAddMember.addEventListener('click', () => {
-      addMemberPanel.style.display = 'none';
-      memberSearch.value = '';
-      selectedUserId.value = '';
-      selectedUserLabel.textContent = '';
-      memberSuggestions.style.display = 'none';
-      memberSuggestions.innerHTML = '';
-    });
+  function closeAddPanel() {
+    addMemberPanel.style.display = 'none';
+    memberSearch.value = '';
+    selectedUserId.value = '';
+    selectedUserLabel.textContent = '';
+    memberSuggestions.style.display = 'none';
+    memberSuggestions.innerHTML = '';
   }
+
+  toggleAddMemberPanel.addEventListener('click', () => {
+    addMemberPanel.style.display === 'none' || addMemberPanel.style.display === ''
+      ? openAddPanel()
+      : closeAddPanel();
+  });
+
+  cancelAddMember.addEventListener('click', closeAddPanel);
 
   function renderSuggestions(users) {
     memberSuggestions.innerHTML = '';
-
     if (!users.length) {
-      memberSuggestions.innerHTML = `
-        <div style="padding: 12px 14px; color: #5f6b85; font-size: 14px;">
-          No matching users found
-        </div>
-      `;
+      memberSuggestions.innerHTML = `<div style="padding:12px 14px;color:#5f6b85;font-size:14px;">No matching users found</div>`;
       memberSuggestions.style.display = 'block';
       return;
     }
-
     users.forEach(user => {
       const item = document.createElement('button');
       item.type = 'button';
-      item.style.width = '100%';
-      item.style.border = 'none';
-      item.style.background = '#fff';
-      item.style.padding = '12px 14px';
-      item.style.textAlign = 'left';
-      item.style.cursor = 'pointer';
-      item.style.display = 'flex';
-      item.style.flexDirection = 'column';
-      item.style.gap = '2px';
+      Object.assign(item.style, { width:'100%', border:'none', background:'#fff', padding:'12px 14px', textAlign:'left', cursor:'pointer', display:'flex', flexDirection:'column', gap:'2px' });
       item.onmouseenter = () => item.style.background = '#f7f8fb';
       item.onmouseleave = () => item.style.background = '#fff';
-
-      item.innerHTML = `
-        <span style="font-weight: 700; color: #1f2a44;">${user.full_name}</span>
-        <span style="font-size: 14px; color: #5f6b85;">${user.email}</span>
-      `;
-
+      item.innerHTML = `<span style="font-weight:700;color:#1f2a44;">${user.full_name}</span><span style="font-size:13px;color:#9ca3af;">${user.email}</span>`;
       item.addEventListener('click', () => {
         memberSearch.value = user.full_name;
         selectedUserId.value = user.id_user;
-        selectedUserLabel.textContent = `Selected: ${user.full_name} - ${user.email}`;
+        selectedUserLabel.textContent = `Selected: ${user.full_name}`;
+        selectedUserLabel.style.color = '#15803d';
         memberSuggestions.style.display = 'none';
       });
-
       memberSuggestions.appendChild(item);
     });
-
     memberSuggestions.style.display = 'block';
   }
 
-  if (memberSearch) {
-    memberSearch.addEventListener('input', () => {
-      clearTimeout(searchTimeout);
-      selectedUserId.value = '';
-      selectedUserLabel.textContent = '';
+  memberSearch.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    selectedUserId.value = '';
+    selectedUserLabel.textContent = '';
+    searchTimeout = setTimeout(async () => {
+      const q = memberSearch.value.trim();
+      if (!q) { memberSuggestions.style.display = 'none'; return; }
+      try {
+        const res = await fetch(`/team-leader/team-members/search?q=${encodeURIComponent(q)}`);
+        renderSuggestions(await res.json());
+      } catch (e) { console.error(e); }
+    }, 300);
+  });
 
-      searchTimeout = setTimeout(async () => {
-        const query = memberSearch.value.trim();
+  memberSearch.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
 
-        if (!query) {
-          memberSuggestions.style.display = 'none';
-          memberSuggestions.innerHTML = '';
-          return;
-        }
-
-        try {
-          const response = await fetch(`/team-leader/team-members/search?q=${encodeURIComponent(query)}`);
-          const users = await response.json();
-          renderSuggestions(users);
-        } catch (error) {
-          console.error('Error searching users:', error);
-        }
-      }, 300);
-    });
-
-    memberSearch.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-      }
-    });
-  }
-
-  if (addMemberForm) {
-    addMemberForm.addEventListener('submit', (event) => {
-      if (!selectedUserId.value) {
-        event.preventDefault();
-        selectedUserLabel.textContent = 'Please select a user from the suggestion list';
-        selectedUserLabel.style.color = '#e74c3c';
-      }
-    });
-  }
-
-  document.addEventListener('click', (event) => {
-    if (
-      memberSuggestions &&
-      memberSearch &&
-      !memberSuggestions.contains(event.target) &&
-      event.target !== memberSearch
-    ) {
-      memberSuggestions.style.display = 'none';
+  addMemberForm.addEventListener('submit', e => {
+    if (!selectedUserId.value) {
+      e.preventDefault();
+      selectedUserLabel.textContent = 'Please select a user from the list.';
+      selectedUserLabel.style.color = '#b91c1c';
     }
+  });
+
+  document.addEventListener('click', e => {
+    if (!memberSuggestions.contains(e.target) && e.target !== memberSearch)
+      memberSuggestions.style.display = 'none';
   });
 
   if (teamMemberFinder) {
     teamMemberFinder.addEventListener('input', () => {
       clearTimeout(finderTimeout);
-
       finderTimeout = setTimeout(async () => {
-        const query = teamMemberFinder.value.trim();
-
+        const q = teamMemberFinder.value.trim();
         try {
-          const response = await fetch(`/team-leader/team-members/find?q=${encodeURIComponent(query)}`);
-          const members = await response.json();
-
-          const matchedIds = members.map(member => String(member.id_user));
-
+          const res = await fetch(`/team-leader/team-members/find?q=${encodeURIComponent(q)}`);
+          const found = await res.json();
+          const matchedIds = found.map(m => String(m.id_user));
           memberCards.forEach(card => {
-            const memberId = card.dataset.memberId;
-            const shouldShow = !query || matchedIds.includes(memberId);
-
-            card.style.display = shouldShow ? '' : 'none';
-            card.style.outline = query && shouldShow ? '2px solid #f25c2a' : 'none';
+            const show = !q || matchedIds.includes(card.dataset.memberId);
+            card.style.display = show ? '' : 'none';
+            card.style.outline = q && show ? '2px solid #f25c2a' : 'none';
           });
-
-          const firstVisible = Array.from(memberCards).find(card => card.style.outline !== 'none' && card.style.display !== 'none');
-          if (firstVisible) {
-            firstVisible.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        } catch (error) {
-          console.error('Error finding team members:', error);
-        }
-      }, 350);
+          const first = Array.from(memberCards).find(c => c.style.outline !== 'none' && c.style.display !== 'none');
+          if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (e) { console.error(e); }
+      }, 300);
     });
   }
 
   document.querySelectorAll('.remove-member-form').forEach(form => {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      const memberName = form.querySelector('input[name="member_name"]').value;
+    form.addEventListener('submit', e => {
+      e.preventDefault();
       pendingRemoveForm = form;
-
-      removeMemberText.textContent = `Are you sure you want to remove ${memberName} from the team?`;
+      removeMemberText.textContent = `Are you sure you want to remove ${form.querySelector('[name="member_name"]').value} from the team?`;
       removeMemberModal.style.display = 'flex';
     });
   });
 
-  if (cancelRemoveMember) {
-    cancelRemoveMember.addEventListener('click', () => {
+  cancelRemoveMember.addEventListener('click', () => {
+    pendingRemoveForm = null;
+    removeMemberModal.style.display = 'none';
+  });
+
+  confirmRemoveMember.addEventListener('click', () => {
+    if (pendingRemoveForm) pendingRemoveForm.submit();
+  });
+
+  removeMemberModal.addEventListener('click', e => {
+    if (e.target === removeMemberModal) {
       pendingRemoveForm = null;
       removeMemberModal.style.display = 'none';
-    });
-  }
-
-  if (confirmRemoveMember) {
-    confirmRemoveMember.addEventListener('click', () => {
-      if (pendingRemoveForm) {
-        pendingRemoveForm.submit();
-      }
-    });
-  }
-
-  if (removeMemberModal) {
-    removeMemberModal.addEventListener('click', (event) => {
-      if (event.target === removeMemberModal) {
-        pendingRemoveForm = null;
-        removeMemberModal.style.display = 'none';
-      }
-    });
-  }
+    }
+  });
 </script>
