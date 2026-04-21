@@ -259,6 +259,21 @@ exports.getLog = (req, res) => {
     });
 };
 
+exports.postLog = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.postLog(req, res);
+};
+
+exports.postEditLog = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.putLog(req, res);
+};
+
+exports.postDeleteLog = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.deleteLog(req, res);
+};
+
 exports.getTeamLog = async (req, res) => {
   try {
     const teamId = req.session.teamId;
