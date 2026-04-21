@@ -801,3 +801,47 @@
   font-size: 0.9rem;
   color: #6b7280;
 }
+
+.goal-link-project {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 220px;
+}
+
+.goal-helper-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.linked-project-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background-color: #eef2ff;
+  color: #3730a3;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.unlink-project-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #3730a3;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.unlink-project-button:hover {
+  color: #1d4ed8;
+}
+
+#goalsListMessage {
+  margin-bottom: 1rem;
+}
