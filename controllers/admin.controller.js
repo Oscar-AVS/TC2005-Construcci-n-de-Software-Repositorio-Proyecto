@@ -7,6 +7,8 @@ const User = require('../models/user.model');
 const Team = require('../models/team.model');
 const Log = require('../models/log.model');
 const Blocker = require('../models/blocker.model');
+const Project = require('../models/project.model');
+const Achievement = require('../models/achievement.model');
 const db = require('../util/database');
 const bcrypt = require('bcrypt');
 
@@ -314,6 +316,211 @@ exports.getRoles = async (req, res) => {
     console.error('getRoles error:', err);
     res.status(500).send('Error loading roles');
   }
+};
+
+// ─── LOG ─────────────────────────────────────────────────────────────────────
+
+exports.getLog = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    id_project: req.query.id_project || null,
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Log.countAllByEmployee(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [logs] = await Log.fetchAllByEmployee(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    const logsWithBlockers = await Promise.all(
+      logs.map(async (log) => {
+        const [blockers] = await Blocker.fetchByLog(log.id_log);
+        return { ...log, blockers };
+      })
+    );
+
+    res.render('shared/log', {
+      currentPage: 'log',
+      role: 'admin',
+      logBase: '/admin',
+      logs: logsWithBlockers,
+      projects,
+      filters,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+      successMessage: req.query.success === 'true' ? 'Log entry created successfully!' : null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postLog = (req, res) => {
+  const activeUserId = req.session.userId;
+  const { completed, planned, blocker } = req.body;
+  let id_projects = req.body.id_projects;
+
+  if (!id_projects) return res.redirect('/admin/log?error=noproject');
+  if (!Array.isArray(id_projects)) id_projects = [id_projects];
+
+  Log.create(activeUserId, completed, planned)
+    .then(([result]) => {
+      const insertId = result.insertId;
+      return Project.fetchAllByEmployee(activeUserId).then(([projects]) => {
+        const projectsToLink = projects
+          .filter((p) => id_projects.includes(String(p.id_project)))
+          .map((p) => ({ id_project: p.id_project, id_team: p.id_team }));
+        return Log.linkProjects(insertId, projectsToLink).then(() => {
+          if (blocker && blocker.trim() !== '') {
+            return Blocker.create(insertId, blocker);
+          }
+        });
+      });
+    })
+    .then(() => res.redirect('/admin/log?success=true'))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    });
+};
+
+exports.putLog = (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id_log, completed, planned, blocker, blocker_id, blocker_status } = req.body;
+  let id_projects = req.body.id_projects;
+
+  if (!Array.isArray(id_projects)) id_projects = id_projects ? [id_projects] : [];
+  id_projects = id_projects.filter((p) => p !== '');
+
+  Log.update(id_log, completed, planned)
+    .then(() => {
+      if (id_projects.length === 0) return;
+      return Project.fetchAllByEmployee(activeUserId).then(([projects]) => {
+        const projectsToLink = projects
+          .filter((p) => id_projects.includes(String(p.id_project)))
+          .map((p) => ({ id_project: p.id_project, id_team: p.id_team }));
+        if (projectsToLink.length === 0) return;
+        return Log.updateProjects(id_log, projectsToLink);
+      });
+    })
+    .then(() => {
+      if (blocker && blocker.trim() !== '') {
+        if (blocker_id) {
+          return Blocker.update(blocker_id, blocker, blocker_status || 'pending');
+        } else {
+          return Blocker.create(id_log, blocker);
+        }
+      } else if (blocker_id) {
+        return Blocker.deleteByLog(id_log);
+      }
+    })
+    .then(() => res.redirect('/admin/log'))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    });
+};
+
+exports.deleteLog = (req, res) => {
+  const { id_log } = req.body;
+  Log.delete(id_log)
+    .then(() => res.redirect('/admin/log'))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    });
+};
+
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+
+exports.getAchievements = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Achievement.countAllByUser(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    res.render('employee/achievements', {
+      currentPage: 'achievements',
+      role: 'admin',
+      achievementsBase: '/admin',
+      achievements,
+      projects,
+      filters,
+      totalRecords,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.postAchievement(req, res);
+};
+
+exports.deleteAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.deleteAchievement(req, res);
+};
+
+exports.editAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.editAchievement(req, res);
+};
+
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+
+exports.getProjects = (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.getProjects(req, res);
+};
+
+// ─── SELF-REVIEW ─────────────────────────────────────────────────────────────
+
+exports.getSelfReview = (req, res) => {
+  res.render('shared/self-review', {
+    currentPage: 'self-review',
+    role: 'admin',
+    selfReviewBase: '/admin',
+    csrfToken: req.csrfToken(),
+  });
+};
+
+exports.generateSelfReview = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.generateSelfReview(req, res);
+};
+
+exports.exportSelfReviewPDF = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.exportSelfReviewPDF(req, res);
 };
 
 exports.getProfile = async (req, res) => {

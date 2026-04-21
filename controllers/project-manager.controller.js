@@ -126,6 +126,7 @@ exports.getLog = (req, res) => {
   res.render('shared/log', {
     title: 'My Log',
     role: 'project-manager',
+    logBase: '/project-manager',
     currentPage: 'log',
     logs: [],
     projects: [],
@@ -138,6 +139,7 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     title: 'Self Review',
     role: 'project-manager',
+    selfReviewBase: '/project-manager',
     currentPage: 'self-review',
     csrfToken: req.csrfToken(),
   });

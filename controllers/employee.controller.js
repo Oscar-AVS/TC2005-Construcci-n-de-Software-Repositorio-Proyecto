@@ -134,6 +134,7 @@ exports.getLog = async (req, res) => {
     res.render('shared/log', {
       currentPage: 'log',
       role: req.session.role,
+      logBase: '/employee',
       logs: logsWithBlockers,
       projects,
       filters,
@@ -252,6 +253,7 @@ exports.getAchievements = async (req, res) => {
     res.render('employee/achievements', {
       currentPage: 'achievements',
       role: req.session.role,
+      achievementsBase: '/employee',
       achievements,
       projects,
       filters,
@@ -328,6 +330,7 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: req.session.role,
+    selfReviewBase: '/employee',
     csrfToken: req.csrfToken(),
   });
 };

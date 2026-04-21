@@ -276,6 +276,7 @@ exports.getLog = (req, res) => {
         res.render('shared/log', {
           currentPage: 'log',
           role: 'manager',
+          logBase: '/manager',
           logs: logsWithBlockers,
           projects,
           filters,
@@ -293,6 +294,7 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: 'manager',
+    selfReviewBase: '/manager',
     csrfToken: req.csrfToken(),
   });
 };
