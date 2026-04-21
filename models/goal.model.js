@@ -205,4 +205,12 @@ module.exports = class Goal {
     );
   }
 
+    static unlinkProject(idGoal, idProject) {
+    return db.execute(
+      `DELETE FROM goal_project
+      WHERE id_goal = ? AND id_project = ?`,
+      [idGoal, idProject]
+    );
+  }
+
 };
