@@ -167,4 +167,42 @@ module.exports = class Goal {
     );
   }
 
+    static fetchLinkedProjectsByGoal(idGoal) {
+    return db.execute(
+      `SELECT
+        gp.id_goal,
+        gp.id_project,
+        gp.linked_by,
+        gp.linked_at,
+        p.project_name,
+        p.status
+      FROM goal_project gp
+      INNER JOIN project p
+        ON gp.id_project = p.id_project
+      WHERE gp.id_goal = ?
+      ORDER BY p.project_name ASC`,
+      [idGoal]
+    );
+  }
+
+  static fetchAllLinkedProjectsByManager(idUser) {
+    return db.execute(
+      `SELECT
+        g.id_goal,
+        gp.id_project,
+        gp.linked_by,
+        gp.linked_at,
+        p.project_name,
+        p.status
+      FROM goal g
+      LEFT JOIN goal_project gp
+        ON g.id_goal = gp.id_goal
+      LEFT JOIN project p
+        ON gp.id_project = p.id_project
+      WHERE g.id_user = ?
+      ORDER BY g.created_at DESC, p.project_name ASC`,
+      [idUser]
+    );
+  }
+
 };

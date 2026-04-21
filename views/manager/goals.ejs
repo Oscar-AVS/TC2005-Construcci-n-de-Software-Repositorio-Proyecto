@@ -214,6 +214,7 @@
   const createGoalButton = document.getElementById('createGoalButton');
   const cancelEditButton = document.getElementById('cancelEditButton');
   const editGoalButtons = document.querySelectorAll('.edit-goal-button');
+  const linkProjectButtons = document.querySelectorAll('.link-project-button');
 
   let isEditMode = false;
   let editingGoalId = null;
@@ -306,6 +307,55 @@
     }
   };
 
+    const linkProjectToGoal = async (goalId) => {
+    clearFormMessage();
+
+    const select = document.querySelector(
+      `.link-project-select[data-goal-id="${goalId}"]`
+    );
+
+    if (!select) {
+      showFormMessage('Project selector not found.', 'error');
+      return;
+    }
+
+    const idProject = select.value;
+
+    if (!idProject) {
+      showFormMessage('Please select a project first.', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/manager/goals/${goalId}/link-project`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({
+          id_project: idProject,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showFormMessage(data.message || 'Could not link project.', 'error');
+        return;
+      }
+
+      showFormMessage(data.message || 'Project linked successfully.', 'success');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.log(err);
+      showFormMessage('Unexpected error while linking project.', 'error');
+    }
+  };
+
   const submitGoal = async (saveMode) => {
     clearFormMessage();
 
@@ -370,6 +420,13 @@
       loadGoalForEdit(goalId);
     });
   });
+
+  linkProjectButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const goalId = button.dataset.goalId;
+    linkProjectToGoal(goalId);
+  });
+});
 
   cancelEditButton.addEventListener('click', () => {
     disableEditMode();
