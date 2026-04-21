@@ -2,7 +2,6 @@
  * Blocker model.
  * Handles database operations for the blocker table.
  */
-
 const db = require('../util/database');
 
 module.exports = class Blocker {
@@ -57,6 +56,50 @@ module.exports = class Blocker {
       `SELECT COUNT(*) AS count
        FROM blocker
        WHERE resolution_status = 'pending'`
+    );
+  }
+
+  // CU 4.10
+
+  static fetchByProject(id_project) {
+    return db.execute(
+      `SELECT b.id_blocker, b.description, b.resolution_status,
+              b.blocker_type, b.severity, b.detected_at,
+              u.full_name AS reporter_name,
+              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+       FROM blocker b
+       JOIN log l ON b.id_log = l.id_log
+       JOIN user u ON l.id_user = u.id_user
+       JOIN log_project lp ON l.id_log = lp.id_log
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       WHERE lp.id_project = ?
+       GROUP BY b.id_blocker
+       ORDER BY
+         FIELD(b.resolution_status, 'pending', 'resolved'),
+         FIELD(b.severity, 'critical', 'high', 'medium', 'low'),
+         b.detected_at DESC`,
+      [id_project]
+    );
+  }
+
+  static fetchAllOrganizational() {
+    return db.execute(
+      `SELECT b.id_blocker, b.description, b.resolution_status,
+              b.blocker_type, b.severity, b.detected_at,
+              u.full_name AS reporter_name,
+              p.project_name,
+              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+       FROM blocker b
+       JOIN log l ON b.id_log = l.id_log
+       JOIN user u ON l.id_user = u.id_user
+       JOIN log_project lp ON l.id_log = lp.id_log
+       JOIN project p ON lp.id_project = p.id_project
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       GROUP BY b.id_blocker
+       ORDER BY
+         FIELD(b.resolution_status, 'pending', 'resolved'),
+         FIELD(b.severity, 'critical', 'high', 'medium', 'low'),
+         b.detected_at DESC`
     );
   }
 };

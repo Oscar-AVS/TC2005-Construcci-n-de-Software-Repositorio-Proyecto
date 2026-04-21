@@ -24,18 +24,21 @@
           <select id="filterProject" name="id_project" class="form-select">
             <option value="">All Projects</option>
             <% projects.forEach(p => { %>
-            <option value="<%= p.id_project %>" <%= filters.id_project == p.id_project ? 'selected' : '' %>>
+            <option value="<%= p.id_project %>"
+              <%= filters.id_project == p.id_project ? 'selected' : '' %>>
               <%= p.project_name %>
             </option>
             <% }) %>
           </select>
         </div>
-        <button class="btn-submit" type="submit">
-          <i class="fa-solid fa-filter"></i> Filter
-        </button>
-        <a href="/project-manager/blockers" class="btn-draft">
-          <i class="fa-solid fa-xmark"></i> Clear
-        </a>
+        <div style="display:flex; align-items:flex-end; gap:8px;">
+          <button class="btn-submit" type="submit">
+            <i class="fa-solid fa-filter"></i> Filter
+          </button>
+          <a href="/project-manager/blockers" class="btn-draft">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </a>
+        </div>
       </div>
     </form>
   </div>
@@ -50,14 +53,18 @@
 %>
 <div class="pm-stats-row">
   <div class="stat-card">
-    <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-circle-exclamation"></i></div>
+    <div class="stat-icon stat-icon-blue">
+      <i class="fa-solid fa-circle-exclamation"></i>
+    </div>
     <div class="stat-info">
       <p class="stat-value"><%= totalB %></p>
       <p class="stat-label">Total Blockers</p>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon stat-icon-yellow"><i class="fa-solid fa-clock"></i></div>
+    <div class="stat-icon stat-icon-yellow">
+      <i class="fa-solid fa-clock"></i>
+    </div>
     <div class="stat-info">
       <p class="stat-value"><%= pendingB %></p>
       <p class="stat-label">Pending</p>
@@ -87,7 +94,9 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>Detected Blockers</h2>
-    <span class="item-count"><%= blockers.length %> blocker<%= blockers.length !== 1 ? 's' : '' %></span>
+    <span class="item-count">
+      <%= blockers.length %> blocker<%= blockers.length !== 1 ? 's' : '' %>
+    </span>
   </div>
   <div class="report-card-body">
     <% if (blockers.length === 0) { %>
@@ -106,8 +115,12 @@
               <span class="blocker-project"><%= blocker.project_name %></span>
               <% } %>
               <span class="blocker-author"><%= blocker.reporter_name %></span>
-              <span class="blocker-project"><%= blocker.team_names || 'No team' %></span>
-              <span class="tag tag-<%= blocker.severity %>"><%= blocker.severity %></span>
+              <span class="blocker-project">
+                <%= blocker.team_names || 'No team' %>
+              </span>
+              <span class="tag tag-<%= blocker.severity %>">
+                <%= blocker.severity %>
+              </span>
               <span class="tag <%= blocker.resolution_status === 'resolved' ? 'tag-resolved' : 'tag-pending' %>">
                 <%= blocker.resolution_status %>
               </span>

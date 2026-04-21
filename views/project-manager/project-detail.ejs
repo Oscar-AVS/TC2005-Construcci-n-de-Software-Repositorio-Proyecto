@@ -183,10 +183,17 @@
  
  
  <!-- Recent Activity -->
- <div class="report-card">
-  <div class="report-card-header">
-    <h2>Recent Activity</h2>
-  </div>
+ <div class="report-card-header">
+  <h2>Recent Activity</h2>
+  <% if (activity && activity.length > 0) { %>
+  <form action="/project-manager/project/<%= project.id_project %>/report/export-pdf" method="POST" style="margin:0;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <button type="submit" class="btn-export">
+      <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+  </form>
+  <% } %>
+</div>
   <div class="report-card-body">
     <% if (activity.length === 0) { %>
       <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>

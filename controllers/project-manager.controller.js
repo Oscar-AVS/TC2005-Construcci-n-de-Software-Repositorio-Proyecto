@@ -4,6 +4,7 @@
 const User    = require('../models/user.model');
 const Project = require('../models/project.model');
 const Team = require('../models/team.model');
+const Blocker = require('../models/blocker.model');
 const bcrypt  = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
@@ -398,5 +399,38 @@ exports.postRemoveUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+user`);
+  }
+};
+
+// CU 4.10 — bloqueos 
+exports.getBlockers = async (req, res) => {
+  try {
+    const { id_project } = req.query;
+    let blockers;
+
+    if (id_project) {
+      const [filtered] = await Blocker.fetchByProject(id_project);
+      blockers = filtered;
+    } else {
+      const [all] = await Blocker.fetchAllOrganizational();
+      blockers = all;
+    }
+
+    const [projects] = await Project.fetchAll();
+
+    res.render('project-manager/blockers', {
+      title: 'Organizational Blockers',
+      role: 'project-manager',
+      currentPage: 'blockers',
+      blockers,
+      projects,
+      filters: { id_project: id_project || '' },
+      error: req.query.error || '',
+      success: req.query.success || '',
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
   }
 };

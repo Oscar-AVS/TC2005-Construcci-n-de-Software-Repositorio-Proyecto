@@ -33,18 +33,17 @@ router.post('/profile/password', pmController.postPassword);
 // Proyectos
 router.get('/projects',         pmController.getProjects);
 router.get('/project/:id',      pmController.getProjectDetail);
-
 router.post('/projects/create',     pmController.postCreateProject);  // 4.1
 router.post('/projects/:id/delete', pmController.postDeleteProject);  // 4.3
-
 router.post('/project/:id/edit',  pmController.postEditProject);    // 4.2
 router.post('/project/:id/dates', pmController.postProjectDates);   // 4.4
 router.post('/project/:id/progress', pmController.postProjectProgressStatus); // 4.5
-
 router.post('/project/:id/teams/assign',          pmController.postAssignTeam);  // 4.6
 router.post('/project/:id/teams/:id_team/remove', pmController.postRemoveTeam);  // 4.6
-
 router.post('/project/:id/users/assign',          pmController.postAssignUser);  // 4.7
 router.post('/project/:id/users/:id_user/remove', pmController.postRemoveUser);  // 4.7
+
+// Bloqueos
+router.get('/blockers', pmController.getBlockers); // 4.10
 
 module.exports = router;
