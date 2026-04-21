@@ -10088,7 +10088,7 @@ CREATE TABLE `project` (
   `progress_status` enum('not_started','in_progress','on_hold','at_risk','completed','archived') NOT NULL DEFAULT 'not_started',
   `progress_percentage` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
   `last_progress_update` datetime DEFAULT NULL,
-  `start_date` date DEFAULT curdate(),
+  `start_date` date NOT NULL DEFAULT CURRENT_DATE,
   `end_date` date DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
