@@ -214,6 +214,8 @@ exports.getDashboard = async (req, res) => {
 
 exports.getLog = (req, res) => {
   const activeUserId = req.session.userId;
+  const teamId = req.session.teamId;
+
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
@@ -222,7 +224,7 @@ exports.getLog = (req, res) => {
 
   Promise.all([
     Log.fetchAllByEmployee(activeUserId, filters),
-    Project.fetchAllByEmployee(activeUserId),
+    Project.fetchAllByTeam(teamId),
   ])
     .then(([[logs], [projects]]) => {
       return Promise.all(
