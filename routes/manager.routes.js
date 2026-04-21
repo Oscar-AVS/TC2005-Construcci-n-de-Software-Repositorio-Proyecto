@@ -17,7 +17,7 @@ const selfReviewLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
+ 
 router.get('/dashboard', managerController.getDashboard);
 router.get('/goals', managerController.getGoals);
 router.post('/goals', managerController.createGoal);
@@ -33,5 +33,6 @@ router.post('/self-review/export-pdf', selfReviewLimiter, managerController.expo
 router.get('/profile', managerController.getProfile);
 router.post('/profile/slack', managerController.postSlack);
 router.post('/profile/password', managerController.postPassword);
+router.post('/goals/:id/link-project', managerController.linkProjectToGoal);
 
 module.exports = router;

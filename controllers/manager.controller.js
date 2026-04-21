@@ -235,6 +235,102 @@ exports.getGoalById = async (req, res) => {
   }
 };
 
+exports.linkProjectToGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+  const { id_project: idProject } = req.body;
+
+  try {
+    if (!idProject) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: 'Goal-project link failed: no project selected.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a project.',
+      });
+    }
+
+    const [goalRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (goalRows.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: 'Goal-project link failed: goal not found.',
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+
+    if (existingLinkRows.length > 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: `Goal-project link failed: project ${idProject} is already linked to goal ${id}.`,
+      });
+
+      return res.status(409).json({
+        success: false,
+        message: 'This project is already linked to the selected goal.',
+      });
+    }
+
+    await Goal.linkProject(id, idProject, activeUserId);
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'link',
+      entityType: 'goal_project',
+      entityId: id,
+      success: 1,
+      detail: `Project ${idProject} linked successfully to goal ${id}.`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Project linked successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while linking project to goal: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 exports.getHighlights = (req, res) => {
   res.render('manager/highlights', {
     currentPage: 'highlights',
