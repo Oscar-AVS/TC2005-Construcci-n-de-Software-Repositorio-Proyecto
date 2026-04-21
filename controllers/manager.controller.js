@@ -8,6 +8,7 @@ const Blocker = require('../models/blocker.model');
 const Project = require('../models/project.model');
 const User = require('../models/user.model');
 const Goal = require('../models/goal.model');
+const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
 
 exports.getDashboard = (req, res) => {
@@ -245,11 +246,19 @@ exports.getHistory = (req, res) => {
 };
 
 exports.getReports = (req, res) => {
-  res.render('manager/reports', {
-    currentPage: 'reports',
-    role: 'manager',
-    csrfToken: req.csrfToken(),
-  });
+  Team.fetchAllForSelect()
+    .then(([teams]) => {
+      res.render('manager/reports', {
+        currentPage: 'reports',
+        role: 'manager',
+        teams,
+        csrfToken: req.csrfToken(),
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
 };
 
 exports.getLog = (req, res) => {
