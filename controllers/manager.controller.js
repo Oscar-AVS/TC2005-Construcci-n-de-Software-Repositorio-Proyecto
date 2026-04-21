@@ -18,22 +18,26 @@ exports.getDashboard = (req, res) => {
   });
 };
 
-exports.getGoals = (req, res) => {
+exports.getGoals = async (req, res) => {
   const activeUserId = req.session.userId;
 
-  Goal.fetchAllByManager(activeUserId)
-    .then(([goals]) => {
-      res.render('manager/goals', {
-        currentPage: 'goals',
-        role: 'manager',
-        goals,
-        csrfToken: req.csrfToken(),
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+  try {
+    const [[goals], [projects]] = await Promise.all([
+      Goal.fetchAllByManager(activeUserId),
+      Project.fetchAvailableForGoalLink(),
+    ]);
+
+    res.render('manager/goals', {
+      currentPage: 'goals',
+      role: 'manager',
+      goals,
+      availableProjects: projects,
+      csrfToken: req.csrfToken(),
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.createGoal = async (req, res) => {
