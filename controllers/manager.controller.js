@@ -250,22 +250,26 @@ exports.getGoalById = async (req, res) => {
 exports.linkProjectToGoal = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
-  const { id_project: idProject } = req.body;
+  const { id_projects: idProjects } = req.body;
 
   try {
-    if (!idProject) {
+    const selectedProjectIds = Array.isArray(idProjects)
+      ? idProjects.filter((projectId) => projectId)
+      : [];
+
+    if (selectedProjectIds.length === 0) {
       await Goal.createAuditLog({
         idUser: activeUserId,
         action: 'link',
         entityType: 'goal_project',
         entityId: id,
         success: 0,
-        detail: 'Goal-project link failed: no project selected.',
+        detail: 'Goal-project link failed: no projects selected.',
       });
 
       return res.status(400).json({
         success: false,
-        message: 'Please select a project.',
+        message: 'Please select at least one project.',
       });
     }
 
@@ -287,25 +291,39 @@ exports.linkProjectToGoal = async (req, res) => {
       });
     }
 
-    const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+    const linkedProjects = [];
+    const skippedProjects = [];
 
-    if (existingLinkRows.length > 0) {
+    for (const idProject of selectedProjectIds) {
+      const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+
+      if (existingLinkRows.length > 0) {
+        skippedProjects.push(idProject);
+      } else {
+        await Goal.linkProject(id, idProject, activeUserId);
+        linkedProjects.push(idProject);
+      }
+    }
+
+    if (linkedProjects.length === 0) {
       await Goal.createAuditLog({
         idUser: activeUserId,
         action: 'link',
         entityType: 'goal_project',
         entityId: id,
         success: 0,
-        detail: `Goal-project link failed: project ${idProject} is already linked to goal ${id}.`,
+        detail: `Goal-project link failed: all selected projects were already linked to goal ${id}.`,
       });
 
       return res.status(409).json({
         success: false,
-        message: 'This project is already linked to the selected goal.',
+        message: 'All selected projects are already linked to this goal.',
       });
     }
 
-    await Goal.linkProject(id, idProject, activeUserId);
+    const successMessage = skippedProjects.length > 0
+      ? `${linkedProjects.length} project(s) linked successfully. ${skippedProjects.length} already linked project(s) were skipped.`
+      : `${linkedProjects.length} project(s) linked successfully.`;
 
     await Goal.createAuditLog({
       idUser: activeUserId,
@@ -313,12 +331,12 @@ exports.linkProjectToGoal = async (req, res) => {
       entityType: 'goal_project',
       entityId: id,
       success: 1,
-      detail: `Project ${idProject} linked successfully to goal ${id}.`,
+      detail: `Linked ${linkedProjects.length} project(s) to goal ${id}. Skipped ${skippedProjects.length} already linked project(s).`,
     });
 
     return res.status(200).json({
       success: true,
-      message: 'Project linked successfully.',
+      message: successMessage,
     });
   } catch (err) {
     console.log(err);
@@ -330,12 +348,67 @@ exports.linkProjectToGoal = async (req, res) => {
         entityType: 'goal_project',
         entityId: id,
         success: 0,
-        detail: `Technical error while linking project to goal: ${err.message}`,
+        detail: `Technical error while linking projects to goal: ${err.message}`,
       });
     } catch (auditErr) {
       console.log(auditErr);
     }
 
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+exports.unlinkProjectFromGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+  const { id_project: idProject } = req.body;
+
+  try {
+    if (!idProject) {
+      return res.status(400).json({
+        success: false,
+        message: 'Project id is required.',
+      });
+    }
+
+    const [goalRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (goalRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+
+    if (existingLinkRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'This project is not linked to the selected goal.',
+      });
+    }
+
+    await Goal.unlinkProject(id, idProject);
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'goal_project',
+      entityId: id,
+      success: 1,
+      detail: `Project ${idProject} unlinked successfully from goal ${id}.`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Project unlinked successfully.',
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({
       success: false,
       message: 'Internal Server Error',
