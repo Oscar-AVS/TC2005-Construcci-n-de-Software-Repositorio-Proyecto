@@ -155,6 +155,25 @@
             </div>
           </div>
 
+          <div class="goal-linked-projects">
+          <span class="goal-meta-item">
+            <i class="fa-solid fa-diagram-project"></i>
+            Linked Projects:
+          </span>
+
+          <% if (goal.linkedProjects && goal.linkedProjects.length > 0) { %>
+            <div class="linked-project-tags">
+              <% goal.linkedProjects.forEach((project) => { %>
+                <span class="linked-project-tag">
+                  <%= project.project_name %>
+                </span>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <p class="no-linked-projects">No linked projects yet.</p>
+          <% } %>
+        </div>
+
           <div class="goal-actions">
   <div class="goal-link-project">
     <select
