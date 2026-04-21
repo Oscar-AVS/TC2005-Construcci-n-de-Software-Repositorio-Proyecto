@@ -240,6 +240,13 @@ exports.getLog = (req, res) => {
           projects,
           filters,
           successMessage: req.query.success || '',
+          page: 1,
+          totalPages: 1,
+          totalItems: logsWithBlockers.length,
+          hasPrevPage: false,
+          hasNextPage: false,
+          previousPage: 1,
+          nextPage: 1,
           csrfToken: req.csrfToken(),
         });
       });
