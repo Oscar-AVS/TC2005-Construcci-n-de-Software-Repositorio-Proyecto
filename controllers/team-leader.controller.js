@@ -239,6 +239,7 @@ exports.getLog = (req, res) => {
           logs: logsWithBlockers,
           projects,
           filters,
+          successMessage: req.query.success || '',
           csrfToken: req.csrfToken(),
         });
       });
@@ -496,22 +497,28 @@ exports.getTeamReport = async (req, res) => {
     );
 
     const [memberActivity] = await db.query(
-      `
-      SELECT
-        u.full_name,
-        u.avatar,
-        COUNT(l.id_log) AS total_entries
-      FROM user u
-      INNER JOIN user_team ut ON u.id_user = ut.id_user
-      LEFT JOIN log l ON u.id_user = l.id_user
-      LEFT JOIN log_project lp ON l.id_log = lp.id_log
-      WHERE ut.id_team = ?
-        AND (l.id_log IS NULL OR DATE(l.created_at) BETWEEN ? AND ?)
-      GROUP BY u.id_user, u.full_name, u.avatar
-      ORDER BY total_entries DESC
-      `,
-      [teamId, reportFrom, reportTo]
-    );
+  `
+  SELECT
+    u.id_user,
+    u.full_name,
+    u.avatar,
+    COUNT(
+      DISTINCT CASE
+        WHEN lp.id_team = ?
+         AND DATE(l.created_at) BETWEEN ? AND ?
+        THEN l.id_log
+      END
+    ) AS total_entries
+  FROM user u
+  INNER JOIN user_team ut ON u.id_user = ut.id_user
+  LEFT JOIN log l ON u.id_user = l.id_user
+  LEFT JOIN log_project lp ON l.id_log = lp.id_log
+  WHERE ut.id_team = ?
+  GROUP BY u.id_user, u.full_name, u.avatar
+  ORDER BY total_entries DESC, u.full_name ASC
+  `,
+  [teamId, reportFrom, reportTo, teamId]
+);
 
     res.render('team-leader/team-report', {
       currentPage: 'team-report',
@@ -571,15 +578,49 @@ exports.addTeamMember = async (req, res) => {
     const teamId = req.session.teamId;
     const { id_user } = req.body;
 
+    console.log('ADD MEMBER DEBUG:', {
+      body: req.body,
+      teamId,
+      id_user,
+      sessionUserId: req.session.userId,
+      role: req.session.role,
+    });
+
+    if (!teamId) {
+      return res.status(400).send('No team assigned to current team leader');
+    }
+
+    if (!id_user) {
+      return res.status(400).send('id_user is required');
+    }
+
+    const [existingRelation] = await db.query(
+      'SELECT * FROM user_team WHERE id_user = ? AND id_team = ?',
+      [id_user, teamId]
+    );
+
+    if (existingRelation.length > 0) {
+      return res.status(400).send('User is already assigned to this team');
+    }
+
+    const [userExists] = await db.query(
+      'SELECT id_user, full_name, email FROM user WHERE id_user = ?',
+      [id_user]
+    );
+
+    if (userExists.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
     await db.query(
       'INSERT INTO user_team (id_user, id_team) VALUES (?, ?)',
       [id_user, teamId]
     );
 
-    res.redirect('/team-leader/team-members');
+    return res.redirect('/team-leader/team-members');
   } catch (error) {
-    console.error(error);
-    res.send('Error DB');
+    console.error('ADD MEMBER ERROR:', error);
+    return res.status(500).send(error.message);
   }
 };
 

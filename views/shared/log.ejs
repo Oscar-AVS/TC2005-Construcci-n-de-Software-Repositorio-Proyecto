@@ -1,6 +1,6 @@
 <h1 id="pageTitle" class="page-title">My Activity Log</h1>
 
-<% if (successMessage) { %>
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
   <div id="toastSuccess" class="toast-notification">
     <i class="fa-solid fa-circle-check"></i> <%= successMessage %>
   </div>
