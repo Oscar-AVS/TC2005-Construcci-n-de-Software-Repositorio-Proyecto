@@ -168,8 +168,18 @@
             <div class="linked-project-tags">
               <% goal.linkedProjects.forEach((project) => { %>
                 <span class="linked-project-tag">
-                  <%= project.project_name %>
-                </span>
+                <span class="linked-project-name"><%= project.project_name %></span>
+                <button
+                  type="button"
+                  class="unlink-project-button"
+                  data-goal-id="<%= goal.id_goal %>"
+                  data-project-id="<%= project.id_project %>"
+                  title="Unlink project"
+                  aria-label="Unlink project"
+                >
+                  ×
+                </button>
+              </span>
               <% }); %>
             </div>
           <% } else { %>
@@ -178,37 +188,47 @@
         </div>
 
           <div class="goal-actions">
-  <div class="goal-link-project">
+ <div class="goal-link-project">
   <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
   <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
 
-  <select
-    class="form-select link-project-select"
-    data-goal-id="<%= goal.id_goal %>"
-    multiple
-    size="4"
-    <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
-  >
-    <% unlinkedProjects.forEach((project) => { %>
-      <option value="<%= project.id_project %>">
-        <%= project.project_name %>
-      </option>
-    <% }); %>
-  </select>
+  <div class="project-dropdown" data-goal-id="<%= goal.id_goal %>">
+    <button
+      type="button"
+      class="project-dropdown-toggle"
+      data-goal-id="<%= goal.id_goal %>"
+      <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
+    >
+      <span>Select projects</span>
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
 
-  <% if (unlinkedProjects.length === 0) { %>
-    <small class="goal-helper-text">All available projects are already linked.</small>
-  <% } else { %>
-    <small class="goal-helper-text">Use Ctrl/Cmd to select multiple projects.</small>
-  <% } %>
+    <div class="project-dropdown-menu" data-goal-id="<%= goal.id_goal %>">
+      <% if (unlinkedProjects.length > 0) { %>
+        <% unlinkedProjects.forEach((project) => { %>
+          <label class="project-option">
+            <input
+              type="checkbox"
+              class="link-project-checkbox"
+              data-goal-id="<%= goal.id_goal %>"
+              value="<%= project.id_project %>"
+            />
+            <span><%= project.project_name %></span>
+          </label>
+        <% }); %>
+      <% } else { %>
+        <p class="project-dropdown-empty">All available projects are already linked.</p>
+      <% } %>
+    </div>
+  </div>
 
   <button
-    class="btn-draft link-project-button"
+    class="goal-link-button link-project-button"
     type="button"
     data-goal-id="<%= goal.id_goal %>"
     <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
   >
-    Link selected
+    Link
   </button>
 </div>
 
@@ -247,6 +267,8 @@
   const editGoalButtons = document.querySelectorAll('.edit-goal-button');
   const linkProjectButtons = document.querySelectorAll('.link-project-button');
   const unlinkProjectButtons = document.querySelectorAll('.unlink-project-button');
+  const projectDropdownToggles = document.querySelectorAll('.project-dropdown-toggle');
+  const projectDropdownMenus = document.querySelectorAll('.project-dropdown-menu');
 
   let isEditMode = false;
   let editingGoalId = null;
@@ -344,56 +366,47 @@
     }
   };
 
-    const linkProjectToGoal = async (goalId) => {
-    clearGoalsListMessage();
+  const linkProjectToGoal = async (goalId) => {
+  clearGoalsListMessage();
 
-    const select = document.querySelector(
-      `.link-project-select[data-goal-id="${goalId}"]`
-    );
+  const selectedProjectIds = Array.from(
+    document.querySelectorAll(`.link-project-checkbox[data-goal-id="${goalId}"]:checked`)
+  ).map((checkbox) => checkbox.value);
 
-    if (!select) {
-      showGoalsListMessage('Project selector not found.', 'error');
+  if (selectedProjectIds.length === 0) {
+    showGoalsListMessage('Please select at least one project.', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`/manager/goals/${goalId}/link-project`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({
+        id_projects: selectedProjectIds,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showGoalsListMessage(data.message || 'Could not link project.', 'error');
       return;
     }
 
-    const selectedProjectIds = Array.from(select.selectedOptions).map(
-      (option) => option.value
-    );
+    showGoalsListMessage(data.message || 'Projects linked successfully.', 'success');
 
-    if (selectedProjectIds.length === 0) {
-      showGoalsListMessage('Please select at least one project.', 'error');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/manager/goals/${goalId}/link-project`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({
-          id_projects: selectedProjectIds,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        showGoalsListMessage(data.message || 'Could not link project.', 'error');
-        return;
-      }
-
-      showGoalsListMessage(data.message || 'Projects linked successfully.', 'success');
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (err) {
-      console.log(err);
-      showGoalsListMessage('Unexpected error while linking projects.', 'error');
-    }
-  };
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
+  } catch (err) {
+    console.log(err);
+    showGoalsListMessage('Unexpected error while linking projects.', 'error');
+  }
+};
 
     const unlinkProjectFromGoal = async (goalId, projectId) => {
     clearGoalsListMessage();
@@ -478,6 +491,7 @@
     }
   };
 
+
   saveDraftButton.addEventListener('click', () => {
     submitGoal('draft');
   });
@@ -506,11 +520,42 @@
     unlinkProjectFromGoal(goalId, projectId);
   });
 });
+
+projectDropdownToggles.forEach((toggle) => {
+  toggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+
+    const goalId = toggle.dataset.goalId;
+    const currentMenu = document.querySelector(
+      `.project-dropdown-menu[data-goal-id="${goalId}"]`
+    );
+
+    projectDropdownMenus.forEach((menu) => {
+      if (menu !== currentMenu) {
+        menu.classList.remove('open');
+      }
+    });
+
+    currentMenu.classList.toggle('open');
+  });
+});
+
+document.addEventListener('click', (event) => {
+  const clickedInsideDropdown = event.target.closest('.project-dropdown');
+
+  if (!clickedInsideDropdown) {
+    projectDropdownMenus.forEach((menu) => {
+      menu.classList.remove('open');
+    });
+  }
+});
 });
 
   cancelEditButton.addEventListener('click', () => {
     disableEditMode();
   });
+
+
 
   const markInvalid = (input) => {
     input.classList.add('input-error');
