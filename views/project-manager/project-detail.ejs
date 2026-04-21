@@ -31,26 +31,31 @@
           ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : 'Not set' %>
       </span>
+
       <span>
         <i class="fa-solid fa-calendar-check"></i>
         Due: <%= project.end_date
           ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : 'Not set' %>
-          <%
-          const progressLabels = {
-            not_started: 'Not Started',
-            in_progress: 'In Progress',
-            on_hold:     'On Hold',
-            at_risk:     'At Risk',
-            completed:   'Completed'
-          };
-        %>
-        <span class="project-progress-badge <%= project.progress_status %>">
-          <i class="fa-solid fa-chart-simple"></i>
-          <%= progressLabels[project.progress_status] || project.progress_status %> · <%= project.progress_percentage || 0 %>%
-        </span>
+      </span>
+
+      <%
+        const progressLabels = {
+          not_started: 'Not Started',
+          in_progress: 'In Progress',
+          on_hold: 'On Hold',
+          at_risk: 'At Risk',
+          completed: 'Completed'
+        };
+      %>
+
+      <span class="project-progress-badge <%= project.progress_status %>">
+        <i class="fa-solid fa-chart-simple"></i>
+        <%= progressLabels[project.progress_status] || project.progress_status %> · <%= project.progress_percentage || 0 %>%
+      </span>
     </div>
   </div>
+
   <div class="project-detail-actions" style="display:flex; flex-wrap:wrap; gap:12px;">
     <button class="btn-draft" type="button" id="btnEditDates" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-calendar-days"></i> Set Dates
@@ -68,8 +73,8 @@
       <i class="fa-solid fa-users"></i> Assign Team
     </button>
   </div>
- </div>
- 
+</div>
+
  <!-- Barra Progreso -->
  <div class="report-card" style="padding: 16px 24px;">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -183,44 +188,45 @@
  
  
  <!-- Recent Activity -->
- <div class="report-card-header">
-  <h2>Recent Activity</h2>
-  <% if (activity && activity.length > 0) { %>
-  <form action="/project-manager/project/<%= project.id_project %>/report/export-pdf" method="POST" style="margin:0;">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <button type="submit" class="btn-export">
-      <i class="fa-solid fa-file-pdf"></i> Export PDF
-    </button>
-  </form>
-  <% } %>
-</div>
+ <div class="report-card">
+  <div class="report-card-header">
+    <h2>Recent Activity</h2>
+    <% if (activity && activity.length > 0) { %>
+      <form action="/project-manager/project/<%= project.id_project %>/report/export-pdf" method="POST" style="margin:0;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="btn-export">
+          <i class="fa-solid fa-file-pdf"></i> Export PDF
+        </button>
+      </form>
+    <% } %>
+  </div>
+
   <div class="report-card-body">
-    <% if (activity.length === 0) { %>
+    <% if (!activity || activity.length === 0) { %>
       <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
     <% } else { %>
       <div class="activity-log-list">
         <% activity.forEach(log => { %>
-        <div class="activity-log-item">
-          <div class="log-date">
-            <%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) %>
-          </div>
-          <div class="log-entries">
-            <div class="log-entry">
-              <span class="log-time">
-                <%= new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
-              </span>
-              <span class="log-text">
-                <strong><%= log.full_name %></strong> — <%= log.completed %>
-              </span>
+          <div class="activity-log-item">
+            <div class="log-date">
+              <%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) %>
+            </div>
+            <div class="log-entries">
+              <div class="log-entry">
+                <span class="log-time">
+                  <%= new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+                <span class="log-text">
+                  <strong><%= log.full_name %></strong> — <%= log.completed %>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
         <% }) %>
       </div>
     <% } %>
   </div>
 </div>
- 
  
  <!-- MODAL: Caso 4.2 — Edición -->
  <div class="modal-overlay" id="modalEditProject">
@@ -492,7 +498,6 @@
       if (e.target === this) closeModal(this);
     });
   });
-
  
  
   // Modal Edit (4.2)
@@ -529,20 +534,24 @@
  
   // Si hay error, abrir el modal que corresponde automáticamente
   <% if (error) { %>
-  const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
+    const errMsg = <%= JSON.stringify(error) %>.toLowerCase();
 
-  if (errMsg.includes('fecha')) {
-    openModal(document.getElementById('modalSetDates'));
-  } else if (errMsg.includes('progress') || errMsg.includes('percentage')) {
-    openModal(document.getElementById('modalEditProgress'));
-  } else if (errMsg.includes('team')) {
-    openModal(document.getElementById('modalAssignTeam'));
-  } else if (errMsg.includes('user') || errMsg.includes('member')) {
-    openModal(document.getElementById('modalAssignUser'));
-  } else {
-    openModal(document.getElementById('modalEditProject'));
-  }
-<% } %>
+    if (errMsg.includes('fecha')) {
+      openModal(document.getElementById('modalSetDates'));
+    } else if (errMsg.includes('progress') || errMsg.includes('percentage')) {
+      openModal(document.getElementById('modalEditProgress'));
+    } else if (errMsg.includes('team')) {
+      openModal(document.getElementById('modalAssignTeam'));
+    } else if (errMsg.includes('user') || errMsg.includes('member')) {
+      openModal(document.getElementById('modalAssignUser'));
+    } else {
+      openModal(document.getElementById('modalEditProject'));
+    }
+  <% } %>
+
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => el.style.display = 'none', 4000);
+  });
  
  
   // Auto-dismiss alerts
