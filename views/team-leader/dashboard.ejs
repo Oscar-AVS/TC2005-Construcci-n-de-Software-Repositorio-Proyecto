@@ -1,3 +1,9 @@
+<% if (typeof noTeam !== 'undefined' && noTeam) { %>
+  <h1 class="page-title">Team Dashboard</h1>
+  <div style="margin-top:2rem; padding: 16px 24px; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 10px; color: #92400e; font-size: 14px; font-weight: 500;">
+    <strong>No team assigned yet.</strong> You have been granted the Team Leader role but haven't been assigned to a team. Please contact an administrator.
+  </div>
+<% } else { %>
 <h1 id="pageTitle" class="page-title">Team Dashboard</h1>
 
 <!-- Dashboard Tabs -->
@@ -446,3 +452,4 @@
   </div>
 
 </div>
+<% } %>

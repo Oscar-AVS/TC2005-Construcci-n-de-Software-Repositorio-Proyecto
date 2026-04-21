@@ -72,14 +72,7 @@ exports.postLogin = (req, res) => {
 
               if (role === 'team-leader') {
                 return User.fetchTeamByLeader(user.id_user).then(([teams]) => {
-                  console.log('LOGIN DEBUG - user.id_user:', user.id_user);
-                  console.log('LOGIN DEBUG - role:', role);
-                  console.log('LOGIN DEBUG - teams:', teams);
-
                   req.session.teamId = teams.length > 0 ? teams[0].id_team : null;
-
-                  console.log('LOGIN DEBUG - req.session.teamId:', req.session.teamId);
-
                   return saveAndRedirect(req, res, role, rememberMe);
                 });
               }

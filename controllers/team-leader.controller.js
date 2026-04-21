@@ -13,10 +13,22 @@ const bcrypt = require('bcrypt');
 
 exports.getDashboard = async (req, res) => {
   try {
-    const teamId = req.session.teamId;
+    let teamId = req.session.teamId;
 
     if (!teamId) {
-      return res.redirect('/login?error=access_denied');
+      const [[team]] = await User.fetchTeamByLeader(req.session.userId);
+      if (team) {
+        req.session.teamId = team.id_team;
+        await new Promise((resolve, reject) =>
+          req.session.save(err => (err ? reject(err) : resolve()))
+        );
+        teamId = team.id_team;
+      } else {
+        return res.render('team-leader/dashboard', {
+          currentPage: 'dashboard',
+          noTeam: true,
+        });
+      }
     }
 
     const [
