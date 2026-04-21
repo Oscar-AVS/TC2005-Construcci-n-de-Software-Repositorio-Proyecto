@@ -16,6 +16,7 @@ module.exports = class Project {
     );
   }
 
+
   static fetchAllByEmployee(id_user) {
     return db.execute(
       `SELECT p.id_project, p.project_name, p.description, p.status, p.start_date,
@@ -81,4 +82,20 @@ module.exports = class Project {
     );
   }
 
+  static fetchAvailableForGoalLink() {
+    return db.execute(
+      `SELECT
+        id_project,
+        project_name,
+        description,
+        status,
+        start_date
+      FROM project
+      WHERE status = 'active'
+      ORDER BY project_name ASC`
+    );
+  }
+
 };
+
+
