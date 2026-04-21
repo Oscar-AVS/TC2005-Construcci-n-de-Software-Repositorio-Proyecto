@@ -145,5 +145,26 @@ module.exports = class Goal {
       ]
     );
   }
+    static checkProjectLink(idGoal, idProject) {
+    return db.execute(
+      `SELECT
+        id_goal,
+        id_project
+      FROM goal_project
+      WHERE id_goal = ? AND id_project = ?`,
+      [idGoal, idProject]
+    );
+  }
+
+  static linkProject(idGoal, idProject, linkedBy) {
+    return db.execute(
+      `INSERT INTO goal_project (
+        id_goal,
+        id_project,
+        linked_by
+      ) VALUES (?, ?, ?)`,
+      [idGoal, idProject, linkedBy]
+    );
+  }
 
 };
