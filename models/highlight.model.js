@@ -128,4 +128,11 @@ module.exports = class Highlight {
       ]
     );
   }
+    static delete(idHighlight, idUser) {
+    return db.execute(
+      `DELETE FROM highlight
+      WHERE id_highlight = ? AND id_user = ?`,
+      [idHighlight, idUser]
+    );
+  }
 };

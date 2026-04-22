@@ -605,6 +605,65 @@ exports.createHighlight = async (req, res) => {
   }
 };
 
+exports.deleteHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [existingRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Highlight not found.',
+      });
+    }
+
+    const [result] = await Highlight.delete(id, activeUserId);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Highlight could not be deleted.',
+      });
+    }
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'highlight',
+      entityId: id,
+      success: 1,
+      detail: 'Highlight deleted successfully.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Highlight deleted successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'delete',
+        entityType: 'highlight',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while deleting highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 exports.getHistory = (req, res) => {
   res.render('manager/history', {
     currentPage: 'history',
