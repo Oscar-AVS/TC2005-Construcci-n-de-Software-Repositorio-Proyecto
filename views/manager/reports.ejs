@@ -37,12 +37,14 @@
       <div class="filter-group">
         <label class="form-label" for="reportTeam">Team</label>
         <select id="reportTeam" class="form-select">
-          <option value="">Select a Team</option>
-          <option value="1">Mufasa Solutions</option>
-          <option value="2">Phoenix Team</option>
-          <option value="3">Delta Squad</option>
-        </select>
-      </div>
+        <option value="">Select a Team</option>
+        <% if (teams && teams.length > 0) { %>
+          <% teams.forEach((team) => { %>
+            <option value="<%= team.id_team %>"><%= team.team_name %></option>
+            <% }) %>
+          <% } %>
+  </select>
+</div>
 
       <button class="btn-generate-ai" type="button" onclick="generateSummary()">
         <i class="fa-solid fa-sparkles"></i>

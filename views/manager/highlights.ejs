@@ -8,32 +8,90 @@
   </div>
 
   <div class="report-card-body">
-    <div class="form-row-grid">
-      <div class="form-field">
-        <label class="form-label" for="highlightTitle">Highlight Title</label>
-        <input type="text" id="highlightTitle" class="form-input" placeholder="Enter highlight title..." />
+    <form id="highlightForm">
+      <input type="hidden" id="csrfToken" value="<%= csrfToken %>">
+      <input type="hidden" id="editingHighlightId" value="">
+      <input type="hidden" id="highlightFormMode" value="create">
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="highlightTitle">Highlight Title</label>
+          <input
+            type="text"
+            id="highlightTitle"
+            name="title"
+            class="form-input"
+            placeholder="Enter highlight title..."
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="highlightProject">Related Project</label>
+          <select id="highlightProject" name="id_project" class="form-select">
+            <option value="">Select a project...</option>
+            <% if (availableProjects && availableProjects.length > 0) { %>
+              <% availableProjects.forEach((project) => { %>
+                <option value="<%= project.id_project %>">
+                  <%= project.project_name %>
+                </option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-grid">
+        <div class="form-field">
+          <label class="form-label" for="highlightType">Highlight Type</label>
+          <select id="highlightType" name="highlight_type" class="form-select">
+            <option value="">Select a type...</option>
+            <option value="technical">Technical</option>
+            <option value="business">Business</option>
+            <option value="team">Team</option>
+            <option value="product">Product</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="highlightDate">Date</label>
+          <input
+            type="date"
+            id="highlightDate"
+            name="highlight_date"
+            class="form-input"
+          />
+        </div>
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="highlightProject">Related Project</label>
-        <select id="highlightProject" class="form-select">
-          <option value="">Select a project...</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
-        </select>
+        <label class="form-label" for="highlightDesc">Description</label>
+        <textarea
+          id="highlightDesc"
+          name="description"
+          rows="3"
+          placeholder="Describe this achievement..."
+        ></textarea>
       </div>
-    </div>
 
-    <div class="form-field">
-      <label class="form-label" for="highlightDesc">Description</label>
-      <textarea id="highlightDesc" rows="3" placeholder="Describe this achievement..."></textarea>
-    </div>
+      <div class="form-field">
+        <label class="form-label" for="highlightImpact">Impact</label>
+        <textarea
+          id="highlightImpact"
+          name="impact"
+          rows="2"
+          placeholder="Describe the impact..."
+        ></textarea>
+      </div>
 
-    <div class="action-row">
-      <button class="btn-draft" type="button">Save as Draft</button>
-      <button class="btn-submit" type="button">Add Highlight</button>
-    </div>
+      <div id="highlightFormMessage" class="form-message" style="display: none;"></div>
+
+      <<div class="action-row">
+  <button id="cancelHighlightEdit" class="btn-draft" type="button" style="display: none;">
+    Cancel
+  </button>
+  <button class="btn-submit" type="submit">Add Highlight</button>
+</div>
+    </form>
   </div>
 </div>
 
@@ -41,162 +99,99 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>Recent Highlights</h2>
-    <span class="item-count">6 highlights</span>
+    <span class="item-count">
+      <%= highlights ? highlights.length : 0 %> highlight<%= highlights && highlights.length === 1 ? '' : 's' %>
+    </span>
   </div>
 
   <div class="report-card-body">
-    <div class="highlights-grid">
+    <% if (highlights && highlights.length > 0) { %>
+      <div class="highlights-grid" id="highlightsGrid">
+        <% highlights.forEach((highlight) => { %>
+          <div class="highlight-card" data-id="<%= highlight.id_highlight %>">
+            <div class="highlight-header">
+              <div class="highlight-icon">
+                <i class="fa-solid fa-trophy"></i>
+              </div>
 
-      <!-- Highlight 1 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-rocket"></i>
+              <span class="highlight-date">
+                <%= new Date(highlight.highlight_date).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: '2-digit',
+                  year: 'numeric',
+                }) %>
+              </span>
+            </div>
+
+            <h3 class="highlight-title"><%= highlight.title %></h3>
+
+            <p class="highlight-desc"><%= highlight.description %></p>
+
+            <% if (highlight.impact) { %>
+              <p class="highlight-desc">
+                <strong>Impact:</strong> <%= highlight.impact %>
+              </p>
+            <% } %>
+
+            <div class="highlight-footer">
+              <div class="highlight-tags">
+                <% if (highlight.project_name) { %>
+                  <span class="highlight-tag"><%= highlight.project_name %></span>
+                <% } else if (highlight.team_name) { %>
+                  <span class="highlight-tag"><%= highlight.team_name %></span>
+                <% } else { %>
+                  <span class="highlight-tag"><%= highlight.highlight_type %></span>
+                <% } %>
+              </div>
+
+              <div class="highlight-actions">
+  <button
+    class="btn-icon edit-highlight-btn"
+    type="button"
+    title="Edit"
+    data-id="<%= highlight.id_highlight %>"
+    data-title="<%= highlight.title %>"
+    data-description="<%= highlight.description %>"
+    data-impact="<%= highlight.impact || '' %>"
+    data-type="<%= highlight.highlight_type %>"
+    data-date="<%= highlight.highlight_date ? new Date(highlight.highlight_date).toISOString().split('T')[0] : '' %>"
+    data-project="<%= highlight.id_project || '' %>"
+  >
+    <i class="fa-solid fa-pen"></i>
+  </button>
+
+  <button
+    class="btn-icon btn-danger delete-highlight-btn"
+    type="button"
+    title="Delete"
+  >
+    <i class="fa-solid fa-trash"></i>
+  </button>
+</div>
+            </div>
           </div>
-          <span class="highlight-date">Mar 18, 2026</span>
-        </div>
-        <h3 class="highlight-title">Launched new authentication system</h3>
-        <p class="highlight-desc">Successfully deployed OAuth 2.0 + JWT authentication across all services, improving security and user experience.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">API Integration</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div id="highlightsEmptyState" class="empty-state">
+        <p>No highlights registered yet.</p>
       </div>
 
-      <!-- Highlight 2 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-shield"></i>
-          </div>
-          <span class="highlight-date">Mar 15, 2026</span>
-        </div>
-        <h3 class="highlight-title">Completed Q1 security audit</h3>
-        <p class="highlight-desc">Zero critical vulnerabilities found. All medium-priority items addressed within 48 hours of discovery.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">Internal Tools</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      <div class="highlights-grid" id="highlightsGrid" style="display: none;"></div>
+    <% } %>
+  </div>
+</div>
+</div>
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box">
+    <h3>Delete Highlight</h3>
+    <p>Are you sure you want to delete this highlight?</p>
 
-      <!-- Highlight 3 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <span class="highlight-date">Mar 12, 2026</span>
-        </div>
-        <h3 class="highlight-title">Team expanded to 12 members</h3>
-        <p class="highlight-desc">Successfully onboarded 3 new engineers, completing Q1 hiring goals ahead of schedule.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">Organization</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Highlight 4 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-gauge-high"></i>
-          </div>
-          <span class="highlight-date">Mar 08, 2026</span>
-        </div>
-        <h3 class="highlight-title">API latency reduced by 45%</h3>
-        <p class="highlight-desc">Database optimization and Redis caching implementation resulted in significant performance improvements.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">API Integration</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Highlight 5 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-code-merge"></i>
-          </div>
-          <span class="highlight-date">Mar 05, 2026</span>
-        </div>
-        <h3 class="highlight-title">CI/CD pipeline fully automated</h3>
-        <p class="highlight-desc">Deployment time reduced from 45 minutes to 8 minutes with new automated testing and deployment workflow.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">Internal Tools</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Highlight 6 -->
-      <div class="highlight-card">
-        <div class="highlight-header">
-          <div class="highlight-icon">
-            <i class="fa-solid fa-palette"></i>
-          </div>
-          <span class="highlight-date">Mar 01, 2026</span>
-        </div>
-        <h3 class="highlight-title">New design system launched</h3>
-        <p class="highlight-desc">Unified component library now available across all products, reducing design inconsistencies by 80%.</p>
-        <div class="highlight-footer">
-          <div class="highlight-tags">
-            <span class="highlight-tag">Dashboard Redesign</span>
-          </div>
-          <div class="highlight-actions">
-            <button class="btn-icon" type="button" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
+    <div class="modal-actions">
+      <button id="cancelDelete" class="btn-secondary">Cancel</button>
+      <button id="confirmDelete" class="btn-danger">Delete</button>
     </div>
   </div>
 </div>
+
+<script src="/js/highlights.js"></script>
