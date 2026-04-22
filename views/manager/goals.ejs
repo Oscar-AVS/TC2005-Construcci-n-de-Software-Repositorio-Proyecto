@@ -1283,39 +1283,38 @@ const showImpactSummaryUI = (summary) => {
   };
 
      generateSummaryBtn.addEventListener('click', async () => {
-    if (!currentGoalId) {
+  if (!currentGoalId) {
+    return;
+  }
+
+  generateSummaryBtn.textContent = 'Generating...';
+  generateSummaryBtn.disabled = true;
+
+  try {
+    const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || 'Error generating summary');
       return;
     }
 
-    generateSummaryBtn.textContent = 'Generating...';
-    generateSummaryBtn.disabled = true;
+    showImpactSummaryUI(data);
+  } catch (err) {
+    console.log(err);
+    alert('Unexpected error generating summary.');
+  }
 
-    try {
-      const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || 'Error generating summary');
-        return;
-      }
-
-      console.log('SUMMARY:', data);
-      alert('Summary generated! Check the console for now.');
-    } catch (err) {
-      console.log(err);
-      alert('Unexpected error generating summary.');
-    }
-
-    generateSummaryBtn.textContent = 'Generate Summary';
-    generateSummaryBtn.disabled = false;
-  });
+  generateSummaryBtn.textContent = 'Generate Summary';
+  generateSummaryBtn.disabled = false;
+});
 
   saveDraftButton.addEventListener('click', () => {
     submitGoal('draft');
