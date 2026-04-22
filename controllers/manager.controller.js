@@ -31,6 +31,7 @@ exports.getGoals = async (req, res) => {
       [goalImpactProjects],
       [goalImpactTeams],
       [goalImpactLogs],
+      [goalImpactHighlights],
     ] = await Promise.all([
       Goal.fetchAllByManager(activeUserId),
       Goal.fetchCreatedByManager(activeUserId),
@@ -39,6 +40,7 @@ exports.getGoals = async (req, res) => {
       Goal.fetchGoalImpactProjectsByManager(activeUserId),
       Goal.fetchGoalImpactTeamsByManager(activeUserId),
       Goal.fetchGoalImpactLogsByManager(activeUserId),
+      Goal.fetchGoalImpactHighlightsByManager(activeUserId),
     ]);
 
     const goalsWithProjects = goals.map((goal) => {
@@ -76,10 +78,15 @@ exports.getGoals = async (req, res) => {
         (log) => log.id_goal === goal.id_goal
       );
 
+      const relatedHighlights = goalImpactHighlights.filter(
+        (highlight) => highlight.id_goal === goal.id_goal
+      );
+
       accumulator[goal.id_goal] = {
         projects: relatedProjects,
         teams: relatedTeams,
         logs: relatedLogs,
+        highlights: relatedHighlights,
       };
 
       return accumulator;
