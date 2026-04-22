@@ -11,6 +11,9 @@ const Goal = require('../models/goal.model');
 const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
 const Highlight = require('../models/highlight.model');
+const { generateText, Output } = require('ai');
+const { openai } = require('@ai-sdk/openai');
+const { z } = require('zod');
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -143,7 +146,14 @@ exports.createGoal = async (req, res) => {
         });
       }
     } else {
-      if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
+      if (
+        !title || !title.trim() ||
+        !description || !description.trim() ||
+        !startDate ||
+        !endDate ||
+        !priority ||
+        !status
+      ) {
         await Goal.createAuditLog({
           idUser: activeUserId,
           action: 'create',
@@ -168,7 +178,10 @@ exports.createGoal = async (req, res) => {
       }
 
       if (new Date(startDate) > new Date(endDate)) {
-        return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
+        return res.status(400).json({
+          success: false,
+          message: 'Start date cannot be later than end date.',
+        });
       }
     }
 
@@ -198,6 +211,7 @@ exports.createGoal = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+
     try {
       await Goal.createAuditLog({
         idUser: activeUserId,
@@ -210,6 +224,7 @@ exports.createGoal = async (req, res) => {
     } catch (auditErr) {
       console.log(auditErr);
     }
+
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
@@ -272,6 +287,7 @@ exports.deleteGoal = async (req, res) => {
     });
   }
 };
+
 exports.updateGoal = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
@@ -289,8 +305,18 @@ exports.updateGoal = async (req, res) => {
   const validStatuses = ['active', 'paused', 'completed', 'cancelled'];
 
   try {
-    if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
-      return res.status(400).json({ success: false, message: 'Please complete all required fields.' });
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !startDate ||
+      !endDate ||
+      !priority ||
+      !status
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
     }
 
     if (!validPriorities.includes(priority)) {
@@ -302,7 +328,10 @@ exports.updateGoal = async (req, res) => {
     }
 
     if (new Date(startDate) > new Date(endDate)) {
-      return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Start date cannot be later than end date.',
+      });
     }
 
     const [existingRows] = await Goal.fetchOneById(id, activeUserId);
@@ -323,7 +352,10 @@ exports.updateGoal = async (req, res) => {
     });
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({ success: false, message: 'Goal could not be updated.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Goal could not be updated.',
+      });
     }
 
     await Goal.createAuditLog({
@@ -335,7 +367,10 @@ exports.updateGoal = async (req, res) => {
       detail: 'Goal updated successfully.',
     });
 
-    return res.status(200).json({ success: true, message: 'Goal updated successfully.' });
+    return res.status(200).json({
+      success: true,
+      message: 'Goal updated successfully.',
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -945,9 +980,11 @@ exports.getProfile = (req, res) => {
 
 exports.postSlack = async (req, res) => {
   const { slack_user } = req.body;
+
   try {
     await User.updateSlack(req.session.userId, slack_user);
     const [[user]] = await User.fetchOne(req.session.userId);
+
     res.render('shared/profile', {
       currentPage: 'profile',
       role: 'manager',
@@ -964,7 +1001,7 @@ exports.postSlack = async (req, res) => {
 
 exports.postPassword = async (req, res) => {
   const { current_password, new_password, confirm_password } = req.body;
-  const bcrypt = require('bcrypt');
+
   try {
     const [[user]] = await User.fetchOne(req.session.userId);
     const match = await bcrypt.compare(current_password, user.password);
@@ -994,7 +1031,8 @@ exports.postPassword = async (req, res) => {
     const hashed = await bcrypt.hash(new_password, 12);
     await User.updatePassword(req.session.userId, hashed);
     const [[updatedUser]] = await User.fetchOne(req.session.userId);
-    res.render('shared/profile', {
+
+    return res.render('shared/profile', {
       currentPage: 'profile',
       role: 'manager',
       user: updatedUser,
@@ -1004,6 +1042,91 @@ exports.postPassword = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.generateGoalImpactSummary = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [
+      [goalRows],
+      [projects],
+      [teams],
+      [logs],
+      [highlights],
+    ] = await Promise.all([
+      Goal.fetchOneById(id, activeUserId),
+      Goal.fetchGoalImpactProjectsByManager(activeUserId),
+      Goal.fetchGoalImpactTeamsByManager(activeUserId),
+      Goal.fetchGoalImpactLogsByManager(activeUserId),
+      Goal.fetchGoalImpactHighlightsByManager(activeUserId),
+    ]);
+
+    if (goalRows.length === 0) {
+      return res.status(404).json({ error: 'Goal not found.' });
+    }
+
+    const goal = goalRows[0];
+
+    const goalProjects = projects.filter((project) => project.id_goal == id);
+    const goalTeams = teams.filter((team) => team.id_goal == id);
+    const goalLogs = logs.filter((log) => log.id_goal == id);
+    const goalHighlights = highlights.filter((highlight) => highlight.id_goal == id);
+
+    const logsText = goalLogs.map((log) =>
+      `- ${log.full_name}: completed "${log.completed}" planned "${log.planned}"`
+    ).join('\n') || 'No logs';
+
+    const highlightsText = goalHighlights.map((highlight) =>
+      `- ${highlight.title}: ${highlight.impact || 'no impact'}`
+    ).join('\n') || 'No highlights';
+
+    const projectsText = goalProjects.map((project) => project.project_name).join(', ') || 'No projects';
+    const teamsText = goalTeams.map((team) => team.team_name).join(', ') || 'No teams';
+
+    const prompt = `
+You are a senior product manager.
+
+Analyze the following goal impact data and generate an executive summary.
+
+GOAL: ${goal.title}
+DESCRIPTION: ${goal.description || 'No description'}
+
+PROJECTS: ${projectsText}
+TEAMS: ${teamsText}
+
+LOGS:
+${logsText}
+
+HIGHLIGHTS:
+${highlightsText}
+
+Generate:
+1. Overall assessment
+2. Key contributions
+3. Risks
+4. Recommendations
+    `.trim();
+
+    const schema = z.object({
+      overallAssessment: z.string(),
+      keyContributions: z.array(z.string()),
+      risks: z.array(z.string()),
+      recommendations: z.array(z.string()),
+    });
+
+    const { output } = await generateText({
+      model: openai('gpt-4o-mini'),
+      output: Output.object({ schema }),
+      prompt,
+    });
+
+    return res.status(200).json(output);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Error generating summary.' });
   }
 };

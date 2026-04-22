@@ -21,7 +21,6 @@
 </div>
 
 <div id="manageGoalsPanel" class="goals-tab-panel active">
-  <!-- Add Goal Card -->
   <div class="report-card">
     <div class="report-card-header">
       <h2 id="goalFormTitle">Create New Goal</h2>
@@ -114,7 +113,6 @@
     </div>
   </div>
 
-  <!-- Goals List -->
   <div class="report-card">
     <div class="report-card-header">
       <h2>Goals</h2>
@@ -300,20 +298,21 @@
           <% } %>
 
           <% createdGoals.forEach((goal) => { %>
-  <button
-    type="button"
-    class="impact-goal-item"
-    data-impact-goal-id="<%= goal.id_goal %>"
-    data-impact-goal-title="<%= goal.title %>"
-    data-impact-goal-description="<%= goal.description || 'No description provided.' %>"
-    data-impact-goal-status="<%= goal.status %>"
-    data-impact-goal-priority="<%= goal.priority || 'Not set' %>"
-    data-impact-goal-start="<%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>"
-    data-impact-goal-end="<%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>"
-    data-impact-projects='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].projects) || []) %>'
-    data-impact-teams='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].teams) || []) %>'
-    data-impact-logs='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].logs) || []) %>'
-  >
+            <button
+              type="button"
+              class="impact-goal-item"
+              data-impact-goal-id="<%= goal.id_goal %>"
+              data-impact-goal-title="<%= goal.title %>"
+              data-impact-goal-description="<%= goal.description || 'No description provided.' %>"
+              data-impact-goal-status="<%= goal.status %>"
+              data-impact-goal-priority="<%= goal.priority || 'Not set' %>"
+              data-impact-goal-start="<%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>"
+              data-impact-goal-end="<%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>"
+              data-impact-projects='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].projects) || []) %>'
+              data-impact-teams='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].teams) || []) %>'
+              data-impact-logs='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].logs) || []) %>'
+              data-impact-highlights='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].highlights) || []) %>'
+            >
               <div class="impact-goal-item-top">
                 <span class="impact-goal-title"><%= goal.title %></span>
                 <span class="goal-status <%= goal.status %>">
@@ -394,6 +393,14 @@
                   <p class="goal-impact-empty-text">No participating teams found.</p>
                 </div>
               </div>
+
+              <div class="goal-impact-data-block">
+                <h4>Related Highlights</h4>
+                <div id="impactHighlightsList" class="goal-impact-highlights-wrap">
+                  <p class="goal-impact-empty-text">No related highlights found.</p>
+                </div>
+              </div>
+
               <div class="goal-impact-data-block">
                 <h4>Contributions / Logs</h4>
                 <div id="impactLogsList" class="goal-impact-logs-wrap">
@@ -402,19 +409,42 @@
               </div>
             </div>
 
-<div class="goal-impact-placeholder-section">
-  <h4>Upcoming Impact Summary Sections</h4>
-  <ul class="goal-impact-placeholder-list">
-    <li>Related contributions and achievements</li>
-    <li>AI-generated impact summary</li>
-    <li>PDF export preview</li>
-  </ul>
-</div>
+            <div class="goal-impact-summary-section">
+                <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
+                  <h4>AI Impact Summary</h4>
+                  <p>Generate a summary to see the executive overview for this goal.</p>
+                </div>
+
+                <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
+                  <h4>AI Impact Summary</h4>
+
+                  <div class="goal-impact-summary-block">
+                    <h5>Overall Assessment</h5>
+                    <p id="impactSummaryOverall">—</p>
+                  </div>
+
+                  <div class="goal-impact-summary-block">
+                    <h5>Key Contributions</h5>
+                    <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
+                  </div>
+
+                  <div class="goal-impact-summary-block">
+                    <h5>Risks</h5>
+                    <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
+                  </div>
+
+                  <div class="goal-impact-summary-block">
+                    <h5>Recommendations</h5>
+                    <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
+                  </div>
+                </div>
+              </div>
 
             <div class="goal-impact-placeholder-actions">
-              <button type="button" class="btn-draft" disabled>
+              <button type="button" id="generateSummaryBtn" class="btn-draft">
                 Generate Summary
               </button>
+
               <button type="button" class="btn-submit" disabled>
                 Export PDF
               </button>
@@ -604,6 +634,143 @@
     color: #6b7280;
   }
 
+  .goal-impact-data-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .goal-impact-data-block h4 {
+    margin-bottom: 10px;
+  }
+
+  .goal-impact-tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .goal-impact-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff4ed;
+    border: 1px solid #f6c7b2;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .goal-impact-tag.project {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .goal-impact-tag.team {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+  }
+
+  .goal-impact-empty-text {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .goal-impact-logs-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .goal-impact-log-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+  }
+
+  .goal-impact-log-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-log-user {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .goal-impact-log-project {
+    font-size: 0.8rem;
+    color: #2563eb;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-log-text {
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  .goal-impact-highlights-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .goal-impact-highlight-card {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #f3e8ff;
+    background: #faf5ff;
+  }
+
+  .goal-impact-highlight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .goal-impact-highlight-title {
+    font-weight: 700;
+    color: #4c1d95;
+  }
+
+  .goal-impact-highlight-type {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #ede9fe;
+    color: #5b21b6;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .goal-impact-highlight-meta {
+    font-size: 0.84rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+
+  .goal-impact-highlight-text {
+    font-size: 0.92rem;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-highlight-impact {
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
   .goal-impact-placeholder-section h4 {
     margin-bottom: 10px;
   }
@@ -663,7 +830,16 @@
   const impactProjectsList = document.getElementById('impactProjectsList');
   const impactTeamsList = document.getElementById('impactTeamsList');
   const impactLogsList = document.getElementById('impactLogsList');
+  const impactHighlightsList = document.getElementById('impactHighlightsList');
+  const generateSummaryBtn = document.getElementById('generateSummaryBtn');
+  const impactSummaryEmpty = document.getElementById('impactSummaryEmpty');
+  const impactSummaryContent = document.getElementById('impactSummaryContent');
+  const impactSummaryOverall = document.getElementById('impactSummaryOverall');
+  const impactSummaryContributions = document.getElementById('impactSummaryContributions');
+  const impactSummaryRisks = document.getElementById('impactSummaryRisks');
+  const impactSummaryRecommendations = document.getElementById('impactSummaryRecommendations');
 
+  let currentGoalId = null;
   let goalToDelete = null;
   let isEditMode = false;
   let editingGoalId = null;
@@ -935,7 +1111,7 @@
     });
   };
 
-    const renderImpactTags = (container, items, type, emptyMessage) => {
+  const renderImpactTags = (container, items, type, emptyMessage) => {
     if (!items || items.length === 0) {
       container.innerHTML = `<p class="goal-impact-empty-text">${emptyMessage}</p>`;
       return;
@@ -948,36 +1124,120 @@
   };
 
   const renderImpactLogs = (container, logs) => {
-  if (!logs || logs.length === 0) {
-    container.innerHTML = `<p class="goal-impact-empty-text">No contributions found.</p>`;
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<p class="goal-impact-empty-text">No contributions found.</p>';
+      return;
+    }
+
+    container.innerHTML = logs.map((log) => {
+      const date = new Date(log.created_at).toLocaleDateString('en-US');
+
+      return `
+        <div class="goal-impact-log-card">
+          <div class="goal-impact-log-header">
+            <span class="goal-impact-log-user">${log.full_name}</span>
+            <span>${date}</span>
+          </div>
+
+          <div class="goal-impact-log-project">${log.project_name}</div>
+
+          <div class="goal-impact-log-text">
+            <strong>Completed:</strong> ${log.completed || '—'}
+          </div>
+
+          <div class="goal-impact-log-text">
+            <strong>Planned:</strong> ${log.planned || '—'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const renderImpactHighlights = (container, highlights) => {
+    if (!highlights || highlights.length === 0) {
+      container.innerHTML = '<p class="goal-impact-empty-text">No related highlights found.</p>';
+      return;
+    }
+
+    container.innerHTML = highlights.map((highlight) => {
+      const date = highlight.highlight_date
+        ? new Date(highlight.highlight_date).toLocaleDateString('en-US')
+        : 'No date';
+
+      const projectName = highlight.project_name || 'No project';
+      const teamName = highlight.team_name || 'No team';
+      const ownerName = highlight.full_name || 'Unknown user';
+      const impactText = highlight.impact || 'No impact description provided.';
+
+      return `
+        <div class="goal-impact-highlight-card">
+          <div class="goal-impact-highlight-header">
+            <span class="goal-impact-highlight-title">${highlight.title}</span>
+            <span class="goal-impact-highlight-type">${highlight.highlight_type}</span>
+          </div>
+
+          <div class="goal-impact-highlight-meta">
+            ${ownerName} · ${date} · ${projectName} · ${teamName}
+          </div>
+
+          <div class="goal-impact-highlight-text">
+            ${highlight.description || 'No description provided.'}
+          </div>
+
+          <div class="goal-impact-highlight-impact">
+            <strong>Impact:</strong> ${impactText}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const renderSummaryList = (container, items, emptyMessage) => {
+  if (!items || items.length === 0) {
+    container.innerHTML = `<li>${emptyMessage}</li>`;
     return;
   }
 
-  container.innerHTML = logs.map((log) => {
-    const date = new Date(log.created_at).toLocaleDateString('en-US');
-
-    return `
-      <div class="goal-impact-log-card">
-        <div class="goal-impact-log-header">
-          <span class="goal-impact-log-user">${log.full_name}</span>
-          <span>${date}</span>
-        </div>
-
-        <div class="goal-impact-log-project">${log.project_name}</div>
-
-        <div class="goal-impact-log-text">
-          <strong>Completed:</strong> ${log.completed || '—'}
-        </div>
-
-        <div class="goal-impact-log-text">
-          <strong>Planned:</strong> ${log.planned || '—'}
-        </div>
-      </div>
-    `;
-  }).join('');
+  container.innerHTML = items.map((item) => `<li>${item}</li>`).join('');
 };
 
-    const showImpactGoalDetails = (button) => {
+const resetImpactSummaryUI = () => {
+  impactSummaryOverall.textContent = '—';
+  impactSummaryContributions.innerHTML = '';
+  impactSummaryRisks.innerHTML = '';
+  impactSummaryRecommendations.innerHTML = '';
+  impactSummaryEmpty.classList.remove('hidden');
+  impactSummaryContent.classList.add('hidden');
+};
+
+const showImpactSummaryUI = (summary) => {
+  impactSummaryOverall.textContent = summary.overallAssessment || 'No summary available.';
+
+  renderSummaryList(
+    impactSummaryContributions,
+    summary.keyContributions,
+    'No key contributions found.'
+  );
+
+  renderSummaryList(
+    impactSummaryRisks,
+    summary.risks,
+    'No risks found.'
+  );
+
+  renderSummaryList(
+    impactSummaryRecommendations,
+    summary.recommendations,
+    'No recommendations found.'
+  );
+
+  impactSummaryEmpty.classList.add('hidden');
+  impactSummaryContent.classList.remove('hidden');
+};
+
+  const showImpactGoalDetails = (button) => {
+    currentGoalId = button.dataset.impactGoalId;
+
     impactGoalItems.forEach((item) => {
       item.classList.remove('active');
     });
@@ -987,6 +1247,7 @@
     const impactProjects = JSON.parse(button.dataset.impactProjects || '[]');
     const impactTeams = JSON.parse(button.dataset.impactTeams || '[]');
     const impactLogs = JSON.parse(button.dataset.impactLogs || '[]');
+    const impactHighlights = JSON.parse(button.dataset.impactHighlights || '[]');
 
     impactGoalTitle.textContent = button.dataset.impactGoalTitle || 'Goal title';
     impactGoalDescription.textContent = button.dataset.impactGoalDescription || 'No description provided.';
@@ -1013,11 +1274,48 @@
       'team',
       'No participating teams found.'
     );
-    renderImpactLogs(impactLogsList, impactLogs);
 
+    renderImpactLogs(impactLogsList, impactLogs);
+    renderImpactHighlights(impactHighlightsList, impactHighlights);
+    resetImpactSummaryUI();
     impactEmptyState.classList.add('hidden');
     impactGoalDetails.classList.remove('hidden');
   };
+
+     generateSummaryBtn.addEventListener('click', async () => {
+    if (!currentGoalId) {
+      return;
+    }
+
+    generateSummaryBtn.textContent = 'Generating...';
+    generateSummaryBtn.disabled = true;
+
+    try {
+      const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Error generating summary');
+        return;
+      }
+
+      console.log('SUMMARY:', data);
+      alert('Summary generated! Check the console for now.');
+    } catch (err) {
+      console.log(err);
+      alert('Unexpected error generating summary.');
+    }
+
+    generateSummaryBtn.textContent = 'Generate Summary';
+    generateSummaryBtn.disabled = false;
+  });
 
   saveDraftButton.addEventListener('click', () => {
     submitGoal('draft');

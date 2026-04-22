@@ -39,6 +39,7 @@ router.post('/profile/password', managerController.postPassword);
 router.post('/goals/:id/link-project', managerController.linkProjectToGoal);
 router.post('/goals/:id/unlink-project', managerController.unlinkProjectFromGoal);
 router.delete('/goals/:id', managerController.deleteGoal);
+router.post('/goals/:id/impact-summary', managerController.generateGoalImpactSummary);
 
 
 module.exports = router;
