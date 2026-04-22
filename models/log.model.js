@@ -3,7 +3,7 @@
  * Handles database operations for the log and log_project tables.
  */
 
-const db = require('../util/database');
+const db = require("../util/database");
 
 module.exports = class Log {
   static countAllByEmployee(id_user, filters = {}) {
@@ -16,17 +16,17 @@ module.exports = class Log {
     const params = [id_user];
 
     if (filters.id_project) {
-      query += ' AND lp.id_project = ?';
+      query += " AND lp.id_project = ?";
       params.push(filters.id_project);
     }
 
     if (filters.date_from) {
-      query += ' AND DATE(l.created_at) >= ?';
+      query += " AND DATE(l.created_at) >= ?";
       params.push(filters.date_from);
     }
 
     if (filters.date_to) {
-      query += ' AND DATE(l.created_at) <= ?';
+      query += " AND DATE(l.created_at) <= ?";
       params.push(filters.date_to);
     }
 
@@ -47,21 +47,21 @@ module.exports = class Log {
     const params = [id_user];
 
     if (filters.id_project) {
-      query += ' AND lp.id_project = ?';
+      query += " AND lp.id_project = ?";
       params.push(filters.id_project);
     }
 
     if (filters.date_from) {
-      query += ' AND DATE(l.created_at) >= ?';
+      query += " AND DATE(l.created_at) >= ?";
       params.push(filters.date_from);
     }
 
     if (filters.date_to) {
-      query += ' AND DATE(l.created_at) <= ?';
+      query += " AND DATE(l.created_at) <= ?";
       params.push(filters.date_to);
     }
 
-    query += ' GROUP BY l.id_log ORDER BY l.created_at DESC LIMIT ? OFFSET ?';
+    query += " GROUP BY l.id_log ORDER BY l.created_at DESC LIMIT ? OFFSET ?";
     params.push(limit.toString(), offset.toString());
 
     return db.execute(query, params);
@@ -70,7 +70,7 @@ module.exports = class Log {
   static create(id_user, completed, planned) {
     return db.execute(
       `INSERT INTO log (id_user, completed, planned) VALUES (?, ?, ?)`,
-      [id_user, completed, planned]
+      [id_user, completed, planned],
     );
   }
 
@@ -78,36 +78,32 @@ module.exports = class Log {
     const values = projects.map((p) => [id_log, p.id_project, p.id_team]);
     return db.query(
       `INSERT INTO log_project (id_log, id_project, id_team) VALUES ?`,
-      [values]
+      [values],
     );
   }
 
   static update(id_log, completed, planned) {
     return db.execute(
       `UPDATE log SET completed = ?, planned = ? WHERE id_log = ?`,
-      [completed, planned, id_log]
+      [completed, planned, id_log],
     );
   }
 
   static updateProjects(id_log, projects) {
-    return db.execute(
-      `DELETE FROM log_project WHERE id_log = ?`,
-      [id_log]
-    ).then(() => {
-      if (projects.length === 0) return;
-      const values = projects.map((p) => [id_log, p.id_project, p.id_team]);
-      return db.query(
-        `INSERT INTO log_project (id_log, id_project, id_team) VALUES ?`,
-        [values]
-      );
-    });
+    return db
+      .execute(`DELETE FROM log_project WHERE id_log = ?`, [id_log])
+      .then(() => {
+        if (projects.length === 0) return;
+        const values = projects.map((p) => [id_log, p.id_project, p.id_team]);
+        return db.query(
+          `INSERT INTO log_project (id_log, id_project, id_team) VALUES ?`,
+          [values],
+        );
+      });
   }
 
   static delete(id_log) {
-    return db.execute(
-      'DELETE FROM log WHERE id_log = ?',
-      [id_log]
-    );
+    return db.execute("DELETE FROM log WHERE id_log = ?", [id_log]);
   }
 
   static countByWeek(id_user, weekOffset = 0) {
@@ -117,7 +113,7 @@ module.exports = class Log {
        WHERE id_user = ?
        AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        GROUP BY WEEKDAY(created_at)`,
-      [id_user, weekOffset.toString()]
+      [id_user, weekOffset.toString()],
     );
   }
 
@@ -128,7 +124,7 @@ module.exports = class Log {
        WHERE id_user = ?
        AND DATE(created_at) = CURDATE()
        ORDER BY created_at DESC`,
-      [id_user]
+      [id_user],
     );
   }
   static fetchByWeek(id_user, weekOffset = 0) {
@@ -139,8 +135,92 @@ module.exports = class Log {
        WHERE id_user = ?
        AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        ORDER BY created_at DESC`,
-      [id_user, weekOffset.toString()]
+      [id_user, weekOffset.toString()],
     );
+  }
+
+  static countAllByTeams(id_teams, filters = {}) {
+    if (!id_teams || id_teams.length === 0) return Promise.resolve([[{ total: 0 }]]);
+    let query = `
+      SELECT COUNT(DISTINCT l.id_log) as total
+      FROM log l
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      WHERE lp.id_team IN (?)
+    `;
+    const params = [id_teams];
+
+    if (filters.id_user) {
+      query += " AND l.id_user = ?";
+      params.push(filters.id_user);
+    }
+
+    if (filters.id_project) {
+      query += " AND lp.id_project = ?";
+      params.push(filters.id_project);
+    }
+
+    if (filters.date_from) {
+      query += " AND DATE(l.created_at) >= ?";
+      params.push(filters.date_from);
+    }
+
+    if (filters.date_to) {
+      query += " AND DATE(l.created_at) <= ?";
+      params.push(filters.date_to);
+    }
+
+    return db.query(query, params);
+  }
+
+  static fetchAllByTeams(id_teams, filters = {}, limit = 10, offset = 0) {
+    if (!id_teams || id_teams.length === 0) return Promise.resolve([[]]);
+    let query = `
+      SELECT DISTINCT 
+        l.id_log, 
+        l.completed, 
+        l.planned, 
+        l.created_at,
+        u.full_name, 
+        u.email, 
+        u.avatar, 
+        r.role_name AS role,
+        GROUP_CONCAT(DISTINCT p.project_name ORDER BY p.project_name SEPARATOR ', ') AS project_name,
+        b.description AS blocker_description
+      FROM log l
+      INNER JOIN user u ON l.id_user = u.id_user
+      LEFT JOIN user_role ur ON u.id_user = ur.id_user
+      LEFT JOIN role r ON ur.id_role = r.id_role
+      INNER JOIN log_project lp ON l.id_log = lp.id_log
+      INNER JOIN project p ON lp.id_project = p.id_project
+      LEFT JOIN blocker b ON l.id_log = b.id_log AND b.resolution_status = 'pending'
+      WHERE lp.id_team IN (?)
+    `;
+    const params = [id_teams];
+
+    if (filters.id_user) {
+      query += " AND l.id_user = ?";
+      params.push(filters.id_user);
+    }
+
+    if (filters.id_project) {
+      query += " AND lp.id_project = ?";
+      params.push(filters.id_project);
+    }
+
+    if (filters.date_from) {
+      query += " AND DATE(l.created_at) >= ?";
+      params.push(filters.date_from);
+    }
+
+    if (filters.date_to) {
+      query += " AND DATE(l.created_at) <= ?";
+      params.push(filters.date_to);
+    }
+
+    query += " GROUP BY l.id_log ORDER BY l.created_at DESC LIMIT ? OFFSET ?";
+    params.push(limit, offset);
+
+    return db.query(query, params);
   }
 
   // ── Organization-wide queries ──
@@ -151,13 +231,13 @@ module.exports = class Log {
        FROM log
        WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        GROUP BY WEEKDAY(created_at)`,
-      [weekOffset.toString()]
+      [weekOffset.toString()],
     );
   }
 
   static countTodayAll() {
     return db.execute(
-      `SELECT COUNT(*) AS count FROM log WHERE DATE(created_at) = CURDATE()`
+      `SELECT COUNT(*) AS count FROM log WHERE DATE(created_at) = CURDATE()`,
     );
   }
 
@@ -172,7 +252,7 @@ module.exports = class Log {
        WHERE DATE(l.created_at) = CURDATE()
        GROUP BY l.id_log
        ORDER BY l.created_at DESC
-       LIMIT 30`
+       LIMIT 30`,
     );
   }
 
@@ -188,7 +268,7 @@ module.exports = class Log {
        WHERE YEARWEEK(l.created_at, 1) = YEARWEEK(CURDATE() - INTERVAL ? WEEK, 1)
        GROUP BY l.id_log
        ORDER BY l.created_at DESC`,
-       [weekOffset.toString()]
+      [weekOffset.toString()],
     );
   }
 };

@@ -16,16 +16,17 @@ module.exports = class Project {
     );
   }
 
-    static fetchAllByTeam(id_team) {
-      return db.execute(
-        `SELECT p.id_project, p.project_name, p.description, p.progress_status, p.start_date,
-                t.team_name, pt.id_team
-        FROM project p
-        JOIN project_team pt ON p.id_project = pt.id_project
-        LEFT JOIN team t ON pt.id_team = t.id_team
-        WHERE pt.id_team = ?
-        ORDER BY p.project_name`,
-        [id_team]
+  static fetchAllByTeams(id_teams) {
+    if (!id_teams || id_teams.length === 0) return Promise.resolve([[]]);
+    return db.query(
+      `SELECT DISTINCT p.id_project, p.project_name, p.description, p.progress_status, p.start_date,
+              t.team_name, lp.id_team
+       FROM project p
+       JOIN log_project lp ON p.id_project = lp.id_project
+       LEFT JOIN team t ON lp.id_team = t.id_team
+       WHERE lp.id_team IN (?)
+       ORDER BY p.project_name`,
+      [id_teams]
     );
   }
 

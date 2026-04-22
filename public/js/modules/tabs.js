@@ -569,17 +569,23 @@ const TabsModule = (() => {
 
     initTeamFilter();
 
-    // If NO tabs but YES view-mode-toggle, init personal chart immediately (Employee case)
+    // Handle initial chart rendering based on current view/tab
     const hasTabs = document.querySelector('.dashboard-tabs');
     const hasViewToggle = document.querySelector('.view-mode-toggle');
     
-    if (!hasTabs && hasViewToggle) {
+    if (hasViewToggle) {
       const urlParams = new URLSearchParams(window.location.search);
       const activeView = urlParams.get('view') || 'personal';
-      if (activeView === 'organization') {
-        setTimeout(initOrgChart, 100);
-      } else {
-        setTimeout(initPersonalChart, 100);
+      
+      // For Team Leader: they have tabs. If the active tab is 'activity', we need to check the view-mode
+      const activeTab = hasTabs ? document.querySelector('.dashboard-tab.active')?.dataset.tab : null;
+
+      if (!hasTabs || activeTab === 'activity' || activeView === 'personal' || activeView === 'organization') {
+        if (activeView === 'organization') {
+          setTimeout(initOrgChart, 100);
+        } else {
+          setTimeout(initPersonalChart, 100);
+        }
       }
     }
   };

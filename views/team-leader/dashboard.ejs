@@ -4,14 +4,23 @@
     <strong>No team assigned yet.</strong> You have been granted the Team Leader role but haven't been assigned to a team. Please contact an administrator.
   </div>
 <% } else { %>
-<h1 id="pageTitle" class="page-title">Team Dashboard</h1>
+<h1 id="pageTitle" class="page-title"><%= fullName.split(' ')[0] %>'s Team Dashboard</h1>
+
+<script>
+  window.personalWeeklyData = <%- JSON.stringify(weeklyData) %>;
+  window.logsByDay = <%- JSON.stringify(logsByDay) %>;
+  window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
+  window.orgWeeklyData = <%- JSON.stringify(orgWeeklyData) %>;
+  window.orgLogsByDay = <%- JSON.stringify(orgLogsByDay) %>;
+  window.teamsData = <%- JSON.stringify(teams) %>;
+</script>
 
 <!-- Dashboard Tabs -->
 <div class="dashboard-tabs">
-  <button type="button" class="dashboard-tab active" data-tab="team-dashboard">
+  <button type="button" class="dashboard-tab <%= activeView === 'team-dashboard' ? 'active' : '' %>" data-tab="team-dashboard">
     <i class="fa-solid fa-users"></i> Team Dashboard
   </button>
-  <button type="button" class="dashboard-tab" data-tab="activity">
+  <button type="button" class="dashboard-tab <%= activeView === 'activity' ? 'active' : '' %>" data-tab="activity">
     <i class="fa-solid fa-chart-line"></i> Activity
   </button>
 </div>
@@ -19,7 +28,7 @@
 <!-- =============================================
      TAB 1: TEAM DASHBOARD
      ============================================= -->
-<div class="tab-content active" id="tab-team-dashboard">
+<div class="tab-content <%= activeView === 'team-dashboard' ? 'active' : '' %>" id="tab-team-dashboard">
 
   <!-- Team Stats -->
   <div class="stats-row">
@@ -67,10 +76,10 @@
   <!-- Two Column Layout -->
   <div class="dashboard-grid">
 
-    <!-- Left Column -->
+    <!-- Left Column: Blockers + Achievements -->
     <div class="dashboard-column">
 
-      <!-- Active Blockers -->
+      <!-- Active Blockers (paginated) -->
       <div class="report-card blockers-card">
         <div class="report-card-header">
           <div class="header-with-icon warning">
@@ -81,10 +90,10 @@
         </div>
 
         <div class="report-card-body">
-          <div class="blocker-list">
+          <div class="blocker-list" id="blockerList">
             <% if (pendingBlockers && pendingBlockers.length > 0) { %>
-              <% pendingBlockers.forEach(blocker => { %>
-                <div class="blocker-item">
+              <% pendingBlockers.forEach((blocker, i) => { %>
+                <div class="blocker-item" data-blocker-index="<%= i %>">
                   <img
                     src="<%= blocker.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
                     alt="<%= blocker.full_name %>"
@@ -112,10 +121,24 @@
               <p>No active blockers.</p>
             <% } %>
           </div>
+
+          <% if (pendingBlockers && pendingBlockers.length > 3) { %>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e1e4e8;">
+            <button id="blockerPrevBtn" onclick="changeDashPage('blocker', -1)"
+              style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; color: #5f6b85;">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span id="blockerPageInfo" style="font-size: 13px; color: #5f6b85; min-width: 60px; text-align: center;"></span>
+            <button id="blockerNextBtn" onclick="changeDashPage('blocker', 1)"
+              style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; color: #5f6b85;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+          <% } %>
         </div>
       </div>
 
-      <!-- Pending Achievements -->
+      <!-- Pending Achievements (paginated) -->
       <div class="report-card">
         <div class="report-card-header">
           <div class="header-with-icon success">
@@ -125,10 +148,10 @@
         </div>
 
         <div class="report-card-body">
-          <div class="blocker-list">
+          <div class="blocker-list" id="achievementList">
             <% if (pendingAchievements && pendingAchievements.length > 0) { %>
-              <% pendingAchievements.forEach(achievement => { %>
-                <div class="blocker-item">
+              <% pendingAchievements.forEach((achievement, i) => { %>
+                <div class="blocker-item" data-achievement-index="<%= i %>">
                   <img
                     src="<%= achievement.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
                     alt="<%= achievement.full_name %>"
@@ -166,50 +189,51 @@
               <p>No pending achievements.</p>
             <% } %>
           </div>
-        </div>
-      </div>
 
-      <!-- Team Members Overview -->
-      <div class="report-card">
-        <div class="report-card-header">
-          <h2>Team Members</h2>
-          <a href="/team-leader/team-members" class="link-action">Manage →</a>
-        </div>
-
-        <div class="report-card-body">
-          <div class="members-overview">
-            <% if (teamMembersOverview && teamMembersOverview.length > 0) { %>
-              <% teamMembersOverview.forEach(member => { %>
-                <div class="member-row">
-                  <div class="member-info-mini">
-                    <img
-                      src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
-                      alt="<%= member.full_name %>"
-                    />
-                    <div>
-                      <p class="member-name-mini"><%= member.full_name %></p>
-                      <p class="member-role-mini"><%= member.email %></p>
-                    </div>
-                  </div>
-                  <div class="member-week-stats">
-                    <span class="week-entries"><%= member.entries_this_week %> entries</span>
-                    <span class="member-status-badge <%= member.member_status === 'Blocked' ? 'blocked' : 'ok' %>">
-                      <%= member.member_status %>
-                    </span>
-                  </div>
-                </div>
-              <% }) %>
-            <% } else { %>
-              <p>No team members found.</p>
-            <% } %>
+          <% if (pendingAchievements && pendingAchievements.length > 3) { %>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e1e4e8;">
+            <button id="achievementPrevBtn" onclick="changeDashPage('achievement', -1)"
+              style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; color: #5f6b85;">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span id="achievementPageInfo" style="font-size: 13px; color: #5f6b85; min-width: 60px; text-align: center;"></span>
+            <button id="achievementNextBtn" onclick="changeDashPage('achievement', 1)"
+              style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; color: #5f6b85;">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
+          <% } %>
         </div>
       </div>
 
     </div>
 
-    <!-- Right Column -->
+    <!-- Right Column: Quick Actions + Recent Activity + Team Members -->
     <div class="dashboard-column">
+
+      <!-- Quick Actions -->
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2>Quick Actions</h2>
+        </div>
+
+        <div class="report-card-body">
+          <div class="quick-actions">
+            <a href="/team-leader/team-report" class="quick-action-btn">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>Generate Report</span>
+            </a>
+            <a href="/team-leader/team-members" class="quick-action-btn">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Add Member</span>
+            </a>
+            <a href="/team-leader/log" class="quick-action-btn">
+              <i class="fa-solid fa-pen"></i>
+              <span>Log</span>
+            </a>
+          </div>
+        </div>
+      </div>
 
       <!-- Recent Activity -->
       <div class="report-card">
@@ -258,26 +282,39 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
+      <!-- Team Members Overview -->
       <div class="report-card">
         <div class="report-card-header">
-          <h2>Quick Actions</h2>
+          <h2>Team Members</h2>
+          <a href="/team-leader/team-members" class="link-action">Manage →</a>
         </div>
 
         <div class="report-card-body">
-          <div class="quick-actions">
-            <a href="/team-leader/team-report" class="quick-action-btn">
-              <i class="fa-solid fa-file-lines"></i>
-              <span>Generate Report</span>
-            </a>
-            <a href="/team-leader/team-members" class="quick-action-btn">
-              <i class="fa-solid fa-user-plus"></i>
-              <span>Add Member</span>
-            </a>
-            <a href="/team-leader/log" class="quick-action-btn">
-              <i class="fa-solid fa-pen"></i>
-              <span>Log</span>
-            </a>
+          <div class="members-overview">
+            <% if (teamMembersOverview && teamMembersOverview.length > 0) { %>
+              <% teamMembersOverview.forEach(member => { %>
+                <div class="member-row">
+                  <div class="member-info-mini">
+                    <img
+                      src="<%= member.avatar || 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' %>"
+                      alt="<%= member.full_name %>"
+                    />
+                    <div>
+                      <p class="member-name-mini"><%= member.full_name %></p>
+                      <p class="member-role-mini"><%= member.email %></p>
+                    </div>
+                  </div>
+                  <div class="member-week-stats">
+                    <span class="week-entries"><%= member.entries_this_week %> entries</span>
+                    <span class="member-status-badge <%= member.member_status === 'Blocked' ? 'blocked' : 'ok' %>">
+                      <%= member.member_status %>
+                    </span>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p>No team members found.</p>
+            <% } %>
           </div>
         </div>
       </div>
@@ -291,14 +328,14 @@
 <!-- =============================================
      TAB 2: ACTIVITY (Personal / Organization)
      ============================================= -->
-<div class="tab-content" id="tab-activity">
+<div class="tab-content <%= activeView === 'activity' ? 'active' : '' %>" id="tab-activity">
 
   <!-- View Mode Toggle -->
   <div class="view-mode-toggle">
-    <button type="button" class="view-mode-btn active" data-view="personal">
+    <button type="button" class="view-mode-btn <%= activeView === 'personal' || activeView === 'activity' ? 'active' : '' %>" data-view="personal">
       <i class="fa-solid fa-user"></i> Personal
     </button>
-    <button type="button" class="view-mode-btn" data-view="organization">
+    <button type="button" class="view-mode-btn <%= activeView === 'organization' ? 'active' : '' %>" data-view="organization">
       <i class="fa-solid fa-building"></i> Organization
     </button>
   </div>
@@ -313,7 +350,7 @@
           <i class="fa-solid fa-circle-check"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value" id="statCompletedPersonal">2</p>
+          <p class="stat-value" id="statCompletedPersonal"><%= completedToday %></p>
           <p class="stat-label">Completed today</p>
         </div>
       </div>
@@ -322,8 +359,8 @@
           <i class="fa-solid fa-list-check"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value" id="statPendingPersonal">2</p>
-          <p class="stat-label">Pending</p>
+          <p class="stat-value" id="statPendingPersonal"><%= weeklyTotal %></p>
+          <p class="stat-label">Logs this week</p>
         </div>
       </div>
       <div class="stat-card">
@@ -331,7 +368,7 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">1</p>
+          <p class="stat-value"><%= activeBlockers %></p>
           <p class="stat-label">Active blockers</p>
         </div>
       </div>
@@ -340,10 +377,19 @@
     <!-- Personal Activity Chart -->
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Weekly Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's tasks</p>
+            <p class="media-card-sub" id="chartSubtitle">Logs submitted per day <%= weekOffset == 0 ? 'this week' : 'selected week' %> — click a bar to filter</p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset='+this.value+'&orgWeekOffset=<%= orgWeekOffset %>&view=activity'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= weekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= weekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= weekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= weekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= weekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -356,22 +402,34 @@
     <div class="report-card">
       <div class="report-card-header">
         <h2 id="personalActivitiesTitle">Today's Activities</h2>
-        <span class="report-date" id="personalActivitiesDate">19 Mar 2026</span>
+        <span class="report-date" id="personalActivitiesDate">
+          <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+        </span>
       </div>
 
       <div class="report-card-body">
         <div class="activities-summary">
           <span class="summary-item">
-            <span class="summary-count" id="personalCompletedCount">2</span> completed
+            <span class="summary-count" id="personalCompletedCount"><%= completedToday %></span> logged
           </span>
           <span class="summary-divider">•</span>
           <span class="summary-item">
-            <span class="summary-count" id="personalPendingCount">2</span> pending
+            <span class="summary-count" id="personalPendingCount"><%= activeBlockers %></span> active blockers
           </span>
         </div>
 
         <ul class="activity-list" id="personalActivityList">
-          <!-- Activities rendered by JS -->
+          <% if (todayLogs.length > 0) { %>
+            <% todayLogs.forEach(log => { %>
+              <li class="activity-item">
+                <span class="activity-text"><%= log.completed %></span>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li class="activity-item">
+              <span class="activity-text" style="color: var(--text-muted);">No activities logged today.</span>
+            </li>
+          <% } %>
         </ul>
       </div>
     </div>
@@ -388,7 +446,7 @@
           <i class="fa-solid fa-users"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">42</p>
+          <p class="stat-value"><%= orgActiveUsers %></p>
           <p class="stat-label">Active employees</p>
         </div>
       </div>
@@ -397,7 +455,7 @@
           <i class="fa-solid fa-clipboard-list"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">156</p>
+          <p class="stat-value"><%= orgTodayLogsCount %></p>
           <p class="stat-label">Logs today</p>
         </div>
       </div>
@@ -406,7 +464,7 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">8</p>
+          <p class="stat-value"><%= orgActiveBlockers %></p>
           <p class="stat-label">Active blockers</p>
         </div>
       </div>
@@ -415,10 +473,19 @@
     <!-- Organization Activity Chart -->
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Organization Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's team activities</p>
+            <p class="media-card-sub">Organization-wide activities per day <%= orgWeekOffset == 0 ? 'this week' : 'that week' %></p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset=<%= weekOffset %>&orgWeekOffset='+this.value+'&view=organization'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= orgWeekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= orgWeekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= orgWeekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= orgWeekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= orgWeekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -436,9 +503,9 @@
         </div>
         <select id="teamFilter" class="team-filter-select">
           <option value="">All Teams</option>
-          <option value="mufasa">Mufasa Solutions</option>
-          <option value="phoenix">Phoenix Team</option>
-          <option value="delta">Delta Squad</option>
+          <% teams.forEach(team => { %>
+            <option value="<%= team.team_name %>"><%= team.team_name %></option>
+          <% }) %>
         </select>
       </div>
 
@@ -452,4 +519,44 @@
   </div>
 
 </div>
+
+<script>
+  (function () {
+    const ITEMS_PER_PAGE = 3;
+    const state = { blocker: 0, achievement: 0 };
+
+    function renderDashPage(type) {
+      const items = document.querySelectorAll(`[data-${type}-index]`);
+      if (!items.length) return;
+
+      const total = items.length;
+      const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+      const page = state[type];
+
+      items.forEach((el, i) => {
+        el.style.display = (i >= page * ITEMS_PER_PAGE && i < (page + 1) * ITEMS_PER_PAGE) ? '' : 'none';
+      });
+
+      const info = document.getElementById(`${type}PageInfo`);
+      const prev = document.getElementById(`${type}PrevBtn`);
+      const next = document.getElementById(`${type}NextBtn`);
+
+      if (info) info.textContent = `${page + 1} / ${totalPages}`;
+      if (prev) prev.disabled = page === 0;
+      if (next) next.disabled = page >= totalPages - 1;
+    }
+
+    window.changeDashPage = function (type, delta) {
+      const items = document.querySelectorAll(`[data-${type}-index]`);
+      const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+      state[type] = Math.max(0, Math.min(state[type] + delta, totalPages - 1));
+      renderDashPage(type);
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      renderDashPage('blocker');
+      renderDashPage('achievement');
+    });
+  })();
+</script>
 <% } %>
