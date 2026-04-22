@@ -154,4 +154,15 @@ module.exports = class User {
       `SELECT COUNT(*) AS count FROM user WHERE status = 'active'`
     );
   }
+
+  static searchByNameEmail(query) {
+    return db.execute(
+      `SELECT id_user, full_name, email 
+       FROM user 
+       WHERE (full_name LIKE ? OR email LIKE ?) 
+       AND status = 'active'
+       LIMIT 10`,
+      [`%${query}%`, `%${query}%`]
+    );
+  }
 };
