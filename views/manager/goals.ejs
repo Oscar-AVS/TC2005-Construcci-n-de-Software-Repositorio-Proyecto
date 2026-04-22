@@ -312,6 +312,7 @@
     data-impact-goal-end="<%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>"
     data-impact-projects='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].projects) || []) %>'
     data-impact-teams='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].teams) || []) %>'
+    data-impact-logs='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].logs) || []) %>'
   >
               <div class="impact-goal-item-top">
                 <span class="impact-goal-title"><%= goal.title %></span>
@@ -380,20 +381,26 @@
             </div>
 
             <div class="goal-impact-data-section">
-  <div class="goal-impact-data-block">
-    <h4>Linked Projects</h4>
-    <div id="impactProjectsList" class="goal-impact-tags-wrap">
-      <p class="goal-impact-empty-text">No linked projects found.</p>
-    </div>
-  </div>
+              <div class="goal-impact-data-block">
+                <h4>Linked Projects</h4>
+                <div id="impactProjectsList" class="goal-impact-tags-wrap">
+                  <p class="goal-impact-empty-text">No linked projects found.</p>
+                </div>
+              </div>
 
-  <div class="goal-impact-data-block">
-    <h4>Participating Teams</h4>
-    <div id="impactTeamsList" class="goal-impact-tags-wrap">
-      <p class="goal-impact-empty-text">No participating teams found.</p>
-    </div>
-  </div>
-</div>
+              <div class="goal-impact-data-block">
+                <h4>Participating Teams</h4>
+                <div id="impactTeamsList" class="goal-impact-tags-wrap">
+                  <p class="goal-impact-empty-text">No participating teams found.</p>
+                </div>
+              </div>
+              <div class="goal-impact-data-block">
+                <h4>Contributions / Logs</h4>
+                <div id="impactLogsList" class="goal-impact-logs-wrap">
+                  <p class="goal-impact-empty-text">No contributions found.</p>
+                </div>
+              </div>
+            </div>
 
 <div class="goal-impact-placeholder-section">
   <h4>Upcoming Impact Summary Sections</h4>
@@ -655,6 +662,7 @@
   const impactGoalEnd = document.getElementById('impactGoalEnd');
   const impactProjectsList = document.getElementById('impactProjectsList');
   const impactTeamsList = document.getElementById('impactTeamsList');
+  const impactLogsList = document.getElementById('impactLogsList');
 
   let goalToDelete = null;
   let isEditMode = false;
@@ -939,12 +947,46 @@
     }).join('');
   };
 
+  const renderImpactLogs = (container, logs) => {
+  if (!logs || logs.length === 0) {
+    container.innerHTML = `<p class="goal-impact-empty-text">No contributions found.</p>`;
+    return;
+  }
+
+  container.innerHTML = logs.map((log) => {
+    const date = new Date(log.created_at).toLocaleDateString('en-US');
+
+    return `
+      <div class="goal-impact-log-card">
+        <div class="goal-impact-log-header">
+          <span class="goal-impact-log-user">${log.full_name}</span>
+          <span>${date}</span>
+        </div>
+
+        <div class="goal-impact-log-project">${log.project_name}</div>
+
+        <div class="goal-impact-log-text">
+          <strong>Completed:</strong> ${log.completed || '—'}
+        </div>
+
+        <div class="goal-impact-log-text">
+          <strong>Planned:</strong> ${log.planned || '—'}
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
     const showImpactGoalDetails = (button) => {
     impactGoalItems.forEach((item) => {
       item.classList.remove('active');
     });
 
     button.classList.add('active');
+
+    const impactProjects = JSON.parse(button.dataset.impactProjects || '[]');
+    const impactTeams = JSON.parse(button.dataset.impactTeams || '[]');
+    const impactLogs = JSON.parse(button.dataset.impactLogs || '[]');
 
     impactGoalTitle.textContent = button.dataset.impactGoalTitle || 'Goal title';
     impactGoalDescription.textContent = button.dataset.impactGoalDescription || 'No description provided.';
@@ -957,6 +999,21 @@
       : 'Active';
 
     impactGoalStatus.className = `goal-status ${button.dataset.impactGoalStatus || 'active'}`;
+
+    renderImpactTags(
+      impactProjectsList,
+      impactProjects,
+      'project',
+      'No linked projects found.'
+    );
+
+    renderImpactTags(
+      impactTeamsList,
+      impactTeams,
+      'team',
+      'No participating teams found.'
+    );
+    renderImpactLogs(impactLogsList, impactLogs);
 
     impactEmptyState.classList.add('hidden');
     impactGoalDetails.classList.remove('hidden');

@@ -267,6 +267,36 @@ module.exports = class Goal {
     );
   }
 
+    static fetchGoalImpactLogsByManager(idUser) {
+    return db.execute(
+      `SELECT DISTINCT
+        g.id_goal,
+        l.id_log,
+        l.completed,
+        l.planned,
+        l.created_at,
+        u.id_user,
+        u.full_name,
+        p.id_project,
+        p.project_name
+      FROM goal g
+      INNER JOIN goal_project gp
+        ON g.id_goal = gp.id_goal
+      INNER JOIN project p
+        ON gp.id_project = p.id_project
+      INNER JOIN log_project lp
+        ON p.id_project = lp.id_project
+      INNER JOIN log l
+        ON lp.id_log = l.id_log
+      INNER JOIN user u
+        ON l.id_user = u.id_user
+      WHERE g.id_user = ?
+        AND g.is_draft = 0
+      ORDER BY g.id_goal ASC, l.created_at DESC`,
+      [idUser]
+    );
+  }
+
   static unlinkProject(idGoal, idProject) {
     return db.execute(
       `DELETE FROM goal_project

@@ -1245,3 +1245,38 @@
     margin: 0;
     color: #6b7280;
   }
+  .goal-impact-logs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-impact-log-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.goal-impact-log-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.goal-impact-log-user {
+  font-weight: 600;
+  color: #111827;
+}
+
+.goal-impact-log-project {
+  font-size: 0.8rem;
+  color: #2563eb;
+}
+
+.goal-impact-log-text {
+  font-size: 0.9rem;
+  color: #374151;
+}
