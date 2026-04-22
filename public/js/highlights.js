@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const impactInput = document.getElementById('highlightImpact');
   const csrfTokenInput = document.getElementById('csrfToken');
   const submitButton = highlightForm.querySelector('.btn-submit');
+  const deleteModal = document.getElementById('deleteModal');
+const confirmDeleteBtn = document.getElementById('confirmDelete');
+const cancelDeleteBtn = document.getElementById('cancelDelete');
+
+let highlightToDelete = null;
+let cardToDelete = null;
 
   const requiredInputs = [
     titleInput,
@@ -297,11 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const confirmed = window.confirm('Are you sure you want to delete this highlight?');
+    highlightToDelete = highlightId;
+cardToDelete = highlightCard;
 
-    if (!confirmed) {
-      return;
-    }
+deleteModal.style.display = 'flex';
+return;
 
     try {
       const response = await fetch(`/manager/highlights/${highlightId}`, {
@@ -334,4 +340,41 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   ensureEmptyStateVisibility();
+
+  confirmDeleteBtn.addEventListener('click', async () => {
+  if (!highlightToDelete) return;
+
+  try {
+    const response = await fetch(`/manager/highlights/${highlightToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'CSRF-Token': csrfTokenInput.value,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showFormMessage(data.message || 'Could not delete highlight.', true);
+      return;
+    }
+
+    deleteHighlightCard(cardToDelete);
+    showFormMessage(data.message || 'Highlight deleted successfully.');
+
+  } catch (error) {
+    console.error(error);
+    showFormMessage('Unexpected error while deleting highlight.', true);
+  } finally {
+    deleteModal.style.display = 'none';
+    highlightToDelete = null;
+    cardToDelete = null;
+  }
+});
+
+cancelDeleteBtn.addEventListener('click', () => {
+  deleteModal.style.display = 'none';
+  highlightToDelete = null;
+  cardToDelete = null;
+});
 });
