@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const csrfTokenInput = document.getElementById('csrfToken');
   const submitButton = highlightForm.querySelector('.btn-submit');
 
+  const requiredInputs = [
+    titleInput,
+    typeInput,
+    dateInput,
+    descriptionInput,
+  ];
+
   const showFormMessage = (message, isError = false) => {
     formMessage.textContent = message;
     formMessage.style.display = 'block';
@@ -27,6 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearFormMessage = () => {
     formMessage.textContent = '';
     formMessage.style.display = 'none';
+  };
+
+  const clearValidationStyles = () => {
+    requiredInputs.forEach((input) => {
+      input.style.border = '';
+    });
+  };
+
+  const markInvalidFields = () => {
+    if (!titleInput.value.trim()) {
+      titleInput.style.border = '1px solid #f04438';
+    }
+
+    if (!typeInput.value) {
+      typeInput.style.border = '1px solid #f04438';
+    }
+
+    if (!dateInput.value) {
+      dateInput.style.border = '1px solid #f04438';
+    }
+
+    if (!descriptionInput.value.trim()) {
+      descriptionInput.style.border = '1px solid #f04438';
+    }
   };
 
   const formatHighlightDate = (dateString) => {
@@ -133,9 +164,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateItemCount();
   };
 
+  requiredInputs.forEach((input) => {
+    input.addEventListener('input', () => {
+      input.style.border = '';
+      clearFormMessage();
+    });
+
+    input.addEventListener('change', () => {
+      input.style.border = '';
+      clearFormMessage();
+    });
+  });
+
   highlightForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearFormMessage();
+    clearValidationStyles();
 
     const formData = {
       title: titleInput.value.trim(),
@@ -146,20 +190,42 @@ document.addEventListener('DOMContentLoaded', () => {
       impact: impactInput.value.trim(),
     };
 
+    const requiredFieldsMissing =
+      !formData.title ||
+      !formData.description ||
+      !formData.highlight_type ||
+      !formData.highlight_date;
+
+    if (requiredFieldsMissing) {
+      markInvalidFields();
+      showFormMessage(
+        'Before adding this highlight, please complete all required fields.',
+        true
+      );
+      return;
+    }
+
     submitButton.disabled = true;
     submitButton.textContent = 'Saving...';
 
     try {
       const response = await fetch('/manager/highlights', {
         method: 'POST',
-       headers: {
-  'Content-Type': 'application/json',
-  'CSRF-Token': csrfTokenInput.value,
-},
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfTokenInput.value,
+        },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data = {};
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        throw new Error(responseText || 'Unexpected server response.');
+      }
 
       if (!response.ok) {
         showFormMessage(data.message || 'Could not save highlight.', true);
@@ -173,9 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       highlightForm.reset();
+      clearValidationStyles();
     } catch (error) {
       console.error(error);
-      showFormMessage('Unexpected error while saving highlight.', true);
+      showFormMessage(error.message || 'Unexpected error while saving highlight.', true);
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = 'Add Highlight';
