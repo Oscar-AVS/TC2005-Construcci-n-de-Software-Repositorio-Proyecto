@@ -27,6 +27,28 @@ module.exports = class Goal {
     );
   }
 
+  static fetchCreatedByManager(idUser) {
+    return db.execute(
+      `SELECT
+        id_goal,
+        title,
+        description,
+        start_date,
+        end_date,
+        priority,
+        status,
+        is_draft,
+        id_user,
+        created_at,
+        updated_at
+      FROM goal
+      WHERE id_user = ?
+        AND is_draft = 0
+      ORDER BY created_at DESC`,
+      [idUser]
+    );
+  }
+
   static create({
     title,
     description,
@@ -88,10 +110,10 @@ module.exports = class Goal {
         success,
         detail,
       ]
-    ); 
+    );
   }
 
-    static fetchOneById(idGoal, idUser) {
+  static fetchOneById(idGoal, idUser) {
     return db.execute(
       `SELECT
         id_goal,
@@ -145,7 +167,8 @@ module.exports = class Goal {
       ]
     );
   }
-    static checkProjectLink(idGoal, idProject) {
+
+  static checkProjectLink(idGoal, idProject) {
     return db.execute(
       `SELECT
         id_goal,
@@ -167,7 +190,7 @@ module.exports = class Goal {
     );
   }
 
-    static fetchLinkedProjectsByGoal(idGoal) {
+  static fetchLinkedProjectsByGoal(idGoal) {
     return db.execute(
       `SELECT
         gp.id_goal,
@@ -205,7 +228,7 @@ module.exports = class Goal {
     );
   }
 
-    static unlinkProject(idGoal, idProject) {
+  static unlinkProject(idGoal, idProject) {
     return db.execute(
       `DELETE FROM goal_project
       WHERE id_goal = ? AND id_project = ?`,
@@ -213,12 +236,11 @@ module.exports = class Goal {
     );
   }
 
-    static delete(idGoal, idUser) {
+  static delete(idGoal, idUser) {
     return db.execute(
       `DELETE FROM goal
       WHERE id_goal = ? AND id_user = ?`,
       [idGoal, idUser]
     );
   }
-
 };

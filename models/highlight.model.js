@@ -100,6 +100,51 @@ module.exports = class Highlight {
     );
   }
 
+  static update({
+    idHighlight,
+    idUser,
+    idProject,
+    idTeam,
+    title,
+    description,
+    impact,
+    highlightType,
+    highlightDate,
+  }) {
+    return db.execute(
+      `UPDATE highlight
+      SET
+        id_project = ?,
+        id_team = ?,
+        title = ?,
+        description = ?,
+        impact = ?,
+        highlight_type = ?,
+        highlight_date = ?,
+        updated_at = NOW()
+      WHERE id_highlight = ? AND id_user = ?`,
+      [
+        idProject,
+        idTeam,
+        title,
+        description,
+        impact,
+        highlightType,
+        highlightDate,
+        idHighlight,
+        idUser,
+      ]
+    );
+  }
+
+  static delete(idHighlight, idUser) {
+    return db.execute(
+      `DELETE FROM highlight
+      WHERE id_highlight = ? AND id_user = ?`,
+      [idHighlight, idUser]
+    );
+  }
+
   static createAuditLog({
     idUser,
     action,
@@ -126,13 +171,6 @@ module.exports = class Highlight {
         success,
         detail,
       ]
-    );
-  }
-    static delete(idHighlight, idUser) {
-    return db.execute(
-      `DELETE FROM highlight
-      WHERE id_highlight = ? AND id_user = ?`,
-      [idHighlight, idUser]
     );
   }
 };

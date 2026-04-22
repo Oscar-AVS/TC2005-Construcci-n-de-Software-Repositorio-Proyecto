@@ -17,12 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const impactInput = document.getElementById('highlightImpact');
   const csrfTokenInput = document.getElementById('csrfToken');
   const submitButton = highlightForm.querySelector('.btn-submit');
-  const deleteModal = document.getElementById('deleteModal');
-const confirmDeleteBtn = document.getElementById('confirmDelete');
-const cancelDeleteBtn = document.getElementById('cancelDelete');
+  const editingHighlightIdInput = document.getElementById('editingHighlightId');
+  const highlightFormModeInput = document.getElementById('highlightFormMode');
+  const cancelEditButton = document.getElementById('cancelHighlightEdit');
 
-let highlightToDelete = null;
-let cardToDelete = null;
+  const deleteModal = document.getElementById('deleteModal');
+  const confirmDeleteBtn = document.getElementById('confirmDelete');
+  const cancelDeleteBtn = document.getElementById('cancelDelete');
+
+  let highlightToDelete = null;
+  let cardToDelete = null;
 
   const requiredInputs = [
     titleInput,
@@ -128,6 +132,32 @@ let cardToDelete = null;
     }
   };
 
+  const buildEditButtonHtml = (highlight) => {
+    const safeTitle = String(highlight.title || '').replace(/"/g, '&quot;');
+    const safeDescription = String(highlight.description || '').replace(/"/g, '&quot;');
+    const safeImpact = String(highlight.impact || '').replace(/"/g, '&quot;');
+    const safeType = String(highlight.highlight_type || '').replace(/"/g, '&quot;');
+    const safeDate = String(highlight.highlight_date || '').replace(/"/g, '&quot;');
+    const safeProject = String(highlight.id_project || '').replace(/"/g, '&quot;');
+
+    return `
+      <button
+        class="btn-icon edit-highlight-btn"
+        type="button"
+        title="Edit"
+        data-id="${highlight.id_highlight}"
+        data-title="${safeTitle}"
+        data-description="${safeDescription}"
+        data-impact="${safeImpact}"
+        data-type="${safeType}"
+        data-date="${safeDate}"
+        data-project="${safeProject}"
+      >
+        <i class="fa-solid fa-pen"></i>
+      </button>
+    `;
+  };
+
   const createHighlightCard = (highlight) => {
     const card = document.createElement('div');
     card.className = 'highlight-card';
@@ -164,9 +194,7 @@ let cardToDelete = null;
         </div>
 
         <div class="highlight-actions">
-          <button class="btn-icon" type="button" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
+          ${buildEditButtonHtml(highlight)}
           <button class="btn-icon btn-danger delete-highlight-btn" type="button" title="Delete">
             <i class="fa-solid fa-trash"></i>
           </button>
@@ -175,6 +203,17 @@ let cardToDelete = null;
     `;
 
     return card;
+  };
+
+  const updateHighlightCard = (highlight) => {
+    const existingCard = document.querySelector(`.highlight-card[data-id="${highlight.id_highlight}"]`);
+
+    if (!existingCard) {
+      return;
+    }
+
+    const newCard = createHighlightCard(highlight);
+    existingCard.replaceWith(newCard);
   };
 
   const insertNewHighlight = (highlight) => {
@@ -199,6 +238,39 @@ let cardToDelete = null;
     ensureEmptyStateVisibility();
   };
 
+  const resetFormToCreateMode = () => {
+    highlightForm.reset();
+    editingHighlightIdInput.value = '';
+    highlightFormModeInput.value = 'create';
+    submitButton.textContent = 'Add Highlight';
+    cancelEditButton.style.display = 'none';
+    clearValidationStyles();
+    clearFormMessage();
+  };
+
+  const setFormToEditMode = (button) => {
+    editingHighlightIdInput.value = button.dataset.id || '';
+    highlightFormModeInput.value = 'edit';
+
+    titleInput.value = button.dataset.title || '';
+    descriptionInput.value = button.dataset.description || '';
+    impactInput.value = button.dataset.impact || '';
+    typeInput.value = button.dataset.type || '';
+    dateInput.value = button.dataset.date || '';
+    projectInput.value = button.dataset.project || '';
+
+    submitButton.textContent = 'Save Changes';
+    cancelEditButton.style.display = 'inline-flex';
+
+    clearValidationStyles();
+    clearFormMessage();
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   requiredInputs.forEach((input) => {
     input.addEventListener('input', () => {
       input.style.border = '';
@@ -209,6 +281,10 @@ let cardToDelete = null;
       input.style.border = '';
       clearFormMessage();
     });
+  });
+
+  cancelEditButton.addEventListener('click', () => {
+    resetFormToCreateMode();
   });
 
   highlightForm.addEventListener('submit', async (event) => {
@@ -240,12 +316,21 @@ let cardToDelete = null;
       return;
     }
 
+    const isEditMode = highlightFormModeInput.value === 'edit';
+    const editingId = editingHighlightIdInput.value;
+
     submitButton.disabled = true;
-    submitButton.textContent = 'Saving...';
+    submitButton.textContent = isEditMode ? 'Saving...' : 'Saving...';
 
     try {
-      const response = await fetch('/manager/highlights', {
-        method: 'POST',
+      const endpoint = isEditMode
+        ? `/manager/highlights/${editingId}`
+        : '/manager/highlights';
+
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'CSRF-Token': csrfTokenInput.value,
@@ -263,28 +348,48 @@ let cardToDelete = null;
       }
 
       if (!response.ok) {
-        showFormMessage(data.message || 'Could not save highlight.', true);
+        showFormMessage(
+          data.message || (isEditMode ? 'Could not update highlight.' : 'Could not save highlight.'),
+          true
+        );
         return;
       }
 
-      showFormMessage(data.message || 'Highlight registered successfully.');
+      showFormMessage(
+        data.message || (isEditMode ? 'Highlight updated successfully.' : 'Highlight registered successfully.')
+      );
 
       if (data.highlight) {
-        insertNewHighlight(data.highlight);
+        if (isEditMode) {
+          updateHighlightCard(data.highlight);
+        } else {
+          insertNewHighlight(data.highlight);
+        }
       }
 
-      highlightForm.reset();
-      clearValidationStyles();
+      resetFormToCreateMode();
+      showFormMessage(
+        data.message || (isEditMode ? 'Highlight updated successfully.' : 'Highlight registered successfully.')
+      );
     } catch (error) {
       console.error(error);
       showFormMessage(error.message || 'Unexpected error while saving highlight.', true);
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = 'Add Highlight';
+      submitButton.textContent = highlightFormModeInput.value === 'edit'
+        ? 'Save Changes'
+        : 'Add Highlight';
     }
   });
 
   document.addEventListener('click', async (event) => {
+    const editButton = event.target.closest('.edit-highlight-btn');
+
+    if (editButton) {
+      setFormToEditMode(editButton);
+      return;
+    }
+
     const deleteButton = event.target.closest('.delete-highlight-btn');
 
     if (!deleteButton) {
@@ -304,13 +409,18 @@ let cardToDelete = null;
     }
 
     highlightToDelete = highlightId;
-cardToDelete = highlightCard;
+    cardToDelete = highlightCard;
 
-deleteModal.style.display = 'flex';
-return;
+    deleteModal.style.display = 'flex';
+  });
+
+  confirmDeleteBtn.addEventListener('click', async () => {
+    if (!highlightToDelete) {
+      return;
+    }
 
     try {
-      const response = await fetch(`/manager/highlights/${highlightId}`, {
+      const response = await fetch(`/manager/highlights/${highlightToDelete}`, {
         method: 'DELETE',
         headers: {
           'CSRF-Token': csrfTokenInput.value,
@@ -331,50 +441,23 @@ return;
         return;
       }
 
-      deleteHighlightCard(highlightCard);
+      deleteHighlightCard(cardToDelete);
       showFormMessage(data.message || 'Highlight deleted successfully.');
     } catch (error) {
       console.error(error);
       showFormMessage(error.message || 'Unexpected error while deleting highlight.', true);
+    } finally {
+      deleteModal.style.display = 'none';
+      highlightToDelete = null;
+      cardToDelete = null;
     }
   });
 
-  ensureEmptyStateVisibility();
-
-  confirmDeleteBtn.addEventListener('click', async () => {
-  if (!highlightToDelete) return;
-
-  try {
-    const response = await fetch(`/manager/highlights/${highlightToDelete}`, {
-      method: 'DELETE',
-      headers: {
-        'CSRF-Token': csrfTokenInput.value,
-      },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      showFormMessage(data.message || 'Could not delete highlight.', true);
-      return;
-    }
-
-    deleteHighlightCard(cardToDelete);
-    showFormMessage(data.message || 'Highlight deleted successfully.');
-
-  } catch (error) {
-    console.error(error);
-    showFormMessage('Unexpected error while deleting highlight.', true);
-  } finally {
+  cancelDeleteBtn.addEventListener('click', () => {
     deleteModal.style.display = 'none';
     highlightToDelete = null;
     cardToDelete = null;
-  }
-});
+  });
 
-cancelDeleteBtn.addEventListener('click', () => {
-  deleteModal.style.display = 'none';
-  highlightToDelete = null;
-  cardToDelete = null;
-});
+  ensureEmptyStateVisibility();
 });

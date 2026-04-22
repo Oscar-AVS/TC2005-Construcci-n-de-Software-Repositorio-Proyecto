@@ -26,6 +26,7 @@ router.put('/goals/:id', managerController.updateGoal);
 router.get('/highlights', managerController.getHighlights);
 router.post('/highlights', managerController.createHighlight);
 router.delete('/highlights/:id', managerController.deleteHighlight);
+router.put('/highlights/:id', managerController.updateHighlight);
 router.get('/history', managerController.getHistory);
 router.get('/reports', managerController.getReports);
 router.get('/log', managerController.getLog);

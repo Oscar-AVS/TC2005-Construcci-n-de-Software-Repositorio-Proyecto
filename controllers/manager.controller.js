@@ -605,6 +605,112 @@ exports.createHighlight = async (req, res) => {
   }
 };
 
+exports.updateHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  const {
+    title,
+    description,
+    impact,
+    highlight_type: highlightType,
+    highlight_date: highlightDate,
+    id_project: idProject,
+    id_team: idTeam,
+  } = req.body;
+
+  const validHighlightTypes = ['technical', 'business', 'team', 'product'];
+
+  try {
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !highlightType ||
+      !highlightDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
+    }
+
+    if (!validHighlightTypes.includes(highlightType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid highlight type.',
+      });
+    }
+
+    const [existingRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Highlight not found.',
+      });
+    }
+
+    const normalizedProjectId = idProject && idProject !== '' ? Number(idProject) : null;
+    const normalizedTeamId = idTeam && idTeam !== '' ? Number(idTeam) : null;
+
+    const [result] = await Highlight.update({
+      idHighlight: id,
+      idUser: activeUserId,
+      idProject: normalizedProjectId,
+      idTeam: normalizedTeamId,
+      title: title.trim(),
+      description: description.trim(),
+      impact: impact && impact.trim() ? impact.trim() : null,
+      highlightType,
+      highlightDate,
+    });
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Highlight could not be updated.',
+      });
+    }
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'update',
+      entityType: 'highlight',
+      entityId: id,
+      success: 1,
+      detail: 'Highlight updated successfully.',
+    });
+
+    const [updatedRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Highlight updated successfully.',
+      highlight: updatedRows[0],
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'highlight',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while updating highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
 exports.deleteHighlight = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
