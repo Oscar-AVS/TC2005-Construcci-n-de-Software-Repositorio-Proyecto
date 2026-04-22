@@ -122,16 +122,18 @@ exports.getProjectTeamRange = async (req, res) => {
   }
 };
 
-exports.getLog = (req, res) => {
-  res.render('shared/log', {
-    title: 'My Log',
-    role: 'project-manager',
-    currentPage: 'log',
-    logs: [],
-    projects: [],
-    filters: {},
-    csrfToken: req.csrfToken(),
-  });
+exports.getLog = async (req, res, next) => {
+  try {
+    res.render('shared/log', {
+      pageTitle: 'My Activity Log',
+      currentPage: 'log',
+      successMessage: null,
+      errorMessage: null,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 exports.getSelfReview = (req, res) => {

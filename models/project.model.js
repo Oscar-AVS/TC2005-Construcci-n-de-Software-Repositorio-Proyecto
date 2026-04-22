@@ -178,5 +178,3 @@ module.exports = class Project {
   }
 
 };
-
-
