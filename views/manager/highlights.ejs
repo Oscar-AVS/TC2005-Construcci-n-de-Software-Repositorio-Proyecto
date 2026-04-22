@@ -145,24 +145,29 @@
               </div>
 
               <div class="highlight-actions">
-                <button class="btn-icon" type="button" title="Edit">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button
-  class="btn-icon edit-highlight-btn"
-  type="button"
-  title="Edit"
-  data-id="<%= highlight.id_highlight %>"
-  data-title="<%= highlight.title %>"
-  data-description="<%= highlight.description %>"
-  data-impact="<%= highlight.impact || '' %>"
-  data-type="<%= highlight.highlight_type %>"
-  data-date="<%= highlight.highlight_date ? new Date(highlight.highlight_date).toISOString().split('T')[0] : '' %>"
-  data-project="<%= highlight.id_project || '' %>"
->
-  <i class="fa-solid fa-pen"></i>
-</button>
-              </div>
+  <button
+    class="btn-icon edit-highlight-btn"
+    type="button"
+    title="Edit"
+    data-id="<%= highlight.id_highlight %>"
+    data-title="<%= highlight.title %>"
+    data-description="<%= highlight.description %>"
+    data-impact="<%= highlight.impact || '' %>"
+    data-type="<%= highlight.highlight_type %>"
+    data-date="<%= highlight.highlight_date ? new Date(highlight.highlight_date).toISOString().split('T')[0] : '' %>"
+    data-project="<%= highlight.id_project || '' %>"
+  >
+    <i class="fa-solid fa-pen"></i>
+  </button>
+
+  <button
+    class="btn-icon btn-danger delete-highlight-btn"
+    type="button"
+    title="Delete"
+  >
+    <i class="fa-solid fa-trash"></i>
+  </button>
+</div>
             </div>
           </div>
         <% }); %>
