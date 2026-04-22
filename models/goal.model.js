@@ -213,4 +213,12 @@ module.exports = class Goal {
     );
   }
 
+    static delete(idGoal, idUser) {
+    return db.execute(
+      `DELETE FROM goal
+      WHERE id_goal = ? AND id_user = ?`,
+      [idGoal, idUser]
+    );
+  }
+
 };

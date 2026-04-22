@@ -159,6 +159,64 @@ exports.createGoal = async (req, res) => {
   }
 };
 
+exports.deleteGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [existingRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const [result] = await Goal.delete(id, activeUserId);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Goal could not be deleted.',
+      });
+    }
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'goal',
+      entityId: id,
+      success: 1,
+      detail: 'Goal deleted successfully.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Goal deleted successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'delete',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while deleting goal: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
 exports.updateGoal = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
