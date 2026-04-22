@@ -23,8 +23,9 @@ exports.getGoals = async (req, res) => {
   const activeUserId = req.session.userId;
 
   try {
-    const [[goals], [projects], [goalProjectLinks]] = await Promise.all([
+    const [[goals], [createdGoals], [projects], [goalProjectLinks]] = await Promise.all([
       Goal.fetchAllByManager(activeUserId),
+      Goal.fetchCreatedByManager(activeUserId),
       Project.fetchAvailableForGoalLink(),
       Goal.fetchAllLinkedProjectsByManager(activeUserId),
     ]);
@@ -40,10 +41,22 @@ exports.getGoals = async (req, res) => {
       };
     });
 
+    const createdGoalsWithProjects = createdGoals.map((goal) => {
+      const linkedProjects = goalProjectLinks.filter(
+        (link) => link.id_goal === goal.id_goal && link.id_project
+      );
+
+      return {
+        ...goal,
+        linkedProjects,
+      };
+    });
+
     res.render('manager/goals', {
       currentPage: 'goals',
       role: 'manager',
       goals: goalsWithProjects,
+      createdGoals: createdGoalsWithProjects,
       availableProjects: projects,
       csrfToken: req.csrfToken(),
     });
