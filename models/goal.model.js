@@ -228,6 +228,45 @@ module.exports = class Goal {
     );
   }
 
+  static fetchGoalImpactProjectsByManager(idUser) {
+    return db.execute(
+      `SELECT
+        g.id_goal,
+        p.id_project,
+        p.project_name,
+        p.status
+      FROM goal g
+      INNER JOIN goal_project gp
+        ON g.id_goal = gp.id_goal
+      INNER JOIN project p
+        ON gp.id_project = p.id_project
+      WHERE g.id_user = ?
+        AND g.is_draft = 0
+      ORDER BY g.id_goal ASC, p.project_name ASC`,
+      [idUser]
+    );
+  }
+
+  static fetchGoalImpactTeamsByManager(idUser) {
+    return db.execute(
+      `SELECT DISTINCT
+        g.id_goal,
+        t.id_team,
+        t.team_name
+      FROM goal g
+      INNER JOIN goal_project gp
+        ON g.id_goal = gp.id_goal
+      INNER JOIN project_team pt
+        ON gp.id_project = pt.id_project
+      INNER JOIN team t
+        ON pt.id_team = t.id_team
+      WHERE g.id_user = ?
+        AND g.is_draft = 0
+      ORDER BY g.id_goal ASC, t.team_name ASC`,
+      [idUser]
+    );
+  }
+
   static unlinkProject(idGoal, idProject) {
     return db.execute(
       `DELETE FROM goal_project
