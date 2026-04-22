@@ -10,6 +10,7 @@ const User = require('../models/user.model');
 const Goal = require('../models/goal.model');
 const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
+const Highlight = require('../models/highlight.model');
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -474,11 +475,134 @@ exports.unlinkProjectFromGoal = async (req, res) => {
   }
 };
 
-exports.getHighlights = (req, res) => {
-  res.render('manager/highlights', {
-    currentPage: 'highlights',
-    role: 'manager',
-  });
+exports.getHighlights = async (req, res) => {
+  const activeUserId = req.session.userId;
+
+  try {
+    const [[highlights], [projects]] = await Promise.all([
+      Highlight.fetchAllByManager(activeUserId),
+      Project.fetchAvailableForGoalLink(),
+    ]);
+
+    res.render('manager/highlights', {
+      currentPage: 'highlights',
+      role: 'manager',
+      highlights,
+      availableProjects: projects,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.createHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+
+  const {
+    title,
+    description,
+    impact,
+    highlight_type: highlightType,
+    highlight_date: highlightDate,
+    id_project: idProject,
+    id_team: idTeam,
+  } = req.body;
+
+  const validHighlightTypes = ['technical', 'business', 'team', 'product'];
+  const verificationStatus = 'pending';
+
+  try {
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !highlightType ||
+      !highlightDate
+    ) {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: 'Highlight creation failed: missing required fields.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
+    }
+
+    if (!validHighlightTypes.includes(highlightType)) {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: 'Highlight creation failed: invalid highlight type.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid highlight type.',
+      });
+    }
+
+    const normalizedProjectId = idProject && idProject !== '' ? Number(idProject) : null;
+    const normalizedTeamId = idTeam && idTeam !== '' ? Number(idTeam) : null;
+
+    const [result] = await Highlight.create({
+      idUser: activeUserId,
+      idProject: normalizedProjectId,
+      idTeam: normalizedTeamId,
+      title: title.trim(),
+      description: description.trim(),
+      impact: impact && impact.trim() ? impact.trim() : null,
+      highlightType,
+      verificationStatus,
+      highlightDate,
+    });
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'create',
+      entityType: 'highlight',
+      entityId: result.insertId,
+      success: 1,
+      detail: 'Highlight created successfully.',
+    });
+
+    const [createdRows] = await Highlight.fetchOneById(result.insertId, activeUserId);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Highlight registered successfully.',
+      highlight: createdRows[0],
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: `Technical error while creating highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Error while registering the highlight.',
+    });
+  }
 };
 
 exports.getHistory = (req, res) => {
@@ -580,7 +704,7 @@ exports.getProfile = (req, res) => {
     });
 };
 
-exports.getProfile = async (req, res) => {
+/*exports.getProfile = async (req, res) => {
   try {
     const [[user]] = await User.fetchOne(req.session.userId);
     if (!user) return res.status(404).send('User not found');
@@ -596,7 +720,7 @@ exports.getProfile = async (req, res) => {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
-};
+};*/
 
 exports.postSlack = async (req, res) => {
   const { slack_user } = req.body;

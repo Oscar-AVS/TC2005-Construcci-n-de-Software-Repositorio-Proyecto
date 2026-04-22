@@ -24,6 +24,7 @@ router.post('/goals', managerController.createGoal);
 router.get('/goals/:id', managerController.getGoalById);
 router.put('/goals/:id', managerController.updateGoal);
 router.get('/highlights', managerController.getHighlights);
+router.post('/highlights', managerController.createHighlight);
 router.get('/history', managerController.getHistory);
 router.get('/reports', managerController.getReports);
 router.get('/log', managerController.getLog);
@@ -36,5 +37,6 @@ router.post('/profile/password', managerController.postPassword);
 router.post('/goals/:id/link-project', managerController.linkProjectToGoal);
 router.post('/goals/:id/unlink-project', managerController.unlinkProjectFromGoal);
 router.delete('/goals/:id', managerController.deleteGoal);
+
 
 module.exports = router;
