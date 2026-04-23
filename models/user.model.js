@@ -107,7 +107,7 @@ module.exports = class User {
   }
 
   static rejectUser(id_user) {
-    return db.execute(`UPDATE user SET status = 'inactive' WHERE id_user = ?`, [
+    return db.execute(`UPDATE user SET status = 'denied' WHERE id_user = ?`, [
       id_user,
     ]);
   }

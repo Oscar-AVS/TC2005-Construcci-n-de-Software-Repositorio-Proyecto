@@ -160,9 +160,13 @@
             <% } %>
           </td>
           <td>
-            <span id="status-badge-<%= user.id %>" class="status-badge <%= user.status === 'active' ? 'active' : 'inactive' %>">
-              <%= user.status === 'active' ? 'Active' : 'Inactive' %>
-            </span>
+            <% if (user.status === 'active') { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge active">Active</span>
+            <% } else if (user.status === 'denied') { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge" style="background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;">Denied</span>
+            <% } else { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge inactive">Inactive</span>
+            <% } %>
           </td>
           <td>
             <div class="table-actions">
@@ -170,6 +174,7 @@
                 onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', <%= user.id_role %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
+              <% if (user.status !== 'denied') { %>
               <button
                 class="btn-icon <%= user.status === 'active' ? 'btn-danger' : '' %>"
                 type="button"
@@ -180,6 +185,9 @@
               >
                 <i id="toggle-icon-<%= user.id %>" class="fa-solid <%= user.status === 'active' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
               </button>
+              <% } else { %>
+              <span style="display: inline-block; width: 32px;"></span>
+              <% } %>
               <button class="btn-icon btn-danger" type="button" title="Delete"
                 onclick="openDeleteUserModal(<%= user.id %>, '<%= user.full_name %>')">
                 <i class="fa-solid fa-trash"></i>

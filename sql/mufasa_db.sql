@@ -10606,7 +10606,7 @@ CREATE TABLE `user` (
   `full_name` varchar(150) NOT NULL,
   `slack_user` varchar(50) DEFAULT NULL,
   `avatar` varchar(255) DEFAULT NULL,
-  `status` enum('pending','active','inactive') NOT NULL DEFAULT 'active',
+  `status` enum('pending','active','inactive','denied') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
