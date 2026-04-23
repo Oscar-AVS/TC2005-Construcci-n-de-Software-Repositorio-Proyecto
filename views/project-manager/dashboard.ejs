@@ -1,11 +1,18 @@
-<h1 id="pageTitle" class="page-title">Project Manager Dashboard</h1>
-
 <!-- Dashboard Tabs -->
+<script>
+  window.personalWeeklyData = <%- JSON.stringify(weeklyData) %>;
+  window.logsByDay = <%- JSON.stringify(logsByDay) %>;
+  window.todayWeekday = <%= new Date().getDay() === 0 ? 6 : new Date().getDay() - 1 %>;
+  window.orgWeeklyData = <%- JSON.stringify(orgWeeklyData) %>;
+  window.orgLogsByDay = <%- JSON.stringify(orgLogsByDay) %>;
+  window.teamsData = <%- JSON.stringify(teams) %>;
+</script>
+
 <div class="dashboard-tabs">
-  <button type="button" class="dashboard-tab active" data-tab="pm-dashboard">
+  <button type="button" class="dashboard-tab <%= activeTab === 'pm-dashboard' ? 'active' : '' %>" data-tab="pm-dashboard">
     <i class="fa-solid fa-folder-open"></i> PM Dashboard
   </button>
-  <button type="button" class="dashboard-tab" data-tab="activity">
+  <button type="button" class="dashboard-tab <%= activeTab === 'activity' ? 'active' : '' %>" data-tab="activity">
     <i class="fa-solid fa-chart-line"></i> Activity
   </button>
 </div>
@@ -13,7 +20,7 @@
 <!-- =============================================
      TAB 1: PM DASHBOARD
      ============================================= -->
-<div class="tab-content active" id="tab-pm-dashboard">
+<div class="tab-content <%= activeTab === 'pm-dashboard' ? 'active' : '' %>" id="tab-pm-dashboard">
 
   <!-- Stats Row -->
   <div class="pm-stats-row">
@@ -22,7 +29,7 @@
         <i class="fa-solid fa-folder-open"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">3</p>
+        <p class="stat-value"><%= stats.activeProjects %></p>
         <p class="stat-label">Active Projects</p>
       </div>
     </div>
@@ -32,7 +39,7 @@
         <i class="fa-solid fa-users"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">12</p>
+        <p class="stat-value"><%= stats.activeUsers %></p>
         <p class="stat-label">Team Members</p>
       </div>
     </div>
@@ -42,7 +49,7 @@
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">3</p>
+        <p class="stat-value"><%= stats.activeBlockers %></p>
         <p class="stat-label">Active Blockers</p>
       </div>
     </div>
@@ -52,7 +59,7 @@
         <i class="fa-solid fa-check-circle"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value">1</p>
+        <p class="stat-value"><%= stats.completedThisMonth %></p>
         <p class="stat-label">Completed This Month</p>
       </div>
     </div>
@@ -69,47 +76,25 @@
 
       <div class="report-card-body">
         <div class="projects-summary">
-          <!-- Project 1 -->
-          <div class="project-summary-card">
-            <div class="project-summary-header">
-              <div class="project-summary-info">
-                <h3 class="project-summary-name">Internal Tools</h3>
-                <span class="project-status active">Active</span>
+          <% if (projects.length === 0) { %>
+            <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">No active projects.</p>
+          <% } else { %>
+            <% projects.forEach(project => { %>
+              <div class="project-summary-card">
+                <div class="project-summary-header">
+                  <div class="project-summary-info">
+                    <h3 class="project-summary-name"><%= project.project_name %></h3>
+                    <span class="project-status <%= project.progress_status %>">
+                      <%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                    </span>
+                  </div>
+                </div>
+                <div class="project-summary-meta">
+                  <span><i class="fa-solid fa-calendar"></i> Starts: <%= project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A' %></span>
+                </div>
               </div>
-            </div>
-            <div class="project-summary-meta">
-              <span><i class="fa-solid fa-users"></i> 4 members</span>
-              <span><i class="fa-solid fa-calendar"></i> Due Mar 30</span>
-            </div>
-          </div>
-
-          <!-- Project 2 -->
-          <div class="project-summary-card">
-            <div class="project-summary-header">
-              <div class="project-summary-info">
-                <h3 class="project-summary-name">API Integration</h3>
-                <span class="project-status on-hold">On Hold</span>
-              </div>
-            </div>
-            <div class="project-summary-meta">
-              <span><i class="fa-solid fa-users"></i> 3 members</span>
-              <span><i class="fa-solid fa-calendar"></i> Due Apr 15</span>
-            </div>
-          </div>
-
-          <!-- Project 3 -->
-          <div class="project-summary-card">
-            <div class="project-summary-header">
-              <div class="project-summary-info">
-                <h3 class="project-summary-name">Dashboard Redesign</h3>
-                <span class="project-status completed">Completed</span>
-              </div>
-            </div>
-            <div class="project-summary-meta">
-              <span><i class="fa-solid fa-users"></i> 5 members</span>
-              <span><i class="fa-solid fa-calendar"></i> Delivered Mar 10</span>
-            </div>
-          </div>
+            <% }) %>
+          <% } %>
         </div>
       </div>
     </div>
@@ -118,52 +103,30 @@
     <div class="report-card">
       <div class="report-card-header">
         <h2>Active Blockers</h2>
-        <span class="item-count">3 blockers</span>
+        <span class="item-count"><%= blockers.length %> blocker<%= blockers.length !== 1 ? 's' : '' %></span>
       </div>
 
       <div class="report-card-body">
         <div class="blockers-list">
-          <div class="blocker-item critical">
-            <div class="blocker-priority">
-              <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <div class="blocker-content">
-              <p class="blocker-title">Waiting for production server access</p>
-              <div class="blocker-meta">
-                <span class="blocker-project">API Integration</span>
-                <span class="blocker-author">Oscar Vilchis</span>
-                <span class="blocker-date">2 days ago</span>
+          <% if (blockers.length === 0) { %>
+            <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">No active blockers.</p>
+          <% } else { %>
+            <% blockers.forEach(blocker => { %>
+              <div class="blocker-item <%= blocker.severity || 'low' %>">
+                <div class="blocker-priority">
+                  <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <div class="blocker-content">
+                  <p class="blocker-title"><%= blocker.description %></p>
+                  <div class="blocker-meta">
+                    <span class="blocker-project"><%= blocker.project_name %></span>
+                    <span class="blocker-author"><%= blocker.reporter_name %></span>
+                    <span class="blocker-date"><%= new Date(blocker.detected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) %></span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div class="blocker-item medium">
-            <div class="blocker-priority">
-              <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <div class="blocker-content">
-              <p class="blocker-title">Design specs incomplete for mobile views</p>
-              <div class="blocker-meta">
-                <span class="blocker-project">Internal Tools</span>
-                <span class="blocker-author">Lakshmi Martinez</span>
-                <span class="blocker-date">1 day ago</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="blocker-item low">
-            <div class="blocker-priority">
-              <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <div class="blocker-content">
-              <p class="blocker-title">Need clarification on auth flow requirements</p>
-              <div class="blocker-meta">
-                <span class="blocker-project">Internal Tools</span>
-                <span class="blocker-author">Francisco Arreola</span>
-                <span class="blocker-date">3 days ago</span>
-              </div>
-            </div>
-          </div>
+            <% }) %>
+          <% } %>
         </div>
       </div>
     </div>
@@ -177,45 +140,21 @@
 
     <div class="report-card-body">
       <div class="activity-timeline">
-        <div class="activity-item">
-          <div class="activity-icon green">
-            <i class="fa-solid fa-check"></i>
-          </div>
-          <div class="activity-content">
-            <p class="activity-text"><strong>Dashboard Redesign</strong> marked as completed</p>
-            <span class="activity-time">Today at 2:30 PM</span>
-          </div>
-        </div>
-
-        <div class="activity-item">
-          <div class="activity-icon blue">
-            <i class="fa-solid fa-user-plus"></i>
-          </div>
-          <div class="activity-content">
-            <p class="activity-text"><strong>Víctor Esquivel</strong> added to API Integration</p>
-            <span class="activity-time">Today at 11:00 AM</span>
-          </div>
-        </div>
-
-        <div class="activity-item">
-          <div class="activity-icon yellow">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          </div>
-          <div class="activity-content">
-            <p class="activity-text"><strong>Oscar Vilchis</strong> reported a blocker on API Integration</p>
-            <span class="activity-time">Yesterday at 4:15 PM</span>
-          </div>
-        </div>
-
-        <div class="activity-item">
-          <div class="activity-icon accent">
-            <i class="fa-solid fa-pause"></i>
-          </div>
-          <div class="activity-content">
-            <p class="activity-text"><strong>API Integration</strong> put on hold</p>
-            <span class="activity-time">Mar 15 at 9:00 AM</span>
-          </div>
-        </div>
+        <% if (globalActivity.length === 0) { %>
+          <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">No recent activity.</p>
+        <% } else { %>
+          <% globalActivity.forEach(act => { %>
+            <div class="activity-item">
+              <div class="activity-icon blue">
+                <i class="fa-solid fa-pencil"></i>
+              </div>
+              <div class="activity-content">
+                <p class="activity-text"><strong><%= act.full_name %></strong> in <%= act.project_name %>: <%= act.completed %></p>
+                <span class="activity-time"><%= new Date(act.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></span>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
       </div>
     </div>
   </div>
@@ -225,20 +164,20 @@
 <!-- =============================================
      TAB 2: ACTIVITY (Personal / Organization)
      ============================================= -->
-<div class="tab-content" id="tab-activity">
+<div class="tab-content <%= activeTab === 'activity' ? 'active' : '' %>" id="tab-activity">
 
   <!-- View Mode Toggle -->
   <div class="view-mode-toggle">
-    <button type="button" class="view-mode-btn active" data-view="personal">
+    <button type="button" class="view-mode-btn <%= activeView === 'personal' ? 'active' : '' %>" data-view="personal">
       <i class="fa-solid fa-user"></i> Personal
     </button>
-    <button type="button" class="view-mode-btn" data-view="organization">
+    <button type="button" class="view-mode-btn <%= activeView === 'organization' ? 'active' : '' %>" data-view="organization">
       <i class="fa-solid fa-building"></i> Organization
     </button>
   </div>
 
   <!-- PERSONAL VIEW -->
-  <div class="activity-view active" id="view-personal">
+  <div class="activity-view <%= activeView === 'personal' ? 'active' : '' %>" id="view-personal">
 
     <!-- Personal Stats -->
     <div class="stats-row">
@@ -247,7 +186,7 @@
           <i class="fa-solid fa-circle-check"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value" id="statCompletedPersonal">2</p>
+          <p class="stat-value"><%= completedToday %></p>
           <p class="stat-label">Completed today</p>
         </div>
       </div>
@@ -256,8 +195,8 @@
           <i class="fa-solid fa-list-check"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value" id="statPendingPersonal">2</p>
-          <p class="stat-label">Pending</p>
+          <p class="stat-value"><%= weeklyTotal %></p>
+          <p class="stat-label">Logs this week</p>
         </div>
       </div>
       <div class="stat-card">
@@ -265,7 +204,7 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">1</p>
+          <p class="stat-value"><%= personalActiveBlockers %></p>
           <p class="stat-label">Active blockers</p>
         </div>
       </div>
@@ -274,10 +213,19 @@
     <!-- Personal Activity Chart -->
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Weekly Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's tasks</p>
+            <p class="media-card-sub" id="chartSubtitle">Logs submitted per day <%= weekOffset == 0 ? 'this week' : 'selected week' %> — click a bar to filter</p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset='+this.value+'&orgWeekOffset=<%= orgWeekOffset %>&view=personal&tab=activity'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= weekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= weekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= weekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= weekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= weekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -289,23 +237,35 @@
     <!-- Today's Activities -->
     <div class="report-card">
       <div class="report-card-header">
-        <h2 id="personalActivitiesTitle">Today's Activities</h2>
-        <span class="report-date" id="personalActivitiesDate">19 Mar 2026</span>
+        <h2 id="activitiesTitle">Today's Activities</h2>
+        <span class="report-date" id="activitiesDate">
+          <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+        </span>
       </div>
 
       <div class="report-card-body">
         <div class="activities-summary">
           <span class="summary-item">
-            <span class="summary-count" id="personalCompletedCount">2</span> completed
+            <span class="summary-count" id="loggedCount"><%= completedToday %></span> logged
           </span>
           <span class="summary-divider">•</span>
           <span class="summary-item">
-            <span class="summary-count" id="personalPendingCount">2</span> pending
+            <span class="summary-count"><%= personalActiveBlockers %></span> active blockers
           </span>
         </div>
 
         <ul class="activity-list" id="personalActivityList">
-          <!-- Activities rendered by JS -->
+          <% if (todayLogs.length > 0) { %>
+            <% todayLogs.forEach(log => { %>
+              <li class="activity-item">
+                <span class="activity-text"><%= log.completed %></span>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li class="activity-item">
+              <span class="activity-text" style="color: var(--text-muted);">No activities logged today.</span>
+            </li>
+          <% } %>
         </ul>
       </div>
     </div>
@@ -313,7 +273,7 @@
   </div>
 
   <!-- ORGANIZATION VIEW -->
-  <div class="activity-view" id="view-organization">
+  <div class="activity-view <%= activeView === 'organization' ? 'active' : '' %>" id="view-organization">
 
     <!-- Organization Stats -->
     <div class="stats-row">
@@ -322,7 +282,7 @@
           <i class="fa-solid fa-users"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">42</p>
+          <p class="stat-value"><%= orgActiveUsers %></p>
           <p class="stat-label">Active employees</p>
         </div>
       </div>
@@ -331,7 +291,7 @@
           <i class="fa-solid fa-clipboard-list"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">156</p>
+          <p class="stat-value"><%= orgTodayLogsCount %></p>
           <p class="stat-label">Logs today</p>
         </div>
       </div>
@@ -340,7 +300,7 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <div class="stat-info">
-          <p class="stat-value">8</p>
+          <p class="stat-value"><%= orgActiveBlockers %></p>
           <p class="stat-label">Active blockers</p>
         </div>
       </div>
@@ -349,10 +309,19 @@
     <!-- Organization Activity Chart -->
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Organization Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's team activities</p>
+            <p class="media-card-sub">Organization-wide activities per day <%= orgWeekOffset == 0 ? 'this week' : 'that week' %></p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset=<%= weekOffset %>&orgWeekOffset='+this.value+'&view=organization&tab=activity'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= orgWeekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= orgWeekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= orgWeekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= orgWeekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= orgWeekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -366,17 +335,24 @@
       <div class="report-card-header">
         <div class="header-title-group">
           <h2 id="orgFeedTitle">Team Activity Feed</h2>
-          <span class="report-date" id="orgFeedDate" style="display: none;"></span>
+          <span class="activity-date" id="orgActivityDate" style="margin-left: 12px; font-weight: 500; font-size: 14px; color: var(--text-muted);">
+            <%= new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+          </span>
         </div>
         <select id="teamFilter" class="team-filter-select">
           <option value="">All Teams</option>
-          <option value="mufasa">Mufasa Solutions</option>
-          <option value="phoenix">Phoenix Team</option>
-          <option value="delta">Delta Squad</option>
+          <% teams.forEach(team => { %>
+            <option value="<%= team.team_name %>"><%= team.team_name %></option>
+          <% }) %>
         </select>
       </div>
 
       <div class="report-card-body">
+        <div class="activities-summary">
+          <span class="summary-item">
+            <span class="summary-count" id="orgLoggedCount"><%= orgTodayLogsCount %></span> logged
+          </span>
+        </div>
         <div class="team-activity-feed" id="teamActivityFeed">
           <!-- Rendered by JS -->
         </div>

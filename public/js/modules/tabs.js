@@ -509,6 +509,10 @@ const TabsModule = (() => {
   };
 
   const switchTab = (tabId) => {
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabId);
+    window.history.pushState({}, '', url);
+
     document.querySelectorAll('.dashboard-tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.tab === tabId);
     });

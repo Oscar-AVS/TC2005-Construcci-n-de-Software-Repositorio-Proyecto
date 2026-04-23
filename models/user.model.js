@@ -155,16 +155,25 @@ module.exports = class User {
     );
   }
 
-    // (MANAGER) Metodo para traer usuarios activos  en el filtro de historial
   static fetchUsersForHistory() {
-    // Consulta que obtiene usuarios activos con su id y nombre
     return db.execute(
-      `SELECT 
+      `SELECT
         id_user,
         full_name
       FROM user
       WHERE status = 'active'
       ORDER BY full_name ASC`
+    );
+  }
+
+  static searchByNameEmail(query) {
+    return db.execute(
+      `SELECT id_user, full_name, email
+       FROM user
+       WHERE (full_name LIKE ? OR email LIKE ?)
+       AND status = 'active'
+       LIMIT 10`,
+      [`%${query}%`, `%${query}%`]
     );
   }
 };
