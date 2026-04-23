@@ -250,7 +250,7 @@ module.exports = class Project {
   }
 
   static fetchGlobalActivity(limit = 10) {
-    return db.execute(
+    return db.query(
       `SELECT l.created_at, u.full_name, l.completed, p.project_name
        FROM log l
        JOIN user u ON l.id_user = u.id_user
