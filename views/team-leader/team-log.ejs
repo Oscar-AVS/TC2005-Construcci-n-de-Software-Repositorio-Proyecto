@@ -8,16 +8,39 @@
   <div class="report-card-body">
     <form action="/team-leader/team-log" method="GET" class="filter-row">
       <div class="filter-group">
+        <label class="form-label" for="logQuickFilter">Quick Filters</label>
+        <select id="logQuickFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="Q1">Q1 (Jan - Mar)</option>
+          <option value="Q2">Q2 (Apr - Jun)</option>
+          <option value="Q3">Q3 (Jul - Sep)</option>
+          <option value="Q4">Q4 (Oct - Dec)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
         <label class="form-label" for="filterMember">Team Member</label>
-        <select id="filterMember" class="form-select" disabled>
+        <select id="filterMember" name="id_user" class="form-select">
           <option value="">All Members</option>
+          <% members.forEach(member => { %>
+            <option value="<%= member.id_user %>" <%= filters.id_user == member.id_user ? 'selected' : '' %>>
+              <%= member.full_name %>
+            </option>
+          <% }) %>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterProject">Project</label>
-        <select id="filterProject" class="form-select" disabled>
+        <select id="filterProject" name="id_project" class="form-select">
           <option value="">All Projects</option>
+          <% projects.forEach(project => { %>
+            <option value="<%= project.id_project %>" <%= filters.id_project == project.id_project ? 'selected' : '' %>>
+              <%= project.project_name %>
+            </option>
+          <% }) %>
         </select>
       </div>
 
@@ -26,9 +49,9 @@
         <input
           type="date"
           id="filterFrom"
-          name="from"
+          name="date_from"
           class="form-input"
-          value="<%= filters && filters.from ? filters.from : '' %>"
+          value="<%= filters.date_from || '' %>"
         />
       </div>
 
@@ -37,9 +60,9 @@
         <input
           type="date"
           id="filterTo"
-          name="to"
+          name="date_to"
           class="form-input"
-          value="<%= filters && filters.to ? filters.to : '' %>"
+          value="<%= filters.date_to || '' %>"
         />
       </div>
 
@@ -51,7 +74,7 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>Entries</h2>
-    <span class="item-count"><%= entries ? entries.length : 0 %> entries</span>
+    <span class="item-count"><%= totalRecords %> entries</span>
   </div>
 
   <div class="report-card-body">
@@ -105,9 +128,70 @@
             </div>
           </div>
         <% }) %>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+          <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px; background: #f8f9fc; border-radius: 12px; border: 1px solid #e1e4e8;">
+            <a href="?page=<%= page - 1 %>&id_user=<%= filters.id_user || '' %>&id_project=<%= filters.id_project || '' %>&date_from=<%= filters.date_from || '' %>&date_to=<%= filters.date_to || '' %>"
+               class="btn-draft" <%= !hasPrevPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </a>
+            <span style="color: #5f6b85; font-size: 14px; font-weight: 500;">Page <%= page %> of <%= totalPages %></span>
+            <a href="?page=<%= page + 1 %>&id_user=<%= filters.id_user || '' %>&id_project=<%= filters.id_project || '' %>&date_from=<%= filters.date_from || '' %>&date_to=<%= filters.date_to || '' %>"
+               class="btn-draft" <%= !hasNextPage ? 'style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              Next <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          </div>
+        <% } %>
+
       <% } else { %>
         <p>No entries found.</p>
       <% } %>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const logQuickFilter = document.getElementById('logQuickFilter');
+    const filterFrom = document.getElementById('filterFrom');
+    const filterTo = document.getElementById('filterTo');
+
+    if (logQuickFilter && filterFrom && filterTo) {
+      logQuickFilter.addEventListener('change', () => {
+        const val = logQuickFilter.value;
+        const year = new Date().getFullYear();
+        let startDate = '', endDate = '';
+
+        switch (val) {
+          case 'LAST_WEEK': {
+            const today = new Date();
+            const last = new Date();
+            last.setDate(today.getDate() - 7);
+            startDate = last.toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            break;
+          }
+          case 'LAST_MONTH': {
+            const today = new Date();
+            const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const last = new Date(today.getFullYear(), today.getMonth(), 0);
+            startDate = first.toISOString().split('T')[0];
+            endDate = last.toISOString().split('T')[0];
+            break;
+          }
+          case 'Q1': startDate = `${year}-01-01`; endDate = `${year}-03-31`; break;
+          case 'Q2': startDate = `${year}-04-01`; endDate = `${year}-06-30`; break;
+          case 'Q3': startDate = `${year}-07-01`; endDate = `${year}-09-30`; break;
+          case 'Q4': startDate = `${year}-10-01`; endDate = `${year}-12-31`; break;
+        }
+
+        filterFrom.value = startDate;
+        filterTo.value = endDate;
+      });
+
+      filterFrom.addEventListener('change', () => { logQuickFilter.value = ''; });
+      filterTo.addEventListener('change', () => { logQuickFilter.value = ''; });
+    }
+  });
+</script>

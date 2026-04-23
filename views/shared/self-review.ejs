@@ -167,7 +167,7 @@
     </div>
   </div>
 
-  <form id="exportPdfForm" method="POST" action="/<%= role %>/self-review/export-pdf" target="_blank" style="display: none;">
+  <form id="exportPdfForm" method="POST" action="<%= selfReviewBase %>/self-review/export-pdf" target="_blank" style="display: none;">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" id="exportFechaInicio" name="fechaInicio">
     <input type="hidden" id="exportFechaFin" name="fechaFin">
@@ -230,7 +230,7 @@
     document.getElementById('reviewContent').style.display = 'none';
 
     try {
-      const url = `/<%= role %>/self-review/generate?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+      const url = `<%= selfReviewBase %>/self-review/generate?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
       const response = await fetch(url);
       const data = await response.json();
 

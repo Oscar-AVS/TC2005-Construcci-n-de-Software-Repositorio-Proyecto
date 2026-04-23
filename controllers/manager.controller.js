@@ -8,7 +8,9 @@ const Blocker = require('../models/blocker.model');
 const Project = require('../models/project.model');
 const User = require('../models/user.model');
 const Goal = require('../models/goal.model');
+const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
+const Highlight = require('../models/highlight.model');
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -17,22 +19,38 @@ exports.getDashboard = (req, res) => {
   });
 };
 
-exports.getGoals = (req, res) => {
+exports.getGoals = async (req, res) => {
   const activeUserId = req.session.userId;
 
-  Goal.fetchAllByManager(activeUserId)
-    .then(([goals]) => {
-      res.render('manager/goals', {
-        currentPage: 'goals',
-        role: 'manager',
-        goals,
-        csrfToken: req.csrfToken(),
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+  try {
+    const [[goals], [projects], [goalProjectLinks]] = await Promise.all([
+      Goal.fetchAllByManager(activeUserId),
+      Project.fetchAvailableForGoalLink(),
+      Goal.fetchAllLinkedProjectsByManager(activeUserId),
+    ]);
+
+    const goalsWithProjects = goals.map((goal) => {
+      const linkedProjects = goalProjectLinks.filter(
+        (link) => link.id_goal === goal.id_goal && link.id_project
+      );
+
+      return {
+        ...goal,
+        linkedProjects,
+      };
     });
+
+    res.render('manager/goals', {
+      currentPage: 'goals',
+      role: 'manager',
+      goals: goalsWithProjects,
+      availableProjects: projects,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.createGoal = async (req, res) => {
@@ -142,6 +160,64 @@ exports.createGoal = async (req, res) => {
   }
 };
 
+exports.deleteGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [existingRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const [result] = await Goal.delete(id, activeUserId);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Goal could not be deleted.',
+      });
+    }
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'goal',
+      entityId: id,
+      success: 1,
+      detail: 'Goal deleted successfully.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Goal deleted successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'delete',
+        entityType: 'goal',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while deleting goal: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
 exports.updateGoal = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
@@ -230,11 +306,468 @@ exports.getGoalById = async (req, res) => {
   }
 };
 
-exports.getHighlights = (req, res) => {
-  res.render('manager/highlights', {
-    currentPage: 'highlights',
-    role: 'manager',
-  });
+exports.linkProjectToGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+  const { id_projects: idProjects } = req.body;
+
+  try {
+    const selectedProjectIds = Array.isArray(idProjects)
+      ? idProjects.filter((projectId) => projectId)
+      : [];
+
+    if (selectedProjectIds.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: 'Goal-project link failed: no projects selected.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Please select at least one project.',
+      });
+    }
+
+    const [goalRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (goalRows.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: 'Goal-project link failed: goal not found.',
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const linkedProjects = [];
+    const skippedProjects = [];
+
+    for (const idProject of selectedProjectIds) {
+      const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+
+      if (existingLinkRows.length > 0) {
+        skippedProjects.push(idProject);
+      } else {
+        await Goal.linkProject(id, idProject, activeUserId);
+        linkedProjects.push(idProject);
+      }
+    }
+
+    if (linkedProjects.length === 0) {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: `Goal-project link failed: all selected projects were already linked to goal ${id}.`,
+      });
+
+      return res.status(409).json({
+        success: false,
+        message: 'All selected projects are already linked to this goal.',
+      });
+    }
+
+    const successMessage = skippedProjects.length > 0
+      ? `${linkedProjects.length} project(s) linked successfully. ${skippedProjects.length} already linked project(s) were skipped.`
+      : `${linkedProjects.length} project(s) linked successfully.`;
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'link',
+      entityType: 'goal_project',
+      entityId: id,
+      success: 1,
+      detail: `Linked ${linkedProjects.length} project(s) to goal ${id}. Skipped ${skippedProjects.length} already linked project(s).`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: successMessage,
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Goal.createAuditLog({
+        idUser: activeUserId,
+        action: 'link',
+        entityType: 'goal_project',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while linking projects to goal: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+exports.unlinkProjectFromGoal = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+  const { id_project: idProject } = req.body;
+
+  try {
+    if (!idProject) {
+      return res.status(400).json({
+        success: false,
+        message: 'Project id is required.',
+      });
+    }
+
+    const [goalRows] = await Goal.fetchOneById(id, activeUserId);
+
+    if (goalRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Goal not found.',
+      });
+    }
+
+    const [existingLinkRows] = await Goal.checkProjectLink(id, idProject);
+
+    if (existingLinkRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'This project is not linked to the selected goal.',
+      });
+    }
+
+    await Goal.unlinkProject(id, idProject);
+
+    await Goal.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'goal_project',
+      entityId: id,
+      success: 1,
+      detail: `Project ${idProject} unlinked successfully from goal ${id}.`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Project unlinked successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+exports.getHighlights = async (req, res) => {
+  const activeUserId = req.session.userId;
+
+  try {
+    const [[highlights], [projects]] = await Promise.all([
+      Highlight.fetchAllByManager(activeUserId),
+      Project.fetchAvailableForGoalLink(),
+    ]);
+
+    res.render('manager/highlights', {
+      currentPage: 'highlights',
+      role: 'manager',
+      highlights,
+      availableProjects: projects,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.createHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+
+  const {
+    title,
+    description,
+    impact,
+    highlight_type: highlightType,
+    highlight_date: highlightDate,
+    id_project: idProject,
+    id_team: idTeam,
+  } = req.body;
+
+  const validHighlightTypes = ['technical', 'business', 'team', 'product'];
+  const verificationStatus = 'pending';
+
+  try {
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !highlightType ||
+      !highlightDate
+    ) {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: 'Highlight creation failed: missing required fields.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
+    }
+
+    if (!validHighlightTypes.includes(highlightType)) {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: 'Highlight creation failed: invalid highlight type.',
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid highlight type.',
+      });
+    }
+
+    const normalizedProjectId = idProject && idProject !== '' ? Number(idProject) : null;
+    const normalizedTeamId = idTeam && idTeam !== '' ? Number(idTeam) : null;
+
+    const [result] = await Highlight.create({
+      idUser: activeUserId,
+      idProject: normalizedProjectId,
+      idTeam: normalizedTeamId,
+      title: title.trim(),
+      description: description.trim(),
+      impact: impact && impact.trim() ? impact.trim() : null,
+      highlightType,
+      verificationStatus,
+      highlightDate,
+    });
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'create',
+      entityType: 'highlight',
+      entityId: result.insertId,
+      success: 1,
+      detail: 'Highlight created successfully.',
+    });
+
+    const [createdRows] = await Highlight.fetchOneById(result.insertId, activeUserId);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Highlight registered successfully.',
+      highlight: createdRows[0],
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'create',
+        entityType: 'highlight',
+        entityId: null,
+        success: 0,
+        detail: `Technical error while creating highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Error while registering the highlight.',
+    });
+  }
+};
+
+exports.updateHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  const {
+    title,
+    description,
+    impact,
+    highlight_type: highlightType,
+    highlight_date: highlightDate,
+    id_project: idProject,
+    id_team: idTeam,
+  } = req.body;
+
+  const validHighlightTypes = ['technical', 'business', 'team', 'product'];
+
+  try {
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !highlightType ||
+      !highlightDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
+    }
+
+    if (!validHighlightTypes.includes(highlightType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid highlight type.',
+      });
+    }
+
+    const [existingRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Highlight not found.',
+      });
+    }
+
+    const normalizedProjectId = idProject && idProject !== '' ? Number(idProject) : null;
+    const normalizedTeamId = idTeam && idTeam !== '' ? Number(idTeam) : null;
+
+    const [result] = await Highlight.update({
+      idHighlight: id,
+      idUser: activeUserId,
+      idProject: normalizedProjectId,
+      idTeam: normalizedTeamId,
+      title: title.trim(),
+      description: description.trim(),
+      impact: impact && impact.trim() ? impact.trim() : null,
+      highlightType,
+      highlightDate,
+    });
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Highlight could not be updated.',
+      });
+    }
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'update',
+      entityType: 'highlight',
+      entityId: id,
+      success: 1,
+      detail: 'Highlight updated successfully.',
+    });
+
+    const [updatedRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Highlight updated successfully.',
+      highlight: updatedRows[0],
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'update',
+        entityType: 'highlight',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while updating highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
+
+exports.deleteHighlight = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [existingRows] = await Highlight.fetchOneById(id, activeUserId);
+
+    if (existingRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Highlight not found.',
+      });
+    }
+
+    const [result] = await Highlight.delete(id, activeUserId);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Highlight could not be deleted.',
+      });
+    }
+
+    await Highlight.createAuditLog({
+      idUser: activeUserId,
+      action: 'delete',
+      entityType: 'highlight',
+      entityId: id,
+      success: 1,
+      detail: 'Highlight deleted successfully.',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Highlight deleted successfully.',
+    });
+  } catch (err) {
+    console.log(err);
+
+    try {
+      await Highlight.createAuditLog({
+        idUser: activeUserId,
+        action: 'delete',
+        entityType: 'highlight',
+        entityId: id,
+        success: 0,
+        detail: `Technical error while deleting highlight: ${err.message}`,
+      });
+    } catch (auditErr) {
+      console.log(auditErr);
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
 };
 
 exports.getHistory = (req, res) => {
@@ -245,11 +778,19 @@ exports.getHistory = (req, res) => {
 };
 
 exports.getReports = (req, res) => {
-  res.render('manager/reports', {
-    currentPage: 'reports',
-    role: 'manager',
-    csrfToken: req.csrfToken(),
-  });
+  Team.fetchAllForSelect()
+    .then(([teams]) => {
+      res.render('manager/reports', {
+        currentPage: 'reports',
+        role: 'manager',
+        teams,
+        csrfToken: req.csrfToken(),
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Internal Server Error');
+    });
 };
 
 exports.getLog = (req, res) => {
@@ -276,6 +817,7 @@ exports.getLog = (req, res) => {
         res.render('shared/log', {
           currentPage: 'log',
           role: 'manager',
+          logBase: '/manager',
           logs: logsWithBlockers,
           projects,
           filters,
@@ -293,6 +835,7 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: 'manager',
+    selfReviewBase: '/manager',
     csrfToken: req.csrfToken(),
   });
 };
@@ -328,7 +871,7 @@ exports.getProfile = (req, res) => {
     });
 };
 
-exports.getProfile = async (req, res) => {
+/*exports.getProfile = async (req, res) => {
   try {
     const [[user]] = await User.fetchOne(req.session.userId);
     if (!user) return res.status(404).send('User not found');
@@ -344,7 +887,7 @@ exports.getProfile = async (req, res) => {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
-};
+};*/
 
 exports.postSlack = async (req, res) => {
   const { slack_user } = req.body;

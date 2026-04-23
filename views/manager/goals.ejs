@@ -5,7 +5,7 @@
 <!-- Add Goal Card -->
 <div class="report-card">
   <div class="report-card-header">
-   <h2 id="goalFormTitle">Create New Goal</h2>
+    <h2 id="goalFormTitle">Create New Goal</h2>
   </div>
 
   <div class="report-card-body">
@@ -103,6 +103,8 @@
   </div>
 
   <div class="report-card-body">
+    <div id="goalsListMessage" class="form-message"></div>
+
     <div class="goals-list">
       <% if (goals.length === 0) { %>
         <div class="empty-state">
@@ -155,21 +157,120 @@
             </div>
           </div>
 
+          <div class="goal-linked-projects">
+            <span class="goal-meta-item">
+              <i class="fa-solid fa-diagram-project"></i>
+              Linked Projects:
+            </span>
+
+            <% if (goal.linkedProjects && goal.linkedProjects.length > 0) { %>
+              <div class="linked-project-tags">
+                <% goal.linkedProjects.forEach((project) => { %>
+                  <span class="linked-project-tag">
+                    <span class="linked-project-name"><%= project.project_name %></span>
+                    <button
+                      type="button"
+                      class="unlink-project-button"
+                      data-goal-id="<%= goal.id_goal %>"
+                      data-project-id="<%= project.id_project %>"
+                      title="Unlink project"
+                      aria-label="Unlink project"
+                    >
+                      ×
+                    </button>
+                  </span>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <p class="no-linked-projects">No linked projects yet.</p>
+            <% } %>
+          </div>
+
           <div class="goal-actions">
-            <button
-              class="btn-icon edit-goal-button"
-              type="button"
-              title="Edit"
-              data-goal-id="<%= goal.id_goal %>"
-            >
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button class="btn-icon btn-danger" type="button" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+            <div class="goal-link-project">
+              <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
+              <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
+
+              <div class="project-dropdown" data-goal-id="<%= goal.id_goal %>">
+                <button
+                  type="button"
+                  class="project-dropdown-toggle"
+                  data-goal-id="<%= goal.id_goal %>"
+                  <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
+                >
+                  <span>Select projects</span>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+
+                <div class="project-dropdown-menu" data-goal-id="<%= goal.id_goal %>">
+                  <% if (unlinkedProjects.length > 0) { %>
+                    <% unlinkedProjects.forEach((project) => { %>
+                      <label class="project-option">
+                        <input
+                          type="checkbox"
+                          class="link-project-checkbox"
+                          data-goal-id="<%= goal.id_goal %>"
+                          value="<%= project.id_project %>"
+                        />
+                        <span><%= project.project_name %></span>
+                      </label>
+                    <% }); %>
+                  <% } else { %>
+                    <p class="project-dropdown-empty">All available projects are already linked.</p>
+                  <% } %>
+                </div>
+              </div>
+
+              <button
+                class="goal-link-button link-project-button"
+                type="button"
+                data-goal-id="<%= goal.id_goal %>"
+                <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
+              >
+                Link
+              </button>
+            </div>
+
+            <div class="goal-secondary-actions">
+              <button
+                class="btn-icon edit-goal-button"
+                type="button"
+                title="Edit"
+                data-goal-id="<%= goal.id_goal %>"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </button>
+
+              <button
+                class="btn-icon btn-danger delete-goal-button"
+                type="button"
+                title="Delete"
+                data-goal-id="<%= goal.id_goal %>"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
           </div>
         </div>
       <% }); %>
+    </div>
+  </div>
+</div>
+
+<div id="deleteGoalModal" class="custom-modal hidden">
+  <div class="custom-modal-backdrop"></div>
+
+  <div class="custom-modal-content">
+    <h3>Delete goal</h3>
+    <p>Are you sure you want to delete this goal?</p>
+
+    <div class="modal-actions">
+      <button id="cancelDeleteBtn" class="btn-secondary" type="button">
+        Cancel
+      </button>
+      <button id="confirmDeleteBtn" class="btn-danger" type="button">
+        Delete
+      </button>
     </div>
   </div>
 </div>
@@ -178,12 +279,22 @@
   const goalForm = document.getElementById('goalForm');
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   const goalFormMessage = document.getElementById('goalFormMessage');
+  const goalsListMessage = document.getElementById('goalsListMessage');
   const goalFormTitle = document.getElementById('goalFormTitle');
   const saveDraftButton = document.getElementById('saveDraftButton');
   const createGoalButton = document.getElementById('createGoalButton');
   const cancelEditButton = document.getElementById('cancelEditButton');
   const editGoalButtons = document.querySelectorAll('.edit-goal-button');
+  const deleteGoalButtons = document.querySelectorAll('.delete-goal-button');
+  const linkProjectButtons = document.querySelectorAll('.link-project-button');
+  const unlinkProjectButtons = document.querySelectorAll('.unlink-project-button');
+  const projectDropdownToggles = document.querySelectorAll('.project-dropdown-toggle');
+  const projectDropdownMenus = document.querySelectorAll('.project-dropdown-menu');
+  const deleteModal = document.getElementById('deleteGoalModal');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
+  let goalToDelete = null;
   let isEditMode = false;
   let editingGoalId = null;
 
@@ -197,6 +308,16 @@
   const showFormMessage = (message, type) => {
     goalFormMessage.textContent = message;
     goalFormMessage.className = `form-message ${type}`;
+  };
+
+  const showGoalsListMessage = (message, type) => {
+    goalsListMessage.textContent = message;
+    goalsListMessage.className = `form-message ${type}`;
+  };
+
+  const clearGoalsListMessage = () => {
+    goalsListMessage.textContent = '';
+    goalsListMessage.className = 'form-message';
   };
 
   const clearFormMessage = () => {
@@ -230,6 +351,8 @@
     statusInput.value = goal.status || '';
 
     clearFormMessage();
+    clearGoalsListMessage();
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -258,6 +381,7 @@
 
   const loadGoalForEdit = async (goalId) => {
     clearFormMessage();
+    clearGoalsListMessage();
 
     try {
       const response = await fetch(`/manager/goals/${goalId}`);
@@ -275,8 +399,115 @@
     }
   };
 
+  const linkProjectToGoal = async (goalId) => {
+    clearGoalsListMessage();
+
+    const selectedProjectIds = Array.from(
+      document.querySelectorAll(`.link-project-checkbox[data-goal-id="${goalId}"]:checked`)
+    ).map((checkbox) => checkbox.value);
+
+    if (selectedProjectIds.length === 0) {
+      showGoalsListMessage('Please select at least one project.', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/manager/goals/${goalId}/link-project`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({
+          id_projects: selectedProjectIds,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showGoalsListMessage(data.message || 'Could not link project.', 'error');
+        return;
+      }
+
+      showGoalsListMessage(data.message || 'Projects linked successfully.', 'success');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    } catch (err) {
+      console.log(err);
+      showGoalsListMessage('Unexpected error while linking projects.', 'error');
+    }
+  };
+
+  const unlinkProjectFromGoal = async (goalId, projectId) => {
+    clearGoalsListMessage();
+
+    try {
+      const response = await fetch(`/manager/goals/${goalId}/unlink-project`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({
+          id_project: projectId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showGoalsListMessage(data.message || 'Could not unlink project.', 'error');
+        return;
+      }
+
+      showGoalsListMessage(data.message || 'Project unlinked successfully.', 'success');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.log(err);
+      showGoalsListMessage('Unexpected error while unlinking project.', 'error');
+    }
+  };
+
+  const deleteGoal = async (goalId) => {
+    clearGoalsListMessage();
+    clearFormMessage();
+
+    try {
+      const response = await fetch(`/manager/goals/${goalId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showGoalsListMessage(data.message || 'Could not delete goal.', 'error');
+        return;
+      }
+
+      showGoalsListMessage(data.message || 'Goal deleted successfully.', 'success');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 900);
+    } catch (err) {
+      console.log(err);
+      showGoalsListMessage('Unexpected error while deleting goal.', 'error');
+    }
+  };
+
   const submitGoal = async (saveMode) => {
     clearFormMessage();
+    clearGoalsListMessage();
 
     if (!validateForm(saveMode)) {
       return;
@@ -287,22 +518,20 @@
     try {
       const payload = getGoalPayload(saveMode);
 
+      const endpoint = isEditMode
+        ? `/manager/goals/${editingGoalId}`
+        : '/manager/goals';
 
+      const method = isEditMode ? 'PUT' : 'POST';
 
-  const endpoint = isEditMode
-  ? `/manager/goals/${editingGoalId}`
-  : '/manager/goals';
-
-  const method = isEditMode ? 'PUT' : 'POST';
-
-  const response = await fetch(endpoint, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
-    },
-    body: JSON.stringify(payload),
-  });
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await response.json();
 
@@ -340,6 +569,72 @@
     });
   });
 
+  deleteGoalButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      goalToDelete = button.dataset.goalId;
+      deleteModal.classList.remove('hidden');
+    });
+  });
+
+  cancelDeleteBtn.addEventListener('click', () => {
+    deleteModal.classList.add('hidden');
+    goalToDelete = null;
+  });
+
+  confirmDeleteBtn.addEventListener('click', () => {
+    if (!goalToDelete) {
+      return;
+    }
+
+    deleteModal.classList.add('hidden');
+    deleteGoal(goalToDelete);
+    goalToDelete = null;
+  });
+
+  linkProjectButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const goalId = button.dataset.goalId;
+      linkProjectToGoal(goalId);
+    });
+  });
+
+  unlinkProjectButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const goalId = button.dataset.goalId;
+      const projectId = button.dataset.projectId;
+      unlinkProjectFromGoal(goalId, projectId);
+    });
+  });
+
+  projectDropdownToggles.forEach((toggle) => {
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+
+      const goalId = toggle.dataset.goalId;
+      const currentMenu = document.querySelector(
+        `.project-dropdown-menu[data-goal-id="${goalId}"]`
+      );
+
+      projectDropdownMenus.forEach((menu) => {
+        if (menu !== currentMenu) {
+          menu.classList.remove('open');
+        }
+      });
+
+      currentMenu.classList.toggle('open');
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    const clickedInsideDropdown = event.target.closest('.project-dropdown');
+
+    if (!clickedInsideDropdown) {
+      projectDropdownMenus.forEach((menu) => {
+        menu.classList.remove('open');
+      });
+    }
+  });
+
   cancelEditButton.addEventListener('click', () => {
     disableEditMode();
   });
@@ -364,9 +659,9 @@
     }
 
     if (!descriptionInput.value.trim()) {
-    markInvalid(descriptionInput);
-    showFormMessage('Description is required.', 'error');
-    isValid = false;
+      markInvalid(descriptionInput);
+      showFormMessage('Description is required.', 'error');
+      isValid = false;
     }
 
     if (mode === 'final') {

@@ -69,7 +69,7 @@
     <h2>Filter Achievements</h2>
   </div>
   <div class="report-card-body">
-    <form method="GET" action="/employee/achievements">
+    <form method="GET" action="<%= achievementsBase %>/achievements">
       <div class="filter-row">
         <div class="filter-group">
           <label class="form-label" for="achQuickFilter">Quick Filters</label>
@@ -256,7 +256,7 @@
     btn.textContent = 'Saving...';
 
     try {
-      const res = await fetch('/employee/achievements', {
+      const res = await fetch('<%= achievementsBase %>/achievements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ title, description, created_at, _csrf: csrfToken }),
@@ -335,7 +335,7 @@
     if (!created_at) { showMsg('Please select a date.', 'error'); return; }
 
     try {
-      const res = await fetch('/employee/achievements/edit', {
+      const res = await fetch('<%= achievementsBase %>/achievements/edit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ id_achievement: currentEditId, title, description, created_at, _csrf: csrfToken }),
@@ -400,7 +400,7 @@
     if (!currentDeleteId) return;
 
     try {
-      const res = await fetch('/employee/achievements/delete', {
+      const res = await fetch('<%= achievementsBase %>/achievements/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ id_achievement: currentDeleteId, _csrf: csrfToken }),

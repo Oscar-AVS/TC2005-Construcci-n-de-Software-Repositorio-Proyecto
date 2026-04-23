@@ -134,6 +134,7 @@ exports.getLog = async (req, res) => {
     res.render('shared/log', {
       currentPage: 'log',
       role: req.session.role,
+      logBase: '/employee',
       logs: logsWithBlockers,
       projects,
       filters,
@@ -152,20 +153,40 @@ exports.getLog = async (req, res) => {
 
 exports.postLog = (req, res) => {
   const activeUserId = req.session.userId;
+  const activeRole = req.session.role;
+  const teamId = req.session.teamId;
   const { completed, planned, blocker } = req.body;
   let id_projects = req.body.id_projects;
 
-  if (!id_projects) return res.redirect('/employee/log?error=noproject');
-  if (!Array.isArray(id_projects)) id_projects = [id_projects];
+  if (!id_projects) {
+    return res.redirect(`/${activeRole}/log?error=noproject`);
+  }
+
+  if (!Array.isArray(id_projects)) {
+    id_projects = [id_projects];
+  }
+
+  const fetchProjects =
+    activeRole === 'team-leader'
+      ? Project.fetchAllByTeam(teamId)
+      : Project.fetchAllByEmployee(activeUserId);
 
   Log.create(activeUserId, completed, planned)
     .then(([result]) => {
       const insertId = result.insertId;
 
-      return Project.fetchAllByEmployee(activeUserId).then(([projects]) => {
+      return fetchProjects.then(([projects]) => {
         const projectsToLink = projects
           .filter((p) => id_projects.includes(String(p.id_project)))
-          .map((p) => ({ id_project: p.id_project, id_team: p.id_team }));
+          .map((p) => ({
+            id_project: p.id_project,
+            id_team: p.id_team || teamId || null,
+          }))
+          .filter((p) => p.id_project && p.id_team);
+
+        if (projectsToLink.length === 0) {
+          throw new Error('No valid projects were selected for this user/team.');
+        }
 
         return Log.linkProjects(insertId, projectsToLink).then(() => {
           if (blocker && blocker.trim() !== '') {
@@ -174,7 +195,7 @@ exports.postLog = (req, res) => {
         });
       });
     })
-    .then(() => res.redirect('/employee/log?success=true'))
+    .then(() => res.redirect(`/${activeRole}/log?success=true`))
     .catch((err) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
@@ -183,20 +204,31 @@ exports.postLog = (req, res) => {
 
 exports.putLog = (req, res) => {
   const activeUserId = req.session.userId;
+  const activeRole = req.session.role;
+  const teamId = req.session.teamId;
   const { id_log, completed, planned, blocker, blocker_id, blocker_status } = req.body;
   let id_projects = req.body.id_projects;
 
   if (!Array.isArray(id_projects)) id_projects = id_projects ? [id_projects] : [];
   id_projects = id_projects.filter((p) => p !== '');
 
+  const fetchProjects =
+    activeRole === 'team-leader'
+      ? Project.fetchAllByTeam(teamId)
+      : Project.fetchAllByEmployee(activeUserId);
+
   Log.update(id_log, completed, planned)
     .then(() => {
       if (id_projects.length === 0) return;
 
-      return Project.fetchAllByEmployee(activeUserId).then(([projects]) => {
+      return fetchProjects.then(([projects]) => {
         const projectsToLink = projects
           .filter((p) => id_projects.includes(String(p.id_project)))
-          .map((p) => ({ id_project: p.id_project, id_team: p.id_team }));
+          .map((p) => ({
+            id_project: p.id_project,
+            id_team: p.id_team || teamId || null,
+          }))
+          .filter((p) => p.id_project && p.id_team);
 
         if (projectsToLink.length === 0) return;
         return Log.updateProjects(id_log, projectsToLink);
@@ -213,7 +245,7 @@ exports.putLog = (req, res) => {
         return Blocker.deleteByLog(id_log);
       }
     })
-    .then(() => res.redirect('/employee/log'))
+    .then(() => res.redirect(`/${activeRole}/log`))
     .catch((err) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
@@ -224,7 +256,7 @@ exports.deleteLog = (req, res) => {
   const { id_log } = req.body;
 
   Log.delete(id_log)
-    .then(() => res.redirect('/employee/log'))
+    .then(() => res.redirect(`/${req.session.role}/log`))
     .catch((err) => {
       console.log(err);
       res.status(500).send('Internal Server Error');
@@ -252,6 +284,7 @@ exports.getAchievements = async (req, res) => {
     res.render('employee/achievements', {
       currentPage: 'achievements',
       role: req.session.role,
+      achievementsBase: '/employee',
       achievements,
       projects,
       filters,
@@ -328,6 +361,7 @@ exports.getSelfReview = (req, res) => {
   res.render('shared/self-review', {
     currentPage: 'self-review',
     role: req.session.role,
+    selfReviewBase: '/employee',
     csrfToken: req.csrfToken(),
   });
 };

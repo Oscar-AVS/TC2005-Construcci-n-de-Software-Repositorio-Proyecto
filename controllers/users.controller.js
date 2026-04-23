@@ -72,6 +72,7 @@ exports.postLogin = (req, res) => {
 
               if (role === 'team-leader') {
                 return User.fetchTeamByLeader(user.id_user).then(([teams]) => {
+                  req.session.teamIds = teams.map(t => t.id_team);
                   req.session.teamId = teams.length > 0 ? teams[0].id_team : null;
                   return saveAndRedirect(req, res, role, rememberMe);
                 });

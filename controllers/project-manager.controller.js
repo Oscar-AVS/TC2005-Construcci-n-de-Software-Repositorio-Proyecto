@@ -2,43 +2,178 @@
  * Project Manager Controller
  */
 
-const PDFDocument = require('pdfkit');
-const { getProjectReportData } = require('../models/report.model');
-const User = require('../models/user.model');
-const Project = require('../models/project.model');
-const Team = require('../models/team.model');
-const Blocker = require('../models/blocker.model');
-const bcrypt = require('bcrypt');
+const PDFDocument = require("pdfkit");
+const { getProjectReportData } = require("../models/report.model");
+const User = require("../models/user.model");
+const Project = require("../models/project.model");
+const Team = require("../models/team.model");
+const Blocker = require("../models/blocker.model");
+const Log = require("../models/log.model");
+const bcrypt = require("bcrypt");
 
 const renderProjectDetailView = async (req, res, project, options = {}) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   const [teams] = await Project.fetchAssignedTeams(project.id_project);
-  const [allTeamsRaw] = await Team.fetchAll();
+  const [allTeamsRaw] = await Team.fetchAllForSelect();
   const [users] = await Project.fetchAssignedUsers(project.id_project);
   const [allUsers] = await User.fetchAll();
-  const [activity] = await Project.fetchActivity(project.id_project);
+  
+  const [activity] = await Project.fetchActivity(project.id_project, limit, offset);
+  const [[{ total: totalRecords }]] = await Project.countActivity(project.id_project);
+  const totalPages = Math.ceil(totalRecords / limit);
 
-  return res.render('project-manager/project-detail', {
+  // Blocker Pagination
+  const blockerPage = parseInt(req.query.blockerPage) || 1;
+  const blockerLimit = 5; // Fewer blockers per page usually
+  const blockerOffset = (blockerPage - 1) * blockerLimit;
+  const [blockers] = await Blocker.fetchByProject(project.id_project, blockerLimit, blockerOffset);
+  const [[{ total: totalBlockersRecords }]] = await Blocker.countByProject(project.id_project);
+  const totalBlockerPages = Math.ceil(totalBlockersRecords / blockerLimit);
+
+  return res.render("project-manager/project-detail", {
     title: project.project_name,
-    role: 'project-manager',
-    currentPage: 'projects',
+    role: "project-manager",
+    currentPage: "projects",
     project,
     teams,
     allTeams: allTeamsRaw,
     users,
     allUsers,
     activity,
-    error: options.error || '',
-    success: options.success || '',
+    blockers,
+    page,
+    totalPages,
+    totalRecords,
+    hasPrevPage: page > 1,
+    hasNextPage: page < totalPages,
+    blockerPage,
+    totalBlockerPages,
+    totalBlockersRecords,
+    hasPrevBlockerPage: blockerPage > 1,
+    hasNextBlockerPage: blockerPage < totalBlockerPages,
+    error: options.error || "",
+    success: options.success || "",
     csrfToken: req.csrfToken(),
   });
 };
 
-exports.getDashboard = (req, res) => {
-  res.render('project-manager/dashboard', {
-    title: 'PM Dashboard',
-    role: 'project-manager',
-    currentPage: 'dashboard',
-  });
+exports.getDashboard = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const weekOffset = parseInt(req.query.weekOffset) || 0;
+  const orgWeekOffset = parseInt(req.query.orgWeekOffset) || 0;
+  const activeView = req.query.view || "personal";
+  const activeTab = req.query.tab || "pm-dashboard";
+
+  try {
+    // PM Dashboard Stats
+    const [[activeProjectsCount]] = await Project.countActive();
+    const [[activeBlockersCount]] = await Blocker.countAllActive();
+    const [[completedThisMonth]] = await Project.countCompletedThisMonth();
+    const [[activeUsersCount]] = await User.countActive();
+
+    const [recentProjects] = await Project.fetchAll();
+    const [activeBlockers] = await Blocker.fetchAllOrganizational();
+    const [globalActivity] = await Project.fetchGlobalActivity(5);
+
+    // Personal Activity Data (same as employee)
+    const [weekRows] = await Log.countByWeek(activeUserId, weekOffset);
+    const [todayLogs] = await Log.fetchToday(activeUserId);
+    const [weekLogs] = await Log.fetchByWeek(activeUserId, weekOffset);
+    const [[personalActiveBlockerRow]] =
+      await Blocker.countActiveByUser(activeUserId);
+
+    // Organization data
+    const [[orgTodayLogsCount]] = await Log.countTodayAll();
+    const [orgWeekRows] = await Log.countByWeekAll(orgWeekOffset);
+    const [orgWeekLogs] = await Log.fetchByWeekAll(orgWeekOffset);
+
+    // Fetch teams for filter
+    const [allTeamsRaw] = await Team.fetchAll();
+    const uniqueTeamsMap = new Map();
+    allTeamsRaw.forEach((team) => {
+      if (!uniqueTeamsMap.has(team.id_team)) {
+        uniqueTeamsMap.set(team.id_team, {
+          id_team: team.id_team,
+          team_name: team.team_name,
+        });
+      }
+    });
+    const teams = Array.from(uniqueTeamsMap.values());
+
+    // Map weekly data for charts
+    const weeklyData = [0, 0, 0, 0, 0];
+    weekRows.forEach((row) => {
+      if (row.weekday <= 4) weeklyData[row.weekday] = Number(row.count);
+    });
+
+    const orgWeeklyData = [0, 0, 0, 0, 0];
+    orgWeekRows.forEach((row) => {
+      if (row.weekday <= 4) orgWeeklyData[row.weekday] = Number(row.count);
+    });
+
+    const logsByDay = [[], [], [], [], []];
+    weekLogs.forEach((log) => {
+      if (log.weekday <= 4) {
+        logsByDay[log.weekday].push({
+          id_log: log.id_log,
+          completed: log.completed,
+          created_at: log.created_at,
+        });
+      }
+    });
+
+    const orgLogsByDay = [[], [], [], [], [], [], []];
+    orgWeekLogs.forEach((log) => {
+      orgLogsByDay[log.weekday].push({
+        id_log: log.id_log,
+        full_name: log.full_name,
+        completed: log.completed,
+        created_at: log.created_at,
+        team_names: log.team_names,
+      });
+    });
+
+    res.render("project-manager/dashboard", {
+      title: "PM Dashboard",
+      role: "project-manager",
+      currentPage: "dashboard",
+      // PM Stats
+      stats: {
+        activeProjects: activeProjectsCount.count,
+        activeBlockers: activeBlockersCount.count,
+        completedThisMonth: completedThisMonth.count,
+        activeUsers: activeUsersCount.count,
+      },
+      projects: recentProjects.slice(0, 3), // Show first 3 for summary
+      blockers: activeBlockers.slice(0, 3), // Show first 3 for summary
+      globalActivity,
+      // Personal Activity
+      weeklyData,
+      logsByDay,
+      todayLogs,
+      completedToday: todayLogs.length,
+      weeklyTotal: weeklyData.reduce((a, b) => a + b, 0),
+      personalActiveBlockers: Number(personalActiveBlockerRow.count),
+      weekOffset,
+      orgWeekOffset,
+      activeView,
+      // Org vars
+      orgActiveUsers: Number(activeUsersCount.count),
+      orgTodayLogsCount: Number(orgTodayLogsCount.count),
+      orgActiveBlockers: Number(activeBlockersCount.count),
+      orgWeeklyData,
+      orgLogsByDay,
+      teams,
+      activeTab,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 exports.getReports = async (req, res) => {
@@ -56,22 +191,22 @@ exports.getReports = async (req, res) => {
       }
     });
 
-    res.render('project-manager/reports', {
-      title: 'Reports',
-      role: 'project-manager',
-      currentPage: 'reports',
+    res.render("project-manager/reports", {
+      title: "Reports",
+      role: "project-manager",
+      currentPage: "reports",
       projects,
       teams: uniqueTeams,
       filters: {
-        id_project: req.query.id_project || '',
-        id_team: req.query.id_team || '',
-        date_from: req.query.date_from || '',
-        date_to: req.query.date_to || '',
+        id_project: req.query.id_project || "",
+        id_team: req.query.id_team || "",
+        date_from: req.query.date_from || "",
+        date_to: req.query.date_to || "",
       },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -80,7 +215,7 @@ exports.getProjectTeamRange = async (req, res) => {
 
   if (!id_project || !id_team) {
     return res.status(400).json({
-      error: 'Missing parameters: id_project and id_team are required.',
+      error: "Missing parameters: id_project and id_team are required.",
     });
   }
 
@@ -89,16 +224,18 @@ exports.getProjectTeamRange = async (req, res) => {
 
     if (!project) {
       return res.status(404).json({
-        error: 'Project not found.',
+        error: "Project not found.",
       });
     }
 
     const [teamRows] = await Team.fetchAll();
-    const team = teamRows.find((row) => String(row.id_team) === String(id_team));
+    const team = teamRows.find(
+      (row) => String(row.id_team) === String(id_team),
+    );
 
     if (!team) {
       return res.status(404).json({
-        error: 'Team not found.',
+        error: "Team not found.",
       });
     }
 
@@ -115,43 +252,102 @@ exports.getProjectTeamRange = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Error fetching project/team range:', err);
+    console.error("Error fetching project/team range:", err);
     return res.status(500).json({
-      error: 'Internal Server Error',
+      error: "Internal Server Error",
     });
   }
 };
 
-exports.getLog = async (req, res, next) => {
+exports.getLog = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    id_project: req.query.id_project || null,
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   try {
-    res.render('shared/log', {
-      pageTitle: 'My Activity Log',
-      currentPage: 'log',
-      successMessage: null,
-      errorMessage: null,
+    const Log = require("../models/log.model");
+    const Blocker = require("../models/blocker.model");
+
+    const [[countResult]] = await Log.countAllByEmployee(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+    const [logs] = await Log.fetchAllByEmployee(
+      activeUserId,
+      filters,
+      limit,
+      offset,
+    );
+    const [projects] = await Project.fetchAll(); // PM can see all projects
+
+    const logsWithBlockers = await Promise.all(
+      logs.map(async (log) => {
+        const [blockers] = await Blocker.fetchByLog(log.id_log);
+        return { ...log, blockers };
+      }),
+    );
+
+    res.render("shared/log", {
+      title: "My Log",
+      role: "project-manager",
+      logBase: "/project-manager",
+      currentPage: "log",
+      logs: logsWithBlockers,
+      projects,
+      filters,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+      successMessage:
+        req.query.success === "true" ? "Log entry created successfully!" : null,
     });
-  } catch (error) {
-    console.log(error);
-    next(error);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
   }
+};
+
+exports.postLog = async (req, res) => {
+  const employeeController = require("./employee.controller");
+  return employeeController.postLog(req, res);
+};
+
+exports.postEditLog = async (req, res) => {
+  const employeeController = require("./employee.controller");
+  return employeeController.putLog(req, res);
+};
+
+exports.postDeleteLog = async (req, res) => {
+  const employeeController = require("./employee.controller");
+  return employeeController.deleteLog(req, res);
 };
 
 exports.getSelfReview = (req, res) => {
-  res.render('shared/self-review', {
-    title: 'Self Review',
-    role: 'project-manager',
-    currentPage: 'self-review',
+  res.render("shared/self-review", {
+    title: "Self Review",
+    role: "project-manager",
+    selfReviewBase: "/project-manager",
+    currentPage: "self-review",
     csrfToken: req.csrfToken(),
   });
 };
 
 exports.generateSelfReview = async (req, res) => {
-  const employeeController = require('./employee.controller');
+  const employeeController = require("./employee.controller");
   return employeeController.generateSelfReview(req, res);
 };
 
 exports.exportSelfReviewPDF = async (req, res) => {
-  const employeeController = require('./employee.controller');
+  const employeeController = require("./employee.controller");
   return employeeController.exportSelfReviewPDF(req, res);
 };
 
@@ -160,20 +356,20 @@ exports.getProfile = async (req, res) => {
     const [[user]] = await User.fetchOne(req.session.userId);
 
     if (!user) {
-      return res.status(404).send('User not found');
+      return res.status(404).send("User not found");
     }
 
-    res.render('shared/profile', {
-      currentPage: 'profile',
-      role: 'project-manager',
+    res.render("shared/profile", {
+      currentPage: "profile",
+      role: "project-manager",
       user,
-      error: '',
-      success: '',
+      error: "",
+      success: "",
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -184,17 +380,17 @@ exports.postSlack = async (req, res) => {
     await User.updateSlack(req.session.userId, slack_user);
     const [[user]] = await User.fetchOne(req.session.userId);
 
-    res.render('shared/profile', {
-      currentPage: 'profile',
-      role: 'project-manager',
+    res.render("shared/profile", {
+      currentPage: "profile",
+      role: "project-manager",
       user,
-      error: '',
-      success: 'Slack username updated successfully.',
+      error: "",
+      success: "Slack username updated successfully.",
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -205,29 +401,29 @@ exports.postPassword = async (req, res) => {
     const [[user]] = await User.fetchOne(req.session.userId);
 
     if (!user) {
-      return res.status(404).send('User not found');
+      return res.status(404).send("User not found");
     }
 
     const match = await bcrypt.compare(current_password, user.password);
 
     if (!match) {
-      return res.render('shared/profile', {
-        currentPage: 'profile',
-        role: 'project-manager',
+      return res.render("shared/profile", {
+        currentPage: "profile",
+        role: "project-manager",
         user,
-        error: 'Current password is incorrect.',
-        success: '',
+        error: "Current password is incorrect.",
+        success: "",
         csrfToken: req.csrfToken(),
       });
     }
 
     if (new_password !== confirm_password) {
-      return res.render('shared/profile', {
-        currentPage: 'profile',
-        role: 'project-manager',
+      return res.render("shared/profile", {
+        currentPage: "profile",
+        role: "project-manager",
         user,
-        error: 'New passwords do not match.',
-        success: '',
+        error: "New passwords do not match.",
+        success: "",
         csrfToken: req.csrfToken(),
       });
     }
@@ -237,17 +433,17 @@ exports.postPassword = async (req, res) => {
 
     const [[updatedUser]] = await User.fetchOne(req.session.userId);
 
-    res.render('shared/profile', {
-      currentPage: 'profile',
-      role: 'project-manager',
+    res.render("shared/profile", {
+      currentPage: "profile",
+      role: "project-manager",
       user: updatedUser,
-      error: '',
-      success: 'Password updated successfully.',
+      error: "",
+      success: "Password updated successfully.",
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -255,18 +451,18 @@ exports.getProjects = async (req, res) => {
   try {
     const [projects] = await Project.fetchAll();
 
-    res.render('project-manager/projects', {
-      title: 'Projects',
-      role: 'project-manager',
-      currentPage: 'projects',
+    res.render("project-manager/projects", {
+      title: "Projects",
+      role: "project-manager",
+      currentPage: "projects",
       projects,
-      error: req.query.error || '',
-      success: req.query.success || '',
+      error: req.query.error || "",
+      success: req.query.success || "",
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -275,71 +471,110 @@ exports.getProjectDetail = async (req, res) => {
     const [[project]] = await Project.fetchOne(req.params.id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
+      return res.redirect("/project-manager/projects?error=Project+not+found");
     }
 
-    const [teams] = await Project.fetchAssignedTeams(req.params.id);
-    const [allTeams] = await Team.fetchAll();
-    const [users] = await Project.fetchAssignedUsers(req.params.id);
-    const [allUsers] = await User.fetchAll();
-    const [activity] = await Project.fetchActivity(req.params.id);
-
-    res.render('project-manager/project-detail', {
-      title: project.project_name,
-      role: 'project-manager',
-      currentPage: 'projects',
-      project,
-      teams,
-      allTeams,
-      users,
-      allUsers,
-      activity,
-      error: req.query.error || '',
-      success: req.query.success || '',
-      csrfToken: req.csrfToken(),
+    return renderProjectDetailView(req, res, project, {
+      error: req.query.error || "",
+      success: req.query.success || "",
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+exports.getProjectActivity = async (req, res) => {
+  const { id } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const filters = {
+    id_team: req.query.id_team || null,
+    id_user: req.query.id_user || null,
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null
+  };
+
+  try {
+    const [activity] = await Project.fetchActivity(id, limit, offset, filters);
+    const [[{ total: totalRecords }]] = await Project.countActivity(id, filters);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return res.json({
+      activity,
+      page,
+      totalPages,
+      totalRecords,
+      hasPrevPage: page > 1,
+      hasNextPage: page < totalPages
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to fetch activity" });
+  }
+};
+
+exports.getProjectBlockers = async (req, res) => {
+  const { id } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [blockers] = await Blocker.fetchByProject(id, limit, offset);
+    const [[{ total: totalRecords }]] = await Blocker.countByProject(id);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return res.json({
+      blockers,
+      page,
+      totalPages,
+      totalRecords,
+      hasPrevPage: page > 1,
+      hasNextPage: page < totalPages
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to fetch blockers" });
   }
 };
 
 exports.postCreateProject = async (req, res) => {
-  const {
-    project_name,
-    description,
-    status,
-    start_date,
-    end_date,
-  } = req.body;
+  const { project_name, description, status, start_date, end_date } = req.body;
 
   const renderWithError = async (error) => {
     const [projects] = await Project.fetchAll();
 
-    return res.render('project-manager/projects', {
-      title: 'Projects',
-      role: 'project-manager',
-      currentPage: 'projects',
+    return res.render("project-manager/projects", {
+      title: "Projects",
+      role: "project-manager",
+      currentPage: "projects",
       projects,
       error,
-      success: '',
+      success: "",
       csrfToken: req.csrfToken(),
     });
   };
 
   if (!project_name || !project_name.trim()) {
-    return renderWithError('El nombre del proyecto es requerido.');
+    return renderWithError("El nombre del proyecto es requerido.");
   }
 
   if (start_date && end_date && end_date < start_date) {
-    return renderWithError('La fecha de fin no puede ser anterior a la fecha de inicio.');
+    return renderWithError(
+      "La fecha de fin no puede ser anterior a la fecha de inicio.",
+    );
   }
 
   try {
     const [[existing]] = await Project.findByName(project_name.trim());
 
     if (existing) {
-      return renderWithError('Ya existe un proyecto registrado con ese nombre.');
+      return renderWithError(
+        "Ya existe un proyecto registrado con ese nombre.",
+      );
     }
 
     await Project.create(
@@ -347,13 +582,17 @@ exports.postCreateProject = async (req, res) => {
       description,
       status,
       start_date || null,
-      end_date || null
+      end_date || null,
     );
 
-    return res.redirect('/project-manager/projects?success=Proyecto+registrado+correctamente');
+    return res.redirect(
+      "/project-manager/projects?success=Proyecto+registrado+correctamente",
+    );
   } catch (err) {
     console.error(err);
-    return renderWithError('No fue posible completar el registro. Intenta nuevamente.');
+    return renderWithError(
+      "No fue posible completar el registro. Intenta nuevamente.",
+    );
   }
 };
 
@@ -365,25 +604,33 @@ exports.postAssignTeam = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
+      return res.redirect("/project-manager/projects?error=Project+not+found");
     }
 
     if (!id_team) {
-      return res.redirect(`/project-manager/project/${id}?error=Please+select+a+team`);
+      return res.redirect(
+        `/project-manager/project/${id}?error=Please+select+a+team`,
+      );
     }
 
     const [[already]] = await Project.isTeamAssigned(id, id_team);
 
     if (already) {
-      return res.redirect(`/project-manager/project/${id}?error=This+team+is+already+assigned+to+the+project`);
+      return res.redirect(
+        `/project-manager/project/${id}?error=This+team+is+already+assigned+to+the+project`,
+      );
     }
 
     await Project.assignTeam(id, id_team, req.session.userId);
 
-    return res.redirect(`/project-manager/project/${id}?success=Team+assigned+successfully`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Team+assigned+successfully`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=Could+not+assign+the+team`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Could+not+assign+the+team`,
+    );
   }
 };
 
@@ -394,52 +641,55 @@ exports.postRemoveTeam = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
+      return res.redirect("/project-manager/projects?error=Project+not+found");
     }
 
     await Project.removeTeam(id, id_team);
 
-    return res.redirect(`/project-manager/project/${id}?success=Team+removed+successfully`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Team+removed+successfully`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+team`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Could+not+remove+the+team`,
+    );
   }
 };
 
 exports.postEditProject = async (req, res) => {
   const { id } = req.params;
-  const {
-    project_name,
-    description,
-    status,
-    start_date,
-    end_date,
-  } = req.body;
+  const { project_name, description, status, start_date, end_date } = req.body;
 
   try {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=El+proyecto+no+está+disponible');
+      return res.redirect(
+        "/project-manager/projects?error=El+proyecto+no+está+disponible",
+      );
     }
 
     if (!project_name || !project_name.trim()) {
       return renderProjectDetailView(req, res, project, {
-        error: 'El nombre del proyecto es requerido.',
+        error: "El nombre del proyecto es requerido.",
       });
     }
 
     if (start_date && end_date && end_date < start_date) {
       return renderProjectDetailView(req, res, project, {
-        error: 'La fecha de fin no puede ser anterior a la fecha de inicio.',
+        error: "La fecha de fin no puede ser anterior a la fecha de inicio.",
       });
     }
 
-    const [[duplicate]] = await Project.findByNameExcluding(project_name.trim(), id);
+    const [[duplicate]] = await Project.findByNameExcluding(
+      project_name.trim(),
+      id,
+    );
 
     if (duplicate) {
       return renderProjectDetailView(req, res, project, {
-        error: 'Ya existe otro proyecto con ese nombre.',
+        error: "Ya existe otro proyecto con ese nombre.",
       });
     }
 
@@ -449,13 +699,17 @@ exports.postEditProject = async (req, res) => {
       description,
       status,
       start_date || null,
-      end_date || null
+      end_date || null,
     );
 
-    return res.redirect(`/project-manager/project/${id}?success=Proyecto+actualizado+correctamente`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Proyecto+actualizado+correctamente`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+el+proyecto`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=No+fue+posible+actualizar+el+proyecto`,
+    );
   }
 };
 
@@ -466,15 +720,21 @@ exports.postDeleteProject = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=El+proyecto+no+está+disponible');
+      return res.redirect(
+        "/project-manager/projects?error=El+proyecto+no+está+disponible",
+      );
     }
 
     await Project.delete(id);
 
-    return res.redirect('/project-manager/projects?success=Proyecto+eliminado+correctamente');
+    return res.redirect(
+      "/project-manager/projects?success=Proyecto+eliminado+correctamente",
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect('/project-manager/projects?error=No+fue+posible+eliminar+el+proyecto');
+    return res.redirect(
+      "/project-manager/projects?error=No+fue+posible+eliminar+el+proyecto",
+    );
   }
 };
 
@@ -486,65 +746,47 @@ exports.postProjectDates = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=El+proyecto+no+fue+encontrado');
+      return res.redirect(
+        "/project-manager/projects?error=El+proyecto+no+fue+encontrado",
+      );
     }
 
     if (!start_date || !end_date) {
       return renderProjectDetailView(req, res, project, {
-        error: 'Ambas fechas son requeridas.',
+        error: "Ambas fechas son requeridas.",
       });
     }
 
     if (end_date < start_date) {
       return renderProjectDetailView(req, res, project, {
-        error: 'La fecha de fin no puede ser anterior a la fecha de inicio.',
+        error: "La fecha de fin no puede ser anterior a la fecha de inicio.",
       });
     }
 
     await Project.updateDates(id, start_date, end_date);
 
-    return res.redirect(`/project-manager/project/${id}?success=Fechas+actualizadas+correctamente`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Fechas+actualizadas+correctamente`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`,
+    );
   }
 };
 
-exports.postProjectProgressStatus = async (req, res) => {
-  const { id } = req.params;
-  const { progress_status, progress_percentage } = req.body;
 
-  const VALID_STATUSES = [
-    'not_started',
-    'in_progress',
-    'on_hold',
-    'at_risk',
-    'completed',
-  ];
-
-  const pct = parseInt(progress_percentage, 10);
-
+// Member search for dynamic "Add Member" modal
+exports.getMemberSearch = async (req, res) => {
+  const query = req.query.q;
+  if (!query) return res.json([]);
   try {
-    const [[project]] = await Project.fetchOne(id);
-
-    if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
-    }
-
-    if (!progress_status || !VALID_STATUSES.includes(progress_status)) {
-      return res.redirect(`/project-manager/project/${id}?error=Invalid+progress+status+selected`);
-    }
-
-    if (isNaN(pct) || pct < 0 || pct > 100) {
-      return res.redirect(`/project-manager/project/${id}?error=Percentage+must+be+between+0+and+100`);
-    }
-
-    await Project.updateProgressStatus(id, progress_status, pct);
-
-    return res.redirect(`/project-manager/project/${id}?success=Progress+status+updated+successfully`);
+    const [users] = await User.searchByNameEmail(query);
+    res.json(users);
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=Could+not+update+progress+status`);
+    res.status(500).json({ error: "Search failed" });
   }
 };
 
@@ -556,25 +798,33 @@ exports.postAssignUser = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
+      return res.redirect("/project-manager/projects?error=Project+not+found");
     }
 
     if (!id_user) {
-      return res.redirect(`/project-manager/project/${id}?error=Please+select+a+user`);
+      return res.redirect(
+        `/project-manager/project/${id}?error=Please+select+a+user`,
+      );
     }
 
     const [[already]] = await Project.isUserAssigned(id, id_user);
 
     if (already) {
-      return res.redirect(`/project-manager/project/${id}?error=This+user+is+already+assigned+to+the+project`);
+      return res.redirect(
+        `/project-manager/project/${id}?error=This+user+is+already+assigned+to+the+project`,
+      );
     }
 
     await Project.assignUser(id, id_user, id_team || null, req.session.userId);
 
-    return res.redirect(`/project-manager/project/${id}?success=Member+added+successfully`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Member+added+successfully`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=Could+not+assign+the+user`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Could+not+assign+the+user`,
+    );
   }
 };
 
@@ -585,15 +835,19 @@ exports.postRemoveUser = async (req, res) => {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
-      return res.redirect('/project-manager/projects?error=Project+not+found');
+      return res.redirect("/project-manager/projects?error=Project+not+found");
     }
 
     await Project.removeUser(id, id_user);
 
-    return res.redirect(`/project-manager/project/${id}?success=Member+removed+successfully`);
+    return res.redirect(
+      `/project-manager/project/${id}?success=Member+removed+successfully`,
+    );
   } catch (err) {
     console.error(err);
-    return res.redirect(`/project-manager/project/${id}?error=Could+not+remove+the+user`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Could+not+remove+the+user`,
+    );
   }
 };
 
@@ -613,20 +867,20 @@ exports.getBlockers = async (req, res) => {
 
     const [projects] = await Project.fetchAll();
 
-    res.render('project-manager/blockers', {
-      title: 'Organizational Blockers',
-      role: 'project-manager',
-      currentPage: 'blockers',
+    res.render("project-manager/blockers", {
+      title: "Organizational Blockers",
+      role: "project-manager",
+      currentPage: "blockers",
       blockers,
       projects,
-      filters: { id_project: id_project || '' },
-      error: req.query.error || '',
-      success: req.query.success || '',
+      filters: { id_project: id_project || "" },
+      error: req.query.error || "",
+      success: req.query.success || "",
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -638,44 +892,57 @@ exports.exportProjectReportPDF = async (req, res) => {
   try {
     data = await getProjectReportData(id);
   } catch (err) {
-    console.error('Error fetching project report data:', err);
-    return res.redirect(`/project-manager/project/${id}?error=Error+fetching+report+data`);
+    console.error("Error fetching project report data:", err);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Error+fetching+report+data`,
+    );
   }
 
   if (!data.proyecto) {
-    return res.redirect(`/project-manager/project/${id}?error=Project+not+found`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Project+not+found`,
+    );
   }
 
   if (!data.bitacoras.length && !data.bloqueos.length) {
-    return res.redirect(`/project-manager/project/${id}?error=Not+enough+data+to+generate+the+report`);
+    return res.redirect(
+      `/project-manager/project/${id}?error=Not+enough+data+to+generate+the+report`,
+    );
   }
 
   try {
     const doc = new PDFDocument({ margin: 50 });
 
-    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="report-${data.proyecto.project_name.replace(/\s+/g, '-')}-${Date.now()}.pdf"`
+      "Content-Disposition",
+      `attachment; filename="report-${data.proyecto.project_name.replace(/\s+/g, "-")}-${Date.now()}.pdf"`,
     );
 
     doc.pipe(res);
 
     // Header
-    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#EFF6FF', '#3b82f6');
+    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke("#EFF6FF", "#3b82f6");
 
-    doc.fillColor('#3b82f6')
+    doc
+      .fillColor("#3b82f6")
       .fontSize(20)
-      .text('Project Progress Report', 60, 50, { align: 'center', width: 475 });
+      .text("Project Progress Report", 60, 50, { align: "center", width: 475 });
 
-    doc.fillColor('#64748b')
+    doc
+      .fillColor("#64748b")
       .fontSize(10)
-      .text('Mufasa — Project Management Platform', 60, 80, { align: 'center', width: 475 });
+      .text("Mufasa — Project Management Platform", 60, 80, {
+        align: "center",
+        width: 475,
+      });
 
-    doc.fillColor('#1e293b').fontSize(10);
+    doc.fillColor("#1e293b").fontSize(10);
     doc.text(`Project: ${data.proyecto.project_name}`, 60, 108, { width: 160 });
     doc.text(`Status: ${data.proyecto.status}`, 240, 108, { width: 120 });
-    doc.text(`Progress: ${data.proyecto.progress_percentage || 0}%`, 380, 108, { width: 140 });
+    doc.text(`Progress: ${data.proyecto.progress_percentage || 0}%`, 380, 108, {
+      width: 140,
+    });
 
     doc.y = 150;
     doc.moveDown(1.2);
@@ -685,122 +952,148 @@ exports.exportProjectReportPDF = async (req, res) => {
     const barY = doc.y;
     const barWidth = 495;
     const barHeight = 12;
-    const fillWidth = Math.round(((data.proyecto.progress_percentage || 0) / 100) * barWidth);
+    const fillWidth = Math.round(
+      ((data.proyecto.progress_percentage || 0) / 100) * barWidth,
+    );
 
-    doc.roundedRect(barX, barY, barWidth, barHeight, 6).fillAndStroke('#e2e8f0', '#e2e8f0');
+    doc
+      .roundedRect(barX, barY, barWidth, barHeight, 6)
+      .fillAndStroke("#e2e8f0", "#e2e8f0");
     if (fillWidth > 0) {
-      doc.roundedRect(barX, barY, fillWidth, barHeight, 6).fillAndStroke('#3b82f6', '#3b82f6');
+      doc
+        .roundedRect(barX, barY, fillWidth, barHeight, 6)
+        .fillAndStroke("#3b82f6", "#3b82f6");
     }
 
     doc.y = barY + barHeight + 6;
 
     const progressLabels = {
-      not_started: 'Not Started',
-      in_progress: 'In Progress',
-      on_hold: 'On Hold',
-      at_risk: 'At Risk',
-      completed: 'Completed',
+      not_started: "Not Started",
+      in_progress: "In Progress",
+      on_hold: "On Hold",
+      at_risk: "At Risk",
+      completed: "Completed",
     };
 
-    doc.fontSize(9).fillColor('#64748b').text(
-      `Progress status: ${progressLabels[data.proyecto.progress_status] || '—'}   |   Start: ${
-        data.proyecto.start_date
-          ? new Date(data.proyecto.start_date).toLocaleDateString('en-US')
-          : '—'
-      }   |   Due: ${
-        data.proyecto.end_date
-          ? new Date(data.proyecto.end_date).toLocaleDateString('en-US')
-          : '—'
-      }`,
-      { align: 'center' }
-    );
+    doc
+      .fontSize(9)
+      .fillColor("#64748b")
+      .text(
+        `Progress status: ${progressLabels[data.proyecto.progress_status] || "—"}   |   Start: ${
+          data.proyecto.start_date
+            ? new Date(data.proyecto.start_date).toLocaleDateString("en-US")
+            : "—"
+        }   |   Due: ${
+          data.proyecto.end_date
+            ? new Date(data.proyecto.end_date).toLocaleDateString("en-US")
+            : "—"
+        }`,
+        { align: "center" },
+      );
 
     doc.moveDown(1);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
     doc.moveDown(0.8);
 
     // Description
     if (data.proyecto.description) {
-      doc.fontSize(13).fillColor('#3b82f6').text('Description');
+      doc.fontSize(13).fillColor("#3b82f6").text("Description");
       doc.moveDown(0.3);
-      doc.fontSize(10).fillColor('#475569').text(data.proyecto.description, { width: 470 });
+      doc
+        .fontSize(10)
+        .fillColor("#475569")
+        .text(data.proyecto.description, { width: 470 });
       doc.moveDown(0.8);
-      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
       doc.moveDown(0.8);
     }
 
     // Assigned Teams
-    doc.fontSize(13).fillColor('#3b82f6').text('Assigned Teams');
+    doc.fontSize(13).fillColor("#3b82f6").text("Assigned Teams");
     doc.moveDown(0.3);
-    doc.fontSize(10).fillColor('#1e293b');
+    doc.fontSize(10).fillColor("#1e293b");
 
     if (data.equipos.length === 0) {
-      doc.fillColor('#94a3b8').text('No teams assigned.');
+      doc.fillColor("#94a3b8").text("No teams assigned.");
     } else {
       data.equipos.forEach((team) => {
-        doc.fillColor('#1e293b').text(`• ${team.team_name}`, { continued: true });
-        doc.fillColor('#64748b').text(`  —  Lead: ${team.leader_name || '—'}`);
+        doc
+          .fillColor("#1e293b")
+          .text(`• ${team.team_name}`, { continued: true });
+        doc.fillColor("#64748b").text(`  —  Lead: ${team.leader_name || "—"}`);
       });
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
     doc.moveDown(0.8);
 
     // Team Members
-    doc.fontSize(13).fillColor('#3b82f6').text('Team Members');
+    doc.fontSize(13).fillColor("#3b82f6").text("Team Members");
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.miembros.length === 0) {
-      doc.fillColor('#94a3b8').text('No members assigned.');
+      doc.fillColor("#94a3b8").text("No members assigned.");
     } else {
       data.miembros.forEach((member) => {
-        doc.fillColor('#1e293b').text(`• ${member.full_name}`, { continued: true });
-        doc.fillColor('#64748b').text(`  —  ${member.email}  |  ${member.team_name || 'No team'}`);
+        doc
+          .fillColor("#1e293b")
+          .text(`• ${member.full_name}`, { continued: true });
+        doc
+          .fillColor("#64748b")
+          .text(`  —  ${member.email}  |  ${member.team_name || "No team"}`);
       });
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
     doc.moveDown(0.8);
 
     // Blockers
-    doc.fontSize(13).fillColor('#3b82f6').text('Organizational Blockers');
+    doc.fontSize(13).fillColor("#3b82f6").text("Organizational Blockers");
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.bloqueos.length === 0) {
-      doc.fillColor('#94a3b8').text('No blockers recorded.');
+      doc.fillColor("#94a3b8").text("No blockers recorded.");
     } else {
       data.bloqueos.forEach((blocker) => {
-        doc.fillColor('#1e293b').text(`• ${blocker.reporter_name}:`, { continued: true });
-        doc.fillColor('#475569').text(` ${blocker.description}`);
-        doc.fontSize(9).fillColor('#94a3b8').text(
-          `  Severity: ${blocker.severity || '—'}   |   Status: ${blocker.resolution_status}   |   ${new Date(blocker.detected_at).toLocaleDateString('en-US')}`,
-          { indent: 10 }
-        );
+        doc
+          .fillColor("#1e293b")
+          .text(`• ${blocker.reporter_name}:`, { continued: true });
+        doc.fillColor("#475569").text(` ${blocker.description}`);
+        doc
+          .fontSize(9)
+          .fillColor("#94a3b8")
+          .text(
+            `  Severity: ${blocker.severity || "—"}   |   Status: ${blocker.resolution_status}   |   ${new Date(blocker.detected_at).toLocaleDateString("en-US")}`,
+            { indent: 10 },
+          );
         doc.fontSize(10);
         doc.moveDown(0.3);
       });
     }
 
     doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
     doc.moveDown(0.8);
 
     // Goals
-    doc.fontSize(13).fillColor('#3b82f6').text('Project Goals');
+    doc.fontSize(13).fillColor("#3b82f6").text("Project Goals");
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.metas.length === 0) {
-      doc.fillColor('#94a3b8').text('No goals defined for this project.');
+      doc.fillColor("#94a3b8").text("No goals defined for this project.");
     } else {
       data.metas.forEach((goal) => {
-        doc.fillColor('#1e293b').text(`• ${goal.title}`);
+        doc.fillColor("#1e293b").text(`• ${goal.title}`);
         if (goal.description) {
-          doc.fontSize(9).fillColor('#64748b').text(`  ${goal.description}`, { indent: 10 });
+          doc
+            .fontSize(9)
+            .fillColor("#64748b")
+            .text(`  ${goal.description}`, { indent: 10 });
           doc.fontSize(10);
         }
         doc.moveDown(0.2);
@@ -808,34 +1101,36 @@ exports.exportProjectReportPDF = async (req, res) => {
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#e2e8f0');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
     doc.moveDown(0.8);
 
     // Recent Activity
-    doc.fontSize(13).fillColor('#3b82f6').text('Recent Activity');
+    doc.fontSize(13).fillColor("#3b82f6").text("Recent Activity");
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.bitacoras.length === 0) {
-      doc.fillColor('#94a3b8').text('No activity recorded.');
+      doc.fillColor("#94a3b8").text("No activity recorded.");
     } else {
       data.bitacoras.slice(0, 30).forEach((log) => {
-        doc.fillColor('#1e293b').text(
-          `• [${new Date(log.created_at).toLocaleDateString('en-US')}] ${log.full_name}`
-        );
+        doc
+          .fillColor("#1e293b")
+          .text(
+            `• [${new Date(log.created_at).toLocaleDateString("en-US")}] ${log.full_name}`,
+          );
 
         if (log.completed) {
-          doc.fontSize(9).fillColor('#475569').text(
-            `  Completed: ${log.completed}`,
-            { indent: 10, width: 460 }
-          );
+          doc
+            .fontSize(9)
+            .fillColor("#475569")
+            .text(`  Completed: ${log.completed}`, { indent: 10, width: 460 });
         }
 
         if (log.planned) {
-          doc.fontSize(9).fillColor('#94a3b8').text(
-            `  Planned: ${log.planned}`,
-            { indent: 10, width: 460 }
-          );
+          doc
+            .fontSize(9)
+            .fillColor("#94a3b8")
+            .text(`  Planned: ${log.planned}`, { indent: 10, width: 460 });
         }
 
         doc.fontSize(10);
@@ -843,26 +1138,31 @@ exports.exportProjectReportPDF = async (req, res) => {
       });
 
       if (data.bitacoras.length > 30) {
-        doc.fontSize(9).fillColor('#94a3b8').text(
-          `Showing 30 of ${data.bitacoras.length} entries.`
-        );
+        doc
+          .fontSize(9)
+          .fillColor("#94a3b8")
+          .text(`Showing 30 of ${data.bitacoras.length} entries.`);
       }
     }
 
     // Footer
     doc.moveDown();
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#3b82f6');
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#3b82f6");
     doc.moveDown(0.5);
-    doc.fontSize(9).fillColor('#94a3b8').text(
-      `Report generated on ${new Date().toLocaleDateString('en-US')}`,
-      { align: 'center' }
-    );
+    doc
+      .fontSize(9)
+      .fillColor("#94a3b8")
+      .text(`Report generated on ${new Date().toLocaleDateString("en-US")}`, {
+        align: "center",
+      });
 
     doc.end();
   } catch (err) {
-    console.error('Error generating PDF:', err);
+    console.error("Error generating PDF:", err);
     if (!res.headersSent) {
-      return res.redirect(`/project-manager/project/${id}?error=Could+not+generate+the+report`);
+      return res.redirect(
+        `/project-manager/project/${id}?error=Could+not+generate+the+report`,
+      );
     }
   }
 };

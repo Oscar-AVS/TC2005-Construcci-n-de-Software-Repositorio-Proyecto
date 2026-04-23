@@ -8,13 +8,38 @@
   <div class="report-card-body">
     <form action="/team-leader/team-report" method="GET" class="filter-row">
       <div class="filter-group">
+        <label class="form-label" for="reportQuickFilter">Quick Filters</label>
+        <select id="reportQuickFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="Q1">Q1 (Jan - Mar)</option>
+          <option value="Q2">Q2 (Apr - Jun)</option>
+          <option value="Q3">Q3 (Jul - Sep)</option>
+          <option value="Q4">Q4 (Oct - Dec)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="form-label" for="filterProject">Project</label>
+        <select id="filterProject" name="id_project" class="form-select">
+          <option value="">All Projects</option>
+          <% projects.forEach(project => { %>
+            <option value="<%= project.id_project %>" <%= filters.id_project == project.id_project ? 'selected' : '' %>>
+              <%= project.project_name %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="filter-group">
         <label class="form-label" for="reportFrom">From</label>
         <input
           type="date"
           id="reportFrom"
-          name="from"
+          name="date_from"
           class="form-input"
-          value="<%= filters && filters.from ? filters.from : '' %>"
+          value="<%= filters && filters.date_from ? filters.date_from : '' %>"
         />
       </div>
 
@@ -23,9 +48,9 @@
         <input
           type="date"
           id="reportTo"
-          name="to"
+          name="date_to"
           class="form-input"
-          value="<%= filters && filters.to ? filters.to : '' %>"
+          value="<%= filters && filters.date_to ? filters.date_to : '' %>"
         />
       </div>
 
@@ -34,7 +59,7 @@
   </div>
 </div>
 
-<div class="report-card">
+<div class="report-card" id="teamReportExportArea">
   <div class="report-card-header">
     <h2>Team Weekly Summary</h2>
   </div>
@@ -70,6 +95,28 @@
         <div class="report-stat-info">
           <span class="report-stat-value"><%= summary.totalBlockers %></span>
           <span class="report-stat-label">Active Blockers</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-sections-grid">
+      <div class="report-section-card">
+        <div class="section-header">
+          <i class="fa-solid fa-chart-column"></i>
+          <h3>Entries by Team Member</h3>
+        </div>
+        <div style="height: 320px; position: relative;">
+          <canvas id="memberActivityChart"></canvas>
+        </div>
+      </div>
+
+      <div class="report-section-card">
+        <div class="section-header">
+          <i class="fa-solid fa-chart-pie"></i>
+          <h3>Team Summary Distribution</h3>
+        </div>
+        <div style="height: 320px; position: relative;">
+          <canvas id="teamSummaryChart"></canvas>
         </div>
       </div>
     </div>
@@ -118,8 +165,42 @@
 
     <div class="report-section-card full-width">
       <div class="section-header">
+        <i class="fa-solid fa-lightbulb"></i>
+        <h3>Quick Insights</h3>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+        <div style="background: #f7f8fb; border-radius: 16px; padding: 16px;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #7b879c;">Top contributor</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #1f2a44;">
+            <%= memberActivity && memberActivity.length > 0 ? memberActivity[0].full_name : 'No data' %>
+          </p>
+        </div>
+
+        <div style="background: #f7f8fb; border-radius: 16px; padding: 16px;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #7b879c;">Most relevant metric</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #1f2a44;">
+            <%= summary.totalEntries >= summary.totalAchievements && summary.totalEntries >= summary.totalBlockers
+              ? 'Entries'
+              : summary.totalAchievements >= summary.totalBlockers
+                ? 'Achievements'
+                : 'Blockers' %>
+          </p>
+        </div>
+
+        <div style="background: #f7f8fb; border-radius: 16px; padding: 16px;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #7b879c;">Team health</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #1f2a44;">
+            <%= summary.totalBlockers > 0 ? 'Needs attention' : 'Stable' %>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section-card full-width">
+      <div class="section-header">
         <i class="fa-solid fa-chart-bar"></i>
-        <h3>Member Activity</h3>
+        <h3>Member Activity Breakdown</h3>
       </div>
 
       <div class="member-breakdown">
@@ -153,14 +234,340 @@
       </div>
     </div>
 
-    <div class="action-row-left">
-      <button class="btn-export-large" type="button">
+    <div class="action-row-left no-print">
+      <button class="btn-export-large" type="button" id="exportPdfBtn">
         <i class="fa-solid fa-file-pdf"></i> PDF
       </button>
 
-      <button class="btn-export-large" type="button">
+      <button class="btn-export-large" type="button" id="exportExcelBtn">
         <i class="fa-solid fa-file-excel"></i> Excel
       </button>
     </div>
   </div>
 </div>
+
+<style>
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #teamReportExportArea,
+    #teamReportExportArea * {
+      visibility: visible;
+    }
+
+    #teamReportExportArea {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<script>
+  const memberLabels = <%- JSON.stringify((memberActivity || []).map(member => member.full_name)) %>;
+  const memberEntries = <%- JSON.stringify((memberActivity || []).map(member => Number(member.total_entries) || 0)) %>;
+
+  const summaryLabels = ['Entries', 'Achievements', 'Blockers'];
+  const summaryValues = [
+    <%= Number(summary.totalEntries || 0) %>,
+    <%= Number(summary.totalAchievements || 0) %>,
+    <%= Number(summary.totalBlockers || 0) %>
+  ];
+
+  const safeMemberLabels = memberLabels.length ? memberLabels : ['No data'];
+  const safeMemberEntries = memberEntries.length ? memberEntries : [0];
+
+  const hasSummaryData = summaryValues.some(function(value) {
+    return value > 0;
+  });
+
+  const safeSummaryValues = hasSummaryData ? summaryValues : [1, 0, 0];
+
+  const memberCanvas = document.getElementById('memberActivityChart');
+  if (memberCanvas) {
+    new Chart(memberCanvas, {
+      type: 'bar',
+      data: {
+        labels: safeMemberLabels,
+        datasets: [{
+          label: 'Entries',
+          data: safeMemberEntries,
+          backgroundColor: [
+            'rgba(242, 92, 42, 0.85)',
+            'rgba(52, 120, 246, 0.85)',
+            'rgba(39, 174, 96, 0.85)',
+            'rgba(241, 196, 15, 0.85)',
+            'rgba(155, 89, 182, 0.85)',
+            'rgba(26, 188, 156, 0.85)'
+          ],
+          borderColor: [
+            'rgba(242, 92, 42, 1)',
+            'rgba(52, 120, 246, 1)',
+            'rgba(39, 174, 96, 1)',
+            'rgba(241, 196, 15, 1)',
+            'rgba(155, 89, 182, 1)',
+            'rgba(26, 188, 156, 1)'
+          ],
+          borderWidth: 1.5,
+          borderRadius: 10,
+          maxBarThickness: 56
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 900,
+          easing: 'easeOutQuart'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            titleColor: '#1f2a44',
+            bodyColor: '#5f6b85',
+            borderColor: 'rgba(31,42,68,0.08)',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed.y || 0;
+                return ' Entries: ' + value;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#5f6b85',
+              font: {
+                size: 12,
+                weight: '600'
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            suggestedMax: Math.max.apply(null, safeMemberEntries.concat([1])),
+            ticks: {
+              precision: 0,
+              color: '#5f6b85',
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(31,42,68,0.08)',
+              drawBorder: false
+            }
+          }
+        }
+      }
+    });
+  }
+
+  const summaryCanvas = document.getElementById('teamSummaryChart');
+  if (summaryCanvas) {
+    new Chart(summaryCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: summaryLabels,
+        datasets: [{
+          data: safeSummaryValues,
+          backgroundColor: [
+            'rgba(52, 120, 246, 0.88)',
+            'rgba(39, 174, 96, 0.88)',
+            'rgba(242, 92, 42, 0.88)'
+          ],
+          borderColor: [
+            'rgba(52, 120, 246, 1)',
+            'rgba(39, 174, 96, 1)',
+            'rgba(242, 92, 42, 1)'
+          ],
+          borderWidth: 2,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        animation: {
+          duration: 900,
+          easing: 'easeOutQuart'
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#1f2a44',
+              font: {
+                size: 12,
+                weight: '600'
+              },
+              padding: 18
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            titleColor: '#1f2a44',
+            bodyColor: '#5f6b85',
+            borderColor: 'rgba(31,42,68,0.08)',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed || 0;
+                if (!hasSummaryData) {
+                  return ' No activity in selected period';
+                }
+                return ' ' + context.label + ': ' + value;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', async function() {
+      const reportArea = document.getElementById('teamReportExportArea');
+
+      if (!reportArea) {
+        alert('Report area not found.');
+        return;
+      }
+
+      try {
+        exportPdfBtn.disabled = true;
+        exportPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+
+        const canvas = await html2canvas(reportArea, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollY: -window.scrollY
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const jsPDFConstructor = window.jspdf.jsPDF;
+        const pdf = new jsPDFConstructor('p', 'mm', 'a4');
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const usableWidth = pageWidth - (margin * 2);
+
+        const imgWidth = usableWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 16;
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(16);
+        pdf.text('Team Report', margin, 10);
+
+        pdf.addImage(imgData, 'PNG', margin, 16, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 16);
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight + 16;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        const from = document.getElementById('reportFrom') ? document.getElementById('reportFrom').value : 'start';
+        const to = document.getElementById('reportTo') ? document.getElementById('reportTo').value : 'end';
+
+        pdf.save('team_report_' + from + 'to' + to + '.pdf');
+      } catch (error) {
+        console.error('PDF EXPORT ERROR:', error);
+        alert('Could not generate PDF.');
+      } finally {
+        exportPdfBtn.disabled = false;
+        exportPdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF';
+      }
+    });
+  }
+
+  const exportExcelBtn = document.getElementById('exportExcelBtn');
+  if (exportExcelBtn) {
+    exportExcelBtn.addEventListener('click', function() {
+      alert('Excel export can be connected later from the backend.');
+    });
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const reportQuickFilter = document.getElementById('reportQuickFilter');
+    const reportFrom = document.getElementById('reportFrom');
+    const reportTo = document.getElementById('reportTo');
+
+    if (reportQuickFilter && reportFrom && reportTo) {
+      reportQuickFilter.addEventListener('change', () => {
+        const val = reportQuickFilter.value;
+        const year = new Date().getFullYear();
+        let startDate = '', endDate = '';
+
+        switch (val) {
+          case 'LAST_WEEK': {
+            const today = new Date();
+            const last = new Date();
+            last.setDate(today.getDate() - 7);
+            startDate = last.toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            break;
+          }
+          case 'LAST_MONTH': {
+            const today = new Date();
+            const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const last = new Date(today.getFullYear(), today.getMonth(), 0);
+            startDate = first.toISOString().split('T')[0];
+            endDate = last.toISOString().split('T')[0];
+            break;
+          }
+          case 'Q1': startDate = `${year}-01-01`; endDate = `${year}-03-31`; break;
+          case 'Q2': startDate = `${year}-04-01`; endDate = `${year}-06-30`; break;
+          case 'Q3': startDate = `${year}-07-01`; endDate = `${year}-09-30`; break;
+          case 'Q4': startDate = `${year}-10-01`; endDate = `${year}-12-31`; break;
+        }
+
+        reportFrom.value = startDate;
+        reportTo.value = endDate;
+      });
+
+      reportFrom.addEventListener('change', () => { reportQuickFilter.value = ''; });
+      reportTo.addEventListener('change', () => { reportQuickFilter.value = ''; });
+    }
+  });
+</script>
