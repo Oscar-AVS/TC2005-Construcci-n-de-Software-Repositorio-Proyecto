@@ -408,37 +408,53 @@
                 </div>
               </div>
             </div>
-
             <div class="goal-impact-summary-section">
-                <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
-                  <h4>AI Impact Summary</h4>
-                  <p>Generate a summary to see the executive overview for this goal.</p>
-                </div>
+  <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
+    <h4>AI Goal Impact Summary</h4>
+    <p>Generate a summary to see the executive overview for this goal.</p>
+  </div>
 
-                <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
-                  <h4>AI Impact Summary</h4>
+  <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
+    <h4>AI Goal Impact Summary</h4>
 
-                  <div class="goal-impact-summary-block">
-                    <h5>Overall Assessment</h5>
-                    <p id="impactSummaryOverall">—</p>
-                  </div>
+    <div class="goal-impact-summary-block">
+      <h5>Overall Impact</h5>
+      <p id="impactSummaryOverall">—</p>
+    </div>
 
-                  <div class="goal-impact-summary-block">
-                    <h5>Key Contributions</h5>
-                    <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
-                  </div>
+    <div class="goal-impact-summary-block">
+      <h5>Projects Driving This Goal</h5>
+      <ul id="impactSummaryProjects" class="goal-impact-summary-list"></ul>
+    </div>
 
-                  <div class="goal-impact-summary-block">
-                    <h5>Risks</h5>
-                    <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
-                  </div>
+    <div class="goal-impact-summary-block">
+      <h5>Team Participation</h5>
+      <p id="impactSummaryTeamParticipation">—</p>
+    </div>
 
-                  <div class="goal-impact-summary-block">
-                    <h5>Recommendations</h5>
-                    <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
-                  </div>
-                </div>
-              </div>
+    <div class="goal-impact-summary-block">
+      <h5>Key Contributions</h5>
+      <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
+    </div>
+
+    <div class="goal-impact-summary-block">
+      <h5>Relevant Highlights</h5>
+      <ul id="impactSummaryHighlights" class="goal-impact-summary-list"></ul>
+    </div>
+
+    <div class="goal-impact-summary-block">
+      <h5>Risks / Gaps</h5>
+      <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
+    </div>
+
+    <div class="goal-impact-summary-block">
+      <h5>Recommendations</h5>
+      <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
+    </div>
+  </div>
+</div>
+
+           
 
             <div class="goal-impact-placeholder-actions">
               <button type="button" id="generateSummaryBtn" class="btn-draft">
@@ -835,7 +851,10 @@
   const impactSummaryEmpty = document.getElementById('impactSummaryEmpty');
   const impactSummaryContent = document.getElementById('impactSummaryContent');
   const impactSummaryOverall = document.getElementById('impactSummaryOverall');
+  const impactSummaryProjects = document.getElementById('impactSummaryProjects');
+  const impactSummaryTeamParticipation = document.getElementById('impactSummaryTeamParticipation');
   const impactSummaryContributions = document.getElementById('impactSummaryContributions');
+  const impactSummaryHighlights = document.getElementById('impactSummaryHighlights');
   const impactSummaryRisks = document.getElementById('impactSummaryRisks');
   const impactSummaryRecommendations = document.getElementById('impactSummaryRecommendations');
 
@@ -1203,7 +1222,10 @@
 
 const resetImpactSummaryUI = () => {
   impactSummaryOverall.textContent = '—';
+  impactSummaryProjects.innerHTML = '';
+  impactSummaryTeamParticipation.textContent = '—';
   impactSummaryContributions.innerHTML = '';
+  impactSummaryHighlights.innerHTML = '';
   impactSummaryRisks.innerHTML = '';
   impactSummaryRecommendations.innerHTML = '';
   impactSummaryEmpty.classList.remove('hidden');
@@ -1211,7 +1233,14 @@ const resetImpactSummaryUI = () => {
 };
 
 const showImpactSummaryUI = (summary) => {
-  impactSummaryOverall.textContent = summary.overallAssessment || 'No summary available.';
+  impactSummaryOverall.textContent = summary.overallImpact || 'No summary available.';
+  impactSummaryTeamParticipation.textContent = summary.teamParticipation || 'No participation summary available.';
+
+  renderSummaryList(
+    impactSummaryProjects,
+    summary.projectsDrivingGoal,
+    'No relevant projects found.'
+  );
 
   renderSummaryList(
     impactSummaryContributions,
@@ -1220,9 +1249,15 @@ const showImpactSummaryUI = (summary) => {
   );
 
   renderSummaryList(
+    impactSummaryHighlights,
+    summary.relevantHighlights,
+    'No relevant highlights found.'
+  );
+
+  renderSummaryList(
     impactSummaryRisks,
-    summary.risks,
-    'No risks found.'
+    summary.risksOrGaps,
+    'No risks or gaps found.'
   );
 
   renderSummaryList(
@@ -1234,6 +1269,8 @@ const showImpactSummaryUI = (summary) => {
   impactSummaryEmpty.classList.add('hidden');
   impactSummaryContent.classList.remove('hidden');
 };
+
+
 
   const showImpactGoalDetails = (button) => {
     currentGoalId = button.dataset.impactGoalId;

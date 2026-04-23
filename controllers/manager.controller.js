@@ -1088,9 +1088,9 @@ exports.generateGoalImpactSummary = async (req, res) => {
     const teamsText = goalTeams.map((team) => team.team_name).join(', ') || 'No teams';
 
     const prompt = `
-You are a senior product manager.
+You are a senior product manager generating a structured impact summary.
 
-Analyze the following goal impact data and generate an executive summary.
+Analyze the following goal data and return a structured JSON response.
 
 GOAL: ${goal.title}
 DESCRIPTION: ${goal.description || 'No description'}
@@ -1104,17 +1104,37 @@ ${logsText}
 HIGHLIGHTS:
 ${highlightsText}
 
-Generate:
-1. Overall assessment
-2. Key contributions
-3. Risks
-4. Recommendations
-    `.trim();
+Instructions:
+
+1. overallImpact:
+Short executive summary of how strong the goal impact is.
+
+2. projectsDrivingGoal:
+List the most relevant projects contributing to this goal.
+
+3. teamParticipation:
+Describe how teams are contributing (strong, weak, missing collaboration, etc).
+
+4. keyContributions:
+List key contributions detected from logs.
+
+5. relevantHighlights:
+List important highlights related to the goal.
+
+6. risksOrGaps:
+List risks, missing contributions, or weak areas.
+
+7. recommendations:
+Give actionable recommendations for the manager.
+`.trim();
 
     const schema = z.object({
-      overallAssessment: z.string(),
+      overallImpact: z.string(),
+      projectsDrivingGoal: z.array(z.string()),
+      teamParticipation: z.string(),
       keyContributions: z.array(z.string()),
-      risks: z.array(z.string()),
+      relevantHighlights: z.array(z.string()),
+      risksOrGaps: z.array(z.string()),
       recommendations: z.array(z.string()),
     });
 
