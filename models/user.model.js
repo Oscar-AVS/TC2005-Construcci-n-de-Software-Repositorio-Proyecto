@@ -154,4 +154,17 @@ module.exports = class User {
       `SELECT COUNT(*) AS count FROM user WHERE status = 'active'`
     );
   }
+
+    // (MANAGER) Metodo para traer usuarios activos  en el filtro de historial
+  static fetchUsersForHistory() {
+    // Consulta que obtiene usuarios activos con su id y nombre
+    return db.execute(
+      `SELECT 
+        id_user,
+        full_name
+      FROM user
+      WHERE status = 'active'
+      ORDER BY full_name ASC`
+    );
+  }
 };
