@@ -11,6 +11,12 @@ const Goal = require('../models/goal.model');
 const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
 const Highlight = require('../models/highlight.model');
+const Achievement = require('../models/achievement.model');
+const { generateText, Output } = require('ai');
+const PDFDocument = require('pdfkit');
+const { openai } = require('@ai-sdk/openai');
+const { z } = require('zod');
+
 
 exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
@@ -23,10 +29,24 @@ exports.getGoals = async (req, res) => {
   const activeUserId = req.session.userId;
 
   try {
-    const [[goals], [projects], [goalProjectLinks]] = await Promise.all([
+    const [
+      [goals],
+      [createdGoals],
+      [projects],
+      [goalProjectLinks],
+      [goalImpactProjects],
+      [goalImpactTeams],
+      [goalImpactLogs],
+      [goalImpactHighlights],
+    ] = await Promise.all([
       Goal.fetchAllByManager(activeUserId),
+      Goal.fetchCreatedByManager(activeUserId),
       Project.fetchAvailableForGoalLink(),
       Goal.fetchAllLinkedProjectsByManager(activeUserId),
+      Goal.fetchGoalImpactProjectsByManager(activeUserId),
+      Goal.fetchGoalImpactTeamsByManager(activeUserId),
+      Goal.fetchGoalImpactLogsByManager(activeUserId),
+      Goal.fetchGoalImpactHighlightsByManager(activeUserId),
     ]);
 
     const goalsWithProjects = goals.map((goal) => {
@@ -40,10 +60,50 @@ exports.getGoals = async (req, res) => {
       };
     });
 
+    const createdGoalsWithProjects = createdGoals.map((goal) => {
+      const linkedProjects = goalProjectLinks.filter(
+        (link) => link.id_goal === goal.id_goal && link.id_project
+      );
+
+      return {
+        ...goal,
+        linkedProjects,
+      };
+    });
+
+    const goalImpactMap = createdGoals.reduce((accumulator, goal) => {
+      const relatedProjects = goalImpactProjects.filter(
+        (project) => project.id_goal === goal.id_goal
+      );
+
+      const relatedTeams = goalImpactTeams.filter(
+        (team) => team.id_goal === goal.id_goal
+      );
+
+      const relatedLogs = goalImpactLogs.filter(
+        (log) => log.id_goal === goal.id_goal
+      );
+
+      const relatedHighlights = goalImpactHighlights.filter(
+        (highlight) => highlight.id_goal === goal.id_goal
+      );
+
+      accumulator[goal.id_goal] = {
+        projects: relatedProjects,
+        teams: relatedTeams,
+        logs: relatedLogs,
+        highlights: relatedHighlights,
+      };
+
+      return accumulator;
+    }, {});
+
     res.render('manager/goals', {
       currentPage: 'goals',
       role: 'manager',
       goals: goalsWithProjects,
+      createdGoals: createdGoalsWithProjects,
+      goalImpactMap,
       availableProjects: projects,
       csrfToken: req.csrfToken(),
     });
@@ -89,7 +149,14 @@ exports.createGoal = async (req, res) => {
         });
       }
     } else {
-      if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
+      if (
+        !title || !title.trim() ||
+        !description || !description.trim() ||
+        !startDate ||
+        !endDate ||
+        !priority ||
+        !status
+      ) {
         await Goal.createAuditLog({
           idUser: activeUserId,
           action: 'create',
@@ -114,7 +181,10 @@ exports.createGoal = async (req, res) => {
       }
 
       if (new Date(startDate) > new Date(endDate)) {
-        return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
+        return res.status(400).json({
+          success: false,
+          message: 'Start date cannot be later than end date.',
+        });
       }
     }
 
@@ -144,6 +214,7 @@ exports.createGoal = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+
     try {
       await Goal.createAuditLog({
         idUser: activeUserId,
@@ -156,6 +227,7 @@ exports.createGoal = async (req, res) => {
     } catch (auditErr) {
       console.log(auditErr);
     }
+
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
@@ -218,6 +290,7 @@ exports.deleteGoal = async (req, res) => {
     });
   }
 };
+
 exports.updateGoal = async (req, res) => {
   const activeUserId = req.session.userId;
   const { id } = req.params;
@@ -235,8 +308,18 @@ exports.updateGoal = async (req, res) => {
   const validStatuses = ['active', 'paused', 'completed', 'cancelled'];
 
   try {
-    if (!title || !title.trim() || !description || !description.trim() || !startDate || !endDate || !priority || !status) {
-      return res.status(400).json({ success: false, message: 'Please complete all required fields.' });
+    if (
+      !title || !title.trim() ||
+      !description || !description.trim() ||
+      !startDate ||
+      !endDate ||
+      !priority ||
+      !status
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete all required fields.',
+      });
     }
 
     if (!validPriorities.includes(priority)) {
@@ -248,7 +331,10 @@ exports.updateGoal = async (req, res) => {
     }
 
     if (new Date(startDate) > new Date(endDate)) {
-      return res.status(400).json({ success: false, message: 'Start date cannot be later than end date.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Start date cannot be later than end date.',
+      });
     }
 
     const [existingRows] = await Goal.fetchOneById(id, activeUserId);
@@ -269,7 +355,10 @@ exports.updateGoal = async (req, res) => {
     });
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({ success: false, message: 'Goal could not be updated.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Goal could not be updated.',
+      });
     }
 
     await Goal.createAuditLog({
@@ -281,7 +370,10 @@ exports.updateGoal = async (req, res) => {
       detail: 'Goal updated successfully.',
     });
 
-    return res.status(200).json({ success: true, message: 'Goal updated successfully.' });
+    return res.status(200).json({
+      success: true,
+      message: 'Goal updated successfully.',
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -770,11 +862,50 @@ exports.deleteHighlight = async (req, res) => {
   }
 };
 
-exports.getHistory = (req, res) => {
-  res.render('manager/history', {
-    currentPage: 'history',
-    role: 'manager',
-  });
+exports.getHistory = async (req, res) => {
+  try {
+    // Lee los filtros que vienen desde la URL
+    const filters = {
+      id_user: req.query.id_user || '',
+      id_project: req.query.id_project || '',
+      id_team: req.query.id_team || '',
+      date_from: req.query.date_from || '',
+      date_to: req.query.date_to || '',
+    };
+
+    // Trae  los datos necesarios para filtros y resultados
+    const [
+      [historyLogs],
+      [historyCountRows],
+      [users],
+      [projects],
+      [teams],
+    ] = await Promise.all([
+      Log.fetchHistoryByManagerFilters(filters),
+      Log.countHistoryByManagerFilters(filters),
+      User.fetchUsersForHistory(),
+      Project.fetchAll(),
+      Team.fetchAllForSelect(),
+    ]);
+
+    // Toma el total de resultados filtrados
+    const totalEntries = historyCountRows.length > 0 ? historyCountRows[0].total : 0;
+
+    res.render('manager/history', {
+      currentPage: 'history',
+      role: 'manager',
+      logs: historyLogs,
+      totalEntries,
+      users,
+      projects,
+      teams,
+      filters,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.getReports = (req, res) => {
@@ -793,42 +924,48 @@ exports.getReports = (req, res) => {
     });
 };
 
-exports.getLog = (req, res) => {
+exports.getLog = async (req, res) => {
   const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
     date_to: req.query.date_to || null,
   };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
 
-  Promise.all([
-    Log.fetchAllByEmployee(activeUserId, filters),
-    Project.fetchAllByEmployee(activeUserId),
-  ])
-    .then(([[logs], [projects]]) => {
-      return Promise.all(
-        logs.map((log) =>
-          Blocker.fetchByLog(log.id_log).then(([blockers]) => ({
-            ...log,
-            blockers,
-          }))
-        )
-      ).then((logsWithBlockers) => {
-        res.render('shared/log', {
-          currentPage: 'log',
-          role: 'manager',
-          logBase: '/manager',
-          logs: logsWithBlockers,
-          projects,
-          filters,
-          csrfToken: req.csrfToken(),
-        });
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+  try {
+    const [[countResult]] = await Log.countAllByEmployee(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [logs] = await Log.fetchAllByEmployee(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    const logsWithBlockers = await Promise.all(
+      logs.map(async (log) => {
+        const [blockers] = await Blocker.fetchByLog(log.id_log);
+        return { ...log, blockers };
+      })
+    );
+
+    res.render('shared/log', {
+      currentPage: 'log',
+      role: 'manager',
+      logBase: '/manager',
+      logs: logsWithBlockers,
+      projects,
+      filters,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.getSelfReview = (req, res) => {
@@ -891,9 +1028,11 @@ exports.getProfile = (req, res) => {
 
 exports.postSlack = async (req, res) => {
   const { slack_user } = req.body;
+
   try {
     await User.updateSlack(req.session.userId, slack_user);
     const [[user]] = await User.fetchOne(req.session.userId);
+
     res.render('shared/profile', {
       currentPage: 'profile',
       role: 'manager',
@@ -910,7 +1049,7 @@ exports.postSlack = async (req, res) => {
 
 exports.postPassword = async (req, res) => {
   const { current_password, new_password, confirm_password } = req.body;
-  const bcrypt = require('bcrypt');
+
   try {
     const [[user]] = await User.fetchOne(req.session.userId);
     const match = await bcrypt.compare(current_password, user.password);
@@ -940,7 +1079,8 @@ exports.postPassword = async (req, res) => {
     const hashed = await bcrypt.hash(new_password, 12);
     await User.updatePassword(req.session.userId, hashed);
     const [[updatedUser]] = await User.fetchOne(req.session.userId);
-    res.render('shared/profile', {
+
+    return res.render('shared/profile', {
       currentPage: 'profile',
       role: 'manager',
       user: updatedUser,
@@ -950,6 +1090,464 @@ exports.postPassword = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    return res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.generateGoalImpactSummary = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [
+      [goalRows],
+      [projects],
+      [teams],
+      [logs],
+      [highlights],
+    ] = await Promise.all([
+      Goal.fetchOneById(id, activeUserId),
+      Goal.fetchGoalImpactProjectsByManager(activeUserId),
+      Goal.fetchGoalImpactTeamsByManager(activeUserId),
+      Goal.fetchGoalImpactLogsByManager(activeUserId),
+      Goal.fetchGoalImpactHighlightsByManager(activeUserId),
+    ]);
+
+    if (goalRows.length === 0) {
+      return res.status(404).json({ error: 'Goal not found.' });
+    }
+
+    const goal = goalRows[0];
+
+    const goalProjects = projects.filter((project) => project.id_goal == id);
+    const goalTeams = teams.filter((team) => team.id_goal == id);
+    const goalLogs = logs.filter((log) => log.id_goal == id);
+    const goalHighlights = highlights.filter((highlight) => highlight.id_goal == id);
+
+    const logsText = goalLogs.map((log) =>
+      `- ${log.full_name}: completed "${log.completed}" planned "${log.planned}"`
+    ).join('\n') || 'No logs';
+
+    const highlightsText = goalHighlights.map((highlight) =>
+      `- ${highlight.title}: ${highlight.impact || 'no impact'}`
+    ).join('\n') || 'No highlights';
+
+    const projectsText = goalProjects.map((project) => project.project_name).join(', ') || 'No projects';
+    const teamsText = goalTeams.map((team) => team.team_name).join(', ') || 'No teams';
+
+    const prompt = `
+You are a senior product manager generating a structured impact summary.
+
+Analyze the following goal data and return a structured JSON response.
+
+GOAL: ${goal.title}
+DESCRIPTION: ${goal.description || 'No description'}
+
+PROJECTS: ${projectsText}
+TEAMS: ${teamsText}
+
+LOGS:
+${logsText}
+
+HIGHLIGHTS:
+${highlightsText}
+
+Instructions:
+
+1. overallImpact:
+Short executive summary of how strong the goal impact is.
+
+2. projectsDrivingGoal:
+List the most relevant projects contributing to this goal.
+
+3. teamParticipation:
+Describe how teams are contributing (strong, weak, missing collaboration, etc).
+
+4. keyContributions:
+List key contributions detected from logs.
+
+5. relevantHighlights:
+List important highlights related to the goal.
+
+6. risksOrGaps:
+List risks, missing contributions, or weak areas.
+
+7. recommendations:
+Give actionable recommendations for the manager.
+`.trim();
+
+    const schema = z.object({
+      overallImpact: z.string(),
+      projectsDrivingGoal: z.array(z.string()),
+      teamParticipation: z.string(),
+      keyContributions: z.array(z.string()),
+      relevantHighlights: z.array(z.string()),
+      risksOrGaps: z.array(z.string()),
+      recommendations: z.array(z.string()),
+    });
+
+    const { output } = await generateText({
+      model: openai('gpt-4o-mini'),
+      output: Output.object({ schema }),
+      prompt,
+    });
+
+    return res.status(200).json(output);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Error generating summary.' });
+  }
+};
+exports.exportGoalImpactPDF = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const { id } = req.params;
+
+  try {
+    const [
+      [goalRows],
+      [projects],
+      [teams],
+      [logs],
+      [highlights],
+    ] = await Promise.all([
+      Goal.fetchOneById(id, activeUserId),
+      Goal.fetchGoalImpactProjectsByManager(activeUserId),
+      Goal.fetchGoalImpactTeamsByManager(activeUserId),
+      Goal.fetchGoalImpactLogsByManager(activeUserId),
+      Goal.fetchGoalImpactHighlightsByManager(activeUserId),
+    ]);
+
+    if (goalRows.length === 0) {
+      return res.status(404).json({ error: 'Goal not found.' });
+    }
+
+    const goal = goalRows[0];
+
+    const goalProjects = projects.filter((project) => project.id_goal == id);
+    const goalTeams = teams.filter((team) => team.id_goal == id);
+    const goalLogs = logs.filter((log) => log.id_goal == id);
+    const goalHighlights = highlights.filter((highlight) => highlight.id_goal == id);
+
+    const logsText = goalLogs.map((log) =>
+      `- ${log.full_name}: completed "${log.completed}" planned "${log.planned}"`
+    ).join('\n') || 'No logs';
+
+    const highlightsText = goalHighlights.map((highlight) =>
+      `- ${highlight.title}: ${highlight.impact || 'no impact'}`
+    ).join('\n') || 'No highlights';
+
+    const projectsText = goalProjects.map((project) => project.project_name).join(', ') || 'No projects';
+    const teamsText = goalTeams.map((team) => team.team_name).join(', ') || 'No teams';
+
+    const prompt = `
+You are a senior product manager generating a structured impact summary.
+
+Analyze the following goal data and return a structured JSON response.
+
+GOAL: ${goal.title}
+DESCRIPTION: ${goal.description || 'No description'}
+
+PROJECTS: ${projectsText}
+TEAMS: ${teamsText}
+
+LOGS:
+${logsText}
+
+HIGHLIGHTS:
+${highlightsText}
+
+Instructions:
+
+1. overallImpact:
+Short executive summary of how strong the goal impact is.
+
+2. projectsDrivingGoal:
+List the most relevant projects contributing to this goal.
+
+3. teamParticipation:
+Describe how teams are contributing (strong, weak, missing collaboration, etc).
+
+4. keyContributions:
+List key contributions detected from logs.
+
+5. relevantHighlights:
+List important highlights related to the goal.
+
+6. risksOrGaps:
+List risks, missing contributions, or weak areas.
+
+7. recommendations:
+Give actionable recommendations for the manager.
+    `.trim();
+
+    const schema = z.object({
+      overallImpact: z.string(),
+      projectsDrivingGoal: z.array(z.string()),
+      teamParticipation: z.string(),
+      keyContributions: z.array(z.string()),
+      relevantHighlights: z.array(z.string()),
+      risksOrGaps: z.array(z.string()),
+      recommendations: z.array(z.string()),
+    });
+
+    const { output } = await generateText({
+      model: openai('gpt-4o-mini'),
+      output: Output.object({ schema }),
+      prompt,
+    });
+
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="goal_impact_${goal.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf"`
+    );
+
+    doc.pipe(res);
+
+    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke('#FFF4ED', '#E84C1E');
+
+    doc.fillColor('#E84C1E')
+      .fontSize(20)
+      .text('Goal Impact Report', 60, 50, { align: 'center', width: 475 });
+
+    doc.fillColor('#444444')
+      .fontSize(10)
+      .text('Change.org Goal Impact Summary', 60, 80, { align: 'center', width: 475 });
+
+    doc.fillColor('#000000').fontSize(10);
+    doc.text(`Goal: ${goal.title}`, 60, 105, { width: 180 });
+    doc.text(`Status: ${goal.status}`, 250, 105, { width: 120 });
+    doc.text(
+      `Period: ${goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set'} — ${goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set'}`,
+      360,
+      105,
+      { width: 170 }
+    );
+
+    doc.y = 150;
+    doc.moveDown(1.2);
+
+    doc.fontSize(15).fillColor('#E84C1E').text('AI Goal Impact Summary', { align: 'center' });
+    doc.moveDown(0.6);
+
+    const summaryBoxY = doc.y;
+
+    doc.roundedRect(50, summaryBoxY, 495, 85, 8).fillAndStroke('#FFF8F3', '#F1C6A8');
+
+    doc.fillColor('#333333')
+      .fontSize(10)
+      .text(output.overallImpact, 65, summaryBoxY + 15, {
+        width: 465,
+        align: 'justify',
+      });
+
+    doc.y = summaryBoxY + 105;
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Projects Driving This Goal');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    output.projectsDrivingGoal.forEach((item) => {
+      doc.text(`• ${item}`, { width: 470 });
+    });
+    doc.moveDown(0.6);
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Team Participation');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    doc.text(output.teamParticipation, { width: 470 });
+    doc.moveDown(0.6);
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Key Contributions');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    output.keyContributions.forEach((item) => {
+      doc.text(`• ${item}`, { width: 470 });
+    });
+    doc.moveDown(0.6);
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Relevant Highlights');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    output.relevantHighlights.forEach((item) => {
+      doc.text(`• ${item}`, { width: 470 });
+    });
+    doc.moveDown(0.6);
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Risks / Gaps');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    output.risksOrGaps.forEach((item) => {
+      doc.text(`• ${item}`, { width: 470 });
+    });
+    doc.moveDown(0.6);
+
+    doc.fontSize(12).fillColor('#E84C1E').text('Recommendations');
+    doc.moveDown(0.25);
+    doc.fontSize(10).fillColor('#000000');
+    output.recommendations.forEach((item) => {
+      doc.text(`• ${item}`, { width: 470 });
+    });
+    doc.moveDown(0.8);
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E84C1E');
+    doc.moveDown(0.8);
+
+    doc.fontSize(13).fillColor('#E84C1E').text('Goal Details');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#000000');
+    doc.text(`Description: ${goal.description || 'No description provided.'}`);
+    doc.text(`Priority: ${goal.priority || 'Not set'}`);
+    doc.text(`Status: ${goal.status || 'Not set'}`);
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
+    doc.fontSize(13).fillColor('#E84C1E').text('Linked Projects');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#000000');
+    if (goalProjects.length === 0) {
+      doc.text('No linked projects found.');
+    } else {
+      goalProjects.forEach((project) => {
+        doc.text(`• ${project.project_name} — ${project.status}`);
+      });
+    }
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
+    doc.fontSize(13).fillColor('#E84C1E').text('Participating Teams');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#000000');
+    if (goalTeams.length === 0) {
+      doc.text('No participating teams found.');
+    } else {
+      goalTeams.forEach((team) => {
+        doc.text(`• ${team.team_name}`);
+      });
+    }
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
+    doc.fontSize(13).fillColor('#E84C1E').text('Related Highlights');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#000000');
+    if (goalHighlights.length === 0) {
+      doc.text('No related highlights found.');
+    } else {
+      goalHighlights.forEach((highlight) => {
+        doc.text(`• ${highlight.title}`);
+        doc.fontSize(9).fillColor('#555555').text(
+          `  ${highlight.description || 'No description provided.'}`,
+          { indent: 10 }
+        );
+        doc.fontSize(10).fillColor('#000000');
+      });
+    }
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E6E6E6');
+    doc.moveDown();
+
+    doc.fontSize(13).fillColor('#E84C1E').text('Contributions / Logs');
+    doc.moveDown(0.3);
+    doc.fontSize(10).fillColor('#000000');
+    if (goalLogs.length === 0) {
+      doc.text('No contributions found.');
+    } else {
+      goalLogs.forEach((log) => {
+        doc.text(`• [${new Date(log.created_at).toLocaleDateString('en-US')}] ${log.full_name}`);
+        if (log.completed) {
+          doc.fontSize(9).fillColor('#555555').text(`  Completed: ${log.completed}`, { indent: 10 });
+        }
+        if (log.planned) {
+          doc.fontSize(9).fillColor('#555555').text(`  Planned: ${log.planned}`, { indent: 10 });
+        }
+        doc.fontSize(10).fillColor('#000000');
+        doc.moveDown(0.3);
+      });
+    }
+
+    doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke('#E84C1E');
+    doc.moveDown(0.5);
+    doc.fontSize(9).fillColor('#999999').text(
+      `Report generated on ${new Date().toLocaleDateString('en-US')}`,
+      { align: 'center' }
+    );
+
+    doc.end();
+  } catch (err) {
+    console.log(err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Error generating PDF.' });
+    }
+  }
+};
+
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+
+exports.getAchievements = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Achievement.countAllByUser(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    res.render('employee/achievements', {
+      currentPage: 'achievements',
+      role: 'manager',
+      achievementsBase: '/manager',
+      achievements,
+      projects,
+      filters,
+      totalRecords,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).send('Internal Server Error');
   }
+};
+
+exports.postAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.postAchievement(req, res);
+};
+
+exports.deleteAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.deleteAchievement(req, res);
+};
+
+exports.editAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.editAchievement(req, res);
+};
+
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+
+exports.getProjects = (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.getProjects(req, res);
 };

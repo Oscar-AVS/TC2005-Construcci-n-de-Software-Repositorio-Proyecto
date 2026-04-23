@@ -119,7 +119,7 @@ const exportPDF = async (req, res) => {
 
     doc.fillColor('#E84C1E')
       .fontSize(20)
-      .text('Weekly Report', 60, 50, { align: 'center', width: 475 });
+      .text("Manager's Report", 60, 50, { align: 'center', width: 475 });
 
     doc.fillColor('#444444')
       .fontSize(10)
@@ -133,7 +133,7 @@ const exportPDF = async (req, res) => {
     doc.y = 150;
     doc.moveDown(1.2);
 
-    doc.fontSize(15).fillColor('#E84C1E').text('AI Executive Summary', { align: 'center' });
+    doc.fontSize(15).fillColor('#E84C1E').text('AI  Summary', { align: 'center' });
     doc.moveDown(0.6);
 
     const summaryBoxY = doc.y;

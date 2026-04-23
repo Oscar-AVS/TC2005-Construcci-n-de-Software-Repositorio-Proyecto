@@ -155,11 +155,22 @@ module.exports = class User {
     );
   }
 
+  static fetchUsersForHistory() {
+    return db.execute(
+      `SELECT
+        id_user,
+        full_name
+      FROM user
+      WHERE status = 'active'
+      ORDER BY full_name ASC`
+    );
+  }
+
   static searchByNameEmail(query) {
     return db.execute(
-      `SELECT id_user, full_name, email 
-       FROM user 
-       WHERE (full_name LIKE ? OR email LIKE ?) 
+      `SELECT id_user, full_name, email
+       FROM user
+       WHERE (full_name LIKE ? OR email LIKE ?)
        AND status = 'active'
        LIMIT 10`,
       [`%${query}%`, `%${query}%`]

@@ -2,257 +2,485 @@
 <!-- Manager Goals View -->
 <h1 id="pageTitle" class="page-title">Goals</h1>
 
-<!-- Add Goal Card -->
-<div class="report-card">
-  <div class="report-card-header">
-    <h2 id="goalFormTitle">Create New Goal</h2>
-  </div>
+<div class="goals-tabs">
+  <button
+    type="button"
+    class="goals-tab-button active"
+    data-tab-target="manageGoalsPanel"
+  >
+    Manage Goals
+  </button>
 
-  <div class="report-card-body">
-    <form id="goalForm" class="goal-form">
-      <div id="goalFormMessage" class="form-message"></div>
-
-      <div class="form-row-grid">
-        <div class="form-field">
-          <label class="form-label" for="title">Goal Title</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            class="form-input"
-            placeholder="Enter goal title..."
-          />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label" for="priority">Priority</label>
-          <select id="priority" name="priority" class="form-select">
-            <option value="">Select priority...</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="description">Description</label>
-        <textarea
-          id="description"
-          name="description"
-          rows="4"
-          class="form-textarea"
-          placeholder="Describe the goal and expected outcomes..."
-        ></textarea>
-      </div>
-
-      <div class="form-row-grid">
-        <div class="form-field">
-          <label class="form-label" for="startDate">Start Date</label>
-          <input
-            type="date"
-            id="startDate"
-            name="start_date"
-            class="form-input"
-          />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label" for="endDate">End Date</label>
-          <input
-            type="date"
-            id="endDate"
-            name="end_date"
-            class="form-input"
-          />
-        </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="status">Status</label>
-        <select id="status" name="status" class="form-select">
-          <option value="">Select status...</option>
-          <option value="active">Active</option>
-          <option value="paused">Paused</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-
-      <div class="action-row">
-        <button id="cancelEditButton" class="btn-draft" type="button" style="display: none;">
-          Cancel Edit
-        </button>
-        <button id="saveDraftButton" class="btn-draft" type="button">
-          Save as Draft
-        </button>
-        <button id="createGoalButton" class="btn-submit" type="button">
-          Create Goal
-        </button>
-      </div>
-    </form>
-  </div>
+  <button
+    type="button"
+    class="goals-tab-button"
+    data-tab-target="goalImpactPanel"
+  >
+    Goal Impact
+  </button>
 </div>
 
-<!-- Goals List -->
-<div class="report-card">
-  <div class="report-card-header">
-    <h2>Goals</h2>
-    <span class="item-count"><%= goals.length %> goal<%= goals.length === 1 ? '' : 's' %></span>
+<div id="manageGoalsPanel" class="goals-tab-panel active">
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2 id="goalFormTitle">Create New Goal</h2>
+    </div>
+
+    <div class="report-card-body">
+      <form id="goalForm" class="goal-form">
+        <div id="goalFormMessage" class="form-message"></div>
+
+        <div class="form-row-grid">
+          <div class="form-field">
+            <label class="form-label" for="title">Goal Title</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              class="form-input"
+              placeholder="Enter goal title..."
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="priority">Priority</label>
+            <select id="priority" name="priority" class="form-select">
+              <option value="">Select priority...</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            class="form-textarea"
+            placeholder="Describe the goal and expected outcomes..."
+          ></textarea>
+        </div>
+
+        <div class="form-row-grid">
+          <div class="form-field">
+            <label class="form-label" for="startDate">Start Date</label>
+            <input
+              type="date"
+              id="startDate"
+              name="start_date"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              name="end_date"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="status">Status</label>
+          <select id="status" name="status" class="form-select">
+            <option value="">Select status...</option>
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="action-row">
+          <button id="cancelEditButton" class="btn-draft" type="button" style="display: none;">
+            Cancel Edit
+          </button>
+          <button id="saveDraftButton" class="btn-draft" type="button">
+            Save as Draft
+          </button>
+          <button id="createGoalButton" class="btn-submit" type="button">
+            Create Goal
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div class="report-card-body">
-    <div id="goalsListMessage" class="form-message"></div>
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Goals</h2>
+      <span class="item-count"><%= goals.length %> goal<%= goals.length === 1 ? '' : 's' %></span>
+    </div>
 
-    <div class="goals-list">
-      <% if (goals.length === 0) { %>
-        <div class="empty-state">
-          <p>No goals have been created yet.</p>
-        </div>
-      <% } %>
+    <div class="report-card-body">
+      <div id="goalsListMessage" class="form-message"></div>
 
-      <% goals.forEach((goal) => { %>
-        <div class="goal-card <%= goal.status %>">
-          <div class="goal-icon">
-            <i class="fa-solid fa-bullseye"></i>
+      <div class="goals-list">
+        <% if (goals.length === 0) { %>
+          <div class="empty-state">
+            <p>No goals have been created yet.</p>
           </div>
+        <% } %>
 
-          <div class="goal-content">
-            <div class="goal-header">
-              <h3 class="goal-title">
-                <%= goal.title %>
-                <% if (goal.is_draft) { %>
-                  <span class="draft-badge">Draft</span>
-                <% } %>
-              </h3>
-
-              <span class="goal-status <%= goal.status %>">
-                <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
-              </span>
+        <% goals.forEach((goal) => { %>
+          <div class="goal-card <%= goal.status %>">
+            <div class="goal-icon">
+              <i class="fa-solid fa-bullseye"></i>
             </div>
 
-            <p class="goal-desc">
-              <%= goal.description || 'No description provided.' %>
-            </p>
+            <div class="goal-content">
+              <div class="goal-header">
+                <h3 class="goal-title">
+                  <%= goal.title %>
+                  <% if (goal.is_draft) { %>
+                    <span class="draft-badge">Draft</span>
+                  <% } %>
+                </h3>
 
-            <div class="goal-meta">
-              <span class="goal-meta-item">
-                <i class="fa-solid fa-flag"></i>
-                Priority:
-                <%= goal.priority ? goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) : 'Not set' %>
-              </span>
-
-              <span class="goal-meta-item">
-                <i class="fa-solid fa-calendar-days"></i>
-                Start:
-                <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
-              </span>
-
-              <span class="goal-meta-item">
-                <i class="fa-solid fa-calendar-check"></i>
-                End:
-                <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
-              </span>
-            </div>
-          </div>
-
-          <div class="goal-linked-projects">
-            <span class="goal-meta-item">
-              <i class="fa-solid fa-diagram-project"></i>
-              Linked Projects:
-            </span>
-
-            <% if (goal.linkedProjects && goal.linkedProjects.length > 0) { %>
-              <div class="linked-project-tags">
-                <% goal.linkedProjects.forEach((project) => { %>
-                  <span class="linked-project-tag">
-                    <span class="linked-project-name"><%= project.project_name %></span>
-                    <button
-                      type="button"
-                      class="unlink-project-button"
-                      data-goal-id="<%= goal.id_goal %>"
-                      data-project-id="<%= project.id_project %>"
-                      title="Unlink project"
-                      aria-label="Unlink project"
-                    >
-                      ×
-                    </button>
-                  </span>
-                <% }); %>
+                <span class="goal-status <%= goal.status %>">
+                  <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
+                </span>
               </div>
-            <% } else { %>
-              <p class="no-linked-projects">No linked projects yet.</p>
-            <% } %>
-          </div>
 
-          <div class="goal-actions">
-            <div class="goal-link-project">
-              <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
-              <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
+              <p class="goal-desc">
+                <%= goal.description || 'No description provided.' %>
+              </p>
 
-              <div class="project-dropdown" data-goal-id="<%= goal.id_goal %>">
+              <div class="goal-meta">
+                <span class="goal-meta-item">
+                  <i class="fa-solid fa-flag"></i>
+                  Priority:
+                  <%= goal.priority ? goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) : 'Not set' %>
+                </span>
+
+                <span class="goal-meta-item">
+                  <i class="fa-solid fa-calendar-days"></i>
+                  Start:
+                  <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
+                </span>
+
+                <span class="goal-meta-item">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  End:
+                  <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
+                </span>
+              </div>
+            </div>
+
+            <div class="goal-linked-projects">
+              <span class="goal-meta-item">
+                <i class="fa-solid fa-diagram-project"></i>
+                Linked Projects:
+              </span>
+
+              <% if (goal.linkedProjects && goal.linkedProjects.length > 0) { %>
+                <div class="linked-project-tags">
+                  <% goal.linkedProjects.forEach((project) => { %>
+                    <span class="linked-project-tag">
+                      <span class="linked-project-name"><%= project.project_name %></span>
+                      <button
+                        type="button"
+                        class="unlink-project-button"
+                        data-goal-id="<%= goal.id_goal %>"
+                        data-project-id="<%= project.id_project %>"
+                        title="Unlink project"
+                        aria-label="Unlink project"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  <% }); %>
+                </div>
+              <% } else { %>
+                <p class="no-linked-projects">No linked projects yet.</p>
+              <% } %>
+            </div>
+
+            <div class="goal-actions">
+              <div class="goal-link-project">
+                <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
+                <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
+
+                <div class="project-dropdown" data-goal-id="<%= goal.id_goal %>">
+                  <button
+                    type="button"
+                    class="project-dropdown-toggle"
+                    data-goal-id="<%= goal.id_goal %>"
+                    <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
+                  >
+                    <span>Select projects</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+
+                  <div class="project-dropdown-menu" data-goal-id="<%= goal.id_goal %>">
+                    <% if (unlinkedProjects.length > 0) { %>
+                      <% unlinkedProjects.forEach((project) => { %>
+                        <label class="project-option">
+                          <input
+                            type="checkbox"
+                            class="link-project-checkbox"
+                            data-goal-id="<%= goal.id_goal %>"
+                            value="<%= project.id_project %>"
+                          />
+                          <span><%= project.project_name %></span>
+                        </label>
+                      <% }); %>
+                    <% } else { %>
+                      <p class="project-dropdown-empty">All available projects are already linked.</p>
+                    <% } %>
+                  </div>
+                </div>
+
                 <button
+                  class="goal-link-button link-project-button"
                   type="button"
-                  class="project-dropdown-toggle"
                   data-goal-id="<%= goal.id_goal %>"
                   <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
                 >
-                  <span>Select projects</span>
-                  <i class="fa-solid fa-chevron-down"></i>
+                  Link
+                </button>
+              </div>
+
+              <div class="goal-secondary-actions">
+                <button
+                  class="btn-icon edit-goal-button"
+                  type="button"
+                  title="Edit"
+                  data-goal-id="<%= goal.id_goal %>"
+                >
+                  <i class="fa-solid fa-pen"></i>
                 </button>
 
-                <div class="project-dropdown-menu" data-goal-id="<%= goal.id_goal %>">
-                  <% if (unlinkedProjects.length > 0) { %>
-                    <% unlinkedProjects.forEach((project) => { %>
-                      <label class="project-option">
-                        <input
-                          type="checkbox"
-                          class="link-project-checkbox"
-                          data-goal-id="<%= goal.id_goal %>"
-                          value="<%= project.id_project %>"
-                        />
-                        <span><%= project.project_name %></span>
-                      </label>
-                    <% }); %>
-                  <% } else { %>
-                    <p class="project-dropdown-empty">All available projects are already linked.</p>
-                  <% } %>
+                <button
+                  class="btn-icon btn-danger delete-goal-button"
+                  type="button"
+                  title="Delete"
+                  data-goal-id="<%= goal.id_goal %>"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="goalImpactPanel" class="goals-tab-panel">
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Goal Impact</h2>
+      <span class="item-count">
+        <%= createdGoals.length %> created goal<%= createdGoals.length === 1 ? '' : 's' %>
+      </span>
+    </div>
+
+    <div class="report-card-body">
+      <p class="goal-impact-intro">
+        Select a created goal to view its base impact structure. Draft goals are not shown here.
+      </p>
+
+      <div class="goal-impact-layout">
+        <div class="goal-impact-list">
+          <% if (createdGoals.length === 0) { %>
+            <div class="empty-state">
+              <p>No created goals are available for impact view.</p>
+            </div>
+          <% } %>
+
+          <% createdGoals.forEach((goal) => { %>
+            <button
+              type="button"
+              class="impact-goal-item"
+              data-impact-goal-id="<%= goal.id_goal %>"
+              data-impact-goal-title="<%= goal.title %>"
+              data-impact-goal-description="<%= goal.description || 'No description provided.' %>"
+              data-impact-goal-status="<%= goal.status %>"
+              data-impact-goal-priority="<%= goal.priority || 'Not set' %>"
+              data-impact-goal-start="<%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>"
+              data-impact-goal-end="<%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>"
+              data-impact-projects='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].projects) || []) %>'
+              data-impact-teams='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].teams) || []) %>'
+              data-impact-logs='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].logs) || []) %>'
+              data-impact-highlights='<%- JSON.stringify((goalImpactMap && goalImpactMap[goal.id_goal] && goalImpactMap[goal.id_goal].highlights) || []) %>'
+            >
+              <div class="impact-goal-item-top">
+                <span class="impact-goal-title"><%= goal.title %></span>
+                <span class="goal-status <%= goal.status %>">
+                  <%= goal.status.charAt(0).toUpperCase() + goal.status.slice(1) %>
+                </span>
+              </div>
+
+              <div class="impact-goal-item-meta">
+                <span>
+                  <i class="fa-solid fa-flag"></i>
+                  <%= goal.priority ? goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1) : 'Not set' %>
+                </span>
+                <span>
+                  <i class="fa-solid fa-calendar-days"></i>
+                  <%= goal.start_date ? new Date(goal.start_date).toLocaleDateString('en-US') : 'Not set' %>
+                </span>
+                <span>
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <%= goal.end_date ? new Date(goal.end_date).toLocaleDateString('en-US') : 'Not set' %>
+                </span>
+              </div>
+            </button>
+          <% }); %>
+        </div>
+
+        <div class="goal-impact-preview report-card-inner">
+          <div id="impactEmptyState" class="goal-impact-empty">
+            <i class="fa-solid fa-chart-line"></i>
+            <h3>Select a goal</h3>
+            <p>
+              Choose one created goal from the left side to prepare its impact summary view.
+            </p>
+          </div>
+
+          <div id="impactGoalDetails" class="goal-impact-details hidden">
+            <div class="goal-impact-details-header">
+              <h3 id="impactGoalTitle">Goal title</h3>
+              <span id="impactGoalStatus" class="goal-status active">Active</span>
+            </div>
+
+            <p id="impactGoalDescription" class="goal-impact-description">
+              Goal description
+            </p>
+
+            <div class="goal-impact-meta-grid">
+              <div class="goal-impact-meta-card">
+                <span class="goal-impact-meta-label">Priority</span>
+                <strong id="impactGoalPriority">Medium</strong>
+              </div>
+
+              <div class="goal-impact-meta-card">
+                <span class="goal-impact-meta-label">Start Date</span>
+                <strong id="impactGoalStart">Not set</strong>
+              </div>
+
+              <div class="goal-impact-meta-card">
+                <span class="goal-impact-meta-label">End Date</span>
+                <strong id="impactGoalEnd">Not set</strong>
+              </div>
+
+              <div class="goal-impact-meta-card">
+                <span class="goal-impact-meta-label">Current Stage</span>
+                <strong>Base structure ready</strong>
+              </div>
+            </div>
+
+            <div class="goal-impact-data-section">
+
+
+              <div class="goal-impact-data-block">
+                <h4>Linked Projects</h4>
+                <div id="impactProjectsList" class="goal-impact-tags-wrap">
+                  <p class="goal-impact-empty-text">No linked projects found.</p>
                 </div>
               </div>
 
-              <button
-                class="goal-link-button link-project-button"
-                type="button"
-                data-goal-id="<%= goal.id_goal %>"
-                <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
-              >
-                Link
-              </button>
+              <div class="goal-impact-data-block">
+                <h4>Participating Teams</h4>
+                <div id="impactTeamsList" class="goal-impact-tags-wrap">
+                  <p class="goal-impact-empty-text">No participating teams found.</p>
+                </div>
+              </div>
+
+              <div class="goal-impact-data-block">
+                <h4>Related Highlights</h4>
+                <div id="impactHighlightsList" class="goal-impact-highlights-wrap">
+                  <p class="goal-impact-empty-text">No related highlights found.</p>
+                </div>
+              </div>
+
+              <div class="goal-impact-data-block">
+                <div class="goal-impact-section-header">
+                  <h4>Contributions / Logs</h4>
+                  <span class="goal-impact-section-hint">Recent activity</span>
+                </div>
+
+                <div id="impactLogsList" class="goal-impact-logs-wrap compact">
+                  <p class="goal-impact-empty-text">No contributions found.</p>
+                </div>
+              </div>
             </div>
 
-            <div class="goal-secondary-actions">
-              <button
-                class="btn-icon edit-goal-button"
-                type="button"
-                title="Edit"
-                data-goal-id="<%= goal.id_goal %>"
-              >
-                <i class="fa-solid fa-pen"></i>
+
+            <div class="goal-impact-summary-section">
+                <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
+                  <h4>AI Goal Impact Summary</h4>
+                  <p>Generate a summary to see the executive overview for this goal.</p>
+                </div>
+
+              <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
+                <div class="goal-impact-summary-header">
+                  <h4>AI Goal Impact Summary</h4>
+                  <span class="goal-impact-summary-badge">Executive View</span>
+                </div>
+
+              <div class="goal-impact-summary-hero">
+                <h5>Overall Impact</h5>
+                <p id="impactSummaryOverall">—</p>
+              </div>
+
+            <div class="goal-impact-summary-grid">
+              <div class="goal-impact-summary-block">
+                <h5>Projects Driving This Goal</h5>
+                <ul id="impactSummaryProjects" class="goal-impact-summary-list"></ul>
+              </div>
+
+              <div class="goal-impact-summary-block">
+                <h5>Team Participation</h5>
+                <p id="impactSummaryTeamParticipation">—</p>
+              </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Key Contributions</h5>
+              <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Relevant Highlights</h5>
+              <ul id="impactSummaryHighlights" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Risks / Gaps</h5>
+              <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Recommendations</h5>
+              <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
+            </div>
+    </div>
+  </div>
+</div>       
+
+           
+
+            <div class="goal-impact-placeholder-actions">
+              <button type="button" id="generateSummaryBtn" class="btn-draft">
+                Generate Summary
               </button>
 
-              <button
-                class="btn-icon btn-danger delete-goal-button"
-                type="button"
-                title="Delete"
-                data-goal-id="<%= goal.id_goal %>"
-              >
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              <button type="button" id="exportGoalPdfBtn" class="btn-submit">
+                  Export PDF
+                </button>
             </div>
           </div>
         </div>
-      <% }); %>
+      </div>
     </div>
   </div>
 </div>
@@ -275,6 +503,462 @@
   </div>
 </div>
 
+<style>
+  .goals-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .goals-tab-button {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .goals-tab-button.active {
+    background: #f15a24;
+    color: #ffffff;
+    border-color: #f15a24;
+  }
+
+  .goals-tab-panel {
+    display: none;
+  }
+
+  .goals-tab-panel.active {
+    display: block;
+  }
+
+  .hidden {
+  display: none !important;
+}
+
+  .goal-impact-intro {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #6b7280;
+  }
+
+  .goal-impact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .goal-impact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .impact-goal-item {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .impact-goal-item:hover {
+    border-color: #f15a24;
+    transform: translateY(-1px);
+  }
+
+  .impact-goal-item.active {
+    border-color: #f15a24;
+    box-shadow: 0 0 0 2px rgba(241, 90, 36, 0.12);
+  }
+
+  .impact-goal-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .impact-goal-title {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .impact-goal-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #6b7280;
+    font-size: 0.92rem;
+  }
+
+  .report-card-inner {
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    background: #fcfcfd;
+    padding: 22px;
+    min-height: 100%;
+  }
+
+  .goal-impact-empty {
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #6b7280;
+    gap: 10px;
+  }
+
+  .goal-impact-empty i {
+    font-size: 2rem;
+    color: #f15a24;
+  }
+
+  .goal-impact-details.hidden {
+    display: none;
+  }
+
+  .goal-impact-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .goal-impact-details-header h3 {
+    margin: 0;
+  }
+
+  .goal-impact-description {
+    color: #4b5563;
+    margin-bottom: 18px;
+  }
+
+  .goal-impact-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .goal-impact-meta-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .goal-impact-meta-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .goal-impact-data-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .goal-impact-data-block h4 {
+    margin-bottom: 10px;
+  }
+
+  .goal-impact-tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .goal-impact-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff4ed;
+    border: 1px solid #f6c7b2;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .goal-impact-tag.project {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .goal-impact-tag.team {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+  }
+
+  .goal-impact-empty-text {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .goal-impact-logs-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .goal-impact-log-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+  }
+
+  .goal-impact-log-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-log-user {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .goal-impact-log-project {
+    font-size: 0.8rem;
+    color: #2563eb;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-log-text {
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  .goal-impact-highlights-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .goal-impact-highlight-card {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #f3e8ff;
+    background: #faf5ff;
+  }
+
+  .goal-impact-highlight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .goal-impact-highlight-title {
+    font-weight: 700;
+    color: #4c1d95;
+  }
+
+  .goal-impact-highlight-type {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #ede9fe;
+    color: #5b21b6;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .goal-impact-highlight-meta {
+    font-size: 0.84rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+
+  .goal-impact-highlight-text {
+    font-size: 0.92rem;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+
+  .goal-impact-highlight-impact {
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
+  .goal-impact-placeholder-section h4 {
+    margin-bottom: 10px;
+  }
+
+  .goal-impact-placeholder-list {
+    margin: 0 0 18px 18px;
+    padding: 0;
+    color: #4b5563;
+  }
+
+  .goal-impact-placeholder-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  @media (max-width: 980px) {
+    .goal-impact-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .goal-impact-meta-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .goal-impact-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.goal-impact-section-hint {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.goal-impact-summary-section {
+  margin-top: 8px;
+}
+
+.goal-impact-summary-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+  padding: 18px;
+  background: #ffffff;
+  color: #6b7280;
+}
+
+.goal-impact-summary-content.hidden {
+  display: none;
+}
+
+.goal-impact-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.goal-impact-summary-header h4 {
+  margin: 0;
+}
+
+.goal-impact-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff4ed;
+  color: #c2410c;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.goal-impact-summary-hero {
+  border: 1px solid #f6c7b2;
+  background: #fff8f3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.goal-impact-summary-hero h5 {
+  margin: 0 0 8px 0;
+  color: #f15a24;
+  font-size: 1rem;
+}
+
+.goal-impact-summary-hero p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.goal-impact-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.goal-impact-summary-block {
+  margin-bottom: 0;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  min-height: 100%;
+}
+
+.goal-impact-summary-block h5 {
+  margin: 0 0 8px 0;
+  color: #f15a24;
+  font-size: 0.95rem;
+}
+
+.goal-impact-summary-block p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.goal-impact-summary-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+
+.goal-impact-summary-list li {
+  margin-bottom: 6px;
+}
+
+.goal-impact-logs-wrap.compact {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.goal-impact-logs-wrap.compact .goal-impact-log-card {
+  padding: 10px 12px;
+}
+
+.goal-impact-logs-wrap.compact .goal-impact-log-text {
+  font-size: 0.86rem;
+}
+
+@media (max-width: 980px) {
+  .goal-impact-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
 <script>
   const goalForm = document.getElementById('goalForm');
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -294,6 +978,34 @@
   const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
   const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
+  const goalsTabButtons = document.querySelectorAll('.goals-tab-button');
+  const goalsTabPanels = document.querySelectorAll('.goals-tab-panel');
+  const impactGoalItems = document.querySelectorAll('.impact-goal-item');
+  const impactEmptyState = document.getElementById('impactEmptyState');
+  const impactGoalDetails = document.getElementById('impactGoalDetails');
+  const impactGoalTitle = document.getElementById('impactGoalTitle');
+  const impactGoalStatus = document.getElementById('impactGoalStatus');
+  const impactGoalDescription = document.getElementById('impactGoalDescription');
+  const impactGoalPriority = document.getElementById('impactGoalPriority');
+  const impactGoalStart = document.getElementById('impactGoalStart');
+  const impactGoalEnd = document.getElementById('impactGoalEnd');
+  const impactProjectsList = document.getElementById('impactProjectsList');
+  const impactTeamsList = document.getElementById('impactTeamsList');
+  const impactLogsList = document.getElementById('impactLogsList');
+  const impactHighlightsList = document.getElementById('impactHighlightsList');
+  const generateSummaryBtn = document.getElementById('generateSummaryBtn');
+  const exportGoalPdfBtn = document.getElementById('exportGoalPdfBtn');
+  const impactSummaryEmpty = document.getElementById('impactSummaryEmpty');
+  const impactSummaryContent = document.getElementById('impactSummaryContent');
+  const impactSummaryOverall = document.getElementById('impactSummaryOverall');
+  const impactSummaryProjects = document.getElementById('impactSummaryProjects');
+  const impactSummaryTeamParticipation = document.getElementById('impactSummaryTeamParticipation');
+  const impactSummaryContributions = document.getElementById('impactSummaryContributions');
+  const impactSummaryHighlights = document.getElementById('impactSummaryHighlights');
+  const impactSummaryRisks = document.getElementById('impactSummaryRisks');
+  const impactSummaryRecommendations = document.getElementById('impactSummaryRecommendations');
+
+  let currentGoalId = null;
   let goalToDelete = null;
   let isEditMode = false;
   let editingGoalId = null;
@@ -554,6 +1266,288 @@
     }
   };
 
+  const activateGoalsTab = (targetId) => {
+    goalsTabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === targetId;
+      button.classList.toggle('active', isActive);
+    });
+
+    goalsTabPanels.forEach((panel) => {
+      panel.classList.toggle('active', panel.id === targetId);
+    });
+  };
+
+  const renderImpactTags = (container, items, type, emptyMessage) => {
+    if (!items || items.length === 0) {
+      container.innerHTML = `<p class="goal-impact-empty-text">${emptyMessage}</p>`;
+      return;
+    }
+
+    container.innerHTML = items.map((item) => {
+      const label = type === 'project' ? item.project_name : item.team_name;
+      return `<span class="goal-impact-tag ${type}">${label}</span>`;
+    }).join('');
+  };
+
+  const renderImpactLogs = (container, logs) => {
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<p class="goal-impact-empty-text">No contributions found.</p>';
+      return;
+    }
+
+    container.innerHTML = logs.map((log) => {
+      const date = new Date(log.created_at).toLocaleDateString('en-US');
+
+      return `
+        <div class="goal-impact-log-card">
+          <div class="goal-impact-log-header">
+            <span class="goal-impact-log-user">${log.full_name}</span>
+            <span>${date}</span>
+          </div>
+
+          <div class="goal-impact-log-project">${log.project_name}</div>
+
+          <div class="goal-impact-log-text">
+            <strong>Completed:</strong> ${log.completed || '—'}
+          </div>
+
+          <div class="goal-impact-log-text">
+            <strong>Planned:</strong> ${log.planned || '—'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const renderImpactHighlights = (container, highlights) => {
+    if (!highlights || highlights.length === 0) {
+      container.innerHTML = '<p class="goal-impact-empty-text">No related highlights found.</p>';
+      return;
+    }
+
+    container.innerHTML = highlights.map((highlight) => {
+      const date = highlight.highlight_date
+        ? new Date(highlight.highlight_date).toLocaleDateString('en-US')
+        : 'No date';
+
+      const projectName = highlight.project_name || 'No project';
+      const teamName = highlight.team_name || 'No team';
+      const ownerName = highlight.full_name || 'Unknown user';
+      const impactText = highlight.impact || 'No impact description provided.';
+
+      return `
+        <div class="goal-impact-highlight-card">
+          <div class="goal-impact-highlight-header">
+            <span class="goal-impact-highlight-title">${highlight.title}</span>
+            <span class="goal-impact-highlight-type">${highlight.highlight_type}</span>
+          </div>
+
+          <div class="goal-impact-highlight-meta">
+            ${ownerName} · ${date} · ${projectName} · ${teamName}
+          </div>
+
+          <div class="goal-impact-highlight-text">
+            ${highlight.description || 'No description provided.'}
+          </div>
+
+          <div class="goal-impact-highlight-impact">
+            <strong>Impact:</strong> ${impactText}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const renderSummaryList = (container, items, emptyMessage) => {
+  if (!items || items.length === 0) {
+    container.innerHTML = `<li>${emptyMessage}</li>`;
+    return;
+  }
+
+  container.innerHTML = items.map((item) => `<li>${item}</li>`).join('');
+};
+
+const resetImpactSummaryUI = () => {
+  impactSummaryOverall.textContent = '—';
+  impactSummaryProjects.innerHTML = '';
+  impactSummaryTeamParticipation.textContent = '—';
+  impactSummaryContributions.innerHTML = '';
+  impactSummaryHighlights.innerHTML = '';
+  impactSummaryRisks.innerHTML = '';
+  impactSummaryRecommendations.innerHTML = '';
+  impactSummaryEmpty.classList.remove('hidden');
+  impactSummaryContent.classList.add('hidden');
+};
+
+const showImpactSummaryUI = (summary) => {
+  impactSummaryOverall.textContent = summary.overallImpact || 'No summary available.';
+  impactSummaryTeamParticipation.textContent = summary.teamParticipation || 'No participation summary available.';
+
+  renderSummaryList(
+    impactSummaryProjects,
+    summary.projectsDrivingGoal,
+    'No relevant projects found.'
+  );
+
+  renderSummaryList(
+    impactSummaryContributions,
+    summary.keyContributions,
+    'No key contributions found.'
+  );
+
+  renderSummaryList(
+    impactSummaryHighlights,
+    summary.relevantHighlights,
+    'No relevant highlights found.'
+  );
+
+  renderSummaryList(
+    impactSummaryRisks,
+    summary.risksOrGaps,
+    'No risks or gaps found.'
+  );
+
+  renderSummaryList(
+    impactSummaryRecommendations,
+    summary.recommendations,
+    'No recommendations found.'
+  );
+
+  impactSummaryEmpty.classList.add('hidden');
+  impactSummaryContent.classList.remove('hidden');
+};
+
+
+
+  const showImpactGoalDetails = (button) => {
+    currentGoalId = button.dataset.impactGoalId;
+
+    impactGoalItems.forEach((item) => {
+      item.classList.remove('active');
+    });
+
+    button.classList.add('active');
+
+    const impactProjects = JSON.parse(button.dataset.impactProjects || '[]');
+    const impactTeams = JSON.parse(button.dataset.impactTeams || '[]');
+    const impactLogs = JSON.parse(button.dataset.impactLogs || '[]');
+    const impactHighlights = JSON.parse(button.dataset.impactHighlights || '[]');
+
+    impactGoalTitle.textContent = button.dataset.impactGoalTitle || 'Goal title';
+    impactGoalDescription.textContent = button.dataset.impactGoalDescription || 'No description provided.';
+    impactGoalPriority.textContent = button.dataset.impactGoalPriority || 'Not set';
+    impactGoalStart.textContent = button.dataset.impactGoalStart || 'Not set';
+    impactGoalEnd.textContent = button.dataset.impactGoalEnd || 'Not set';
+
+    impactGoalStatus.textContent = button.dataset.impactGoalStatus
+      ? button.dataset.impactGoalStatus.charAt(0).toUpperCase() + button.dataset.impactGoalStatus.slice(1)
+      : 'Active';
+
+    impactGoalStatus.className = `goal-status ${button.dataset.impactGoalStatus || 'active'}`;
+
+    renderImpactTags(
+      impactProjectsList,
+      impactProjects,
+      'project',
+      'No linked projects found.'
+    );
+
+    renderImpactTags(
+      impactTeamsList,
+      impactTeams,
+      'team',
+      'No participating teams found.'
+    );
+
+    renderImpactLogs(impactLogsList, impactLogs);
+    renderImpactHighlights(impactHighlightsList, impactHighlights);
+    resetImpactSummaryUI();
+    impactEmptyState.classList.add('hidden');
+    impactGoalDetails.classList.remove('hidden');
+  };
+
+     generateSummaryBtn.addEventListener('click', async () => {
+        if (!currentGoalId) {
+          return;
+        }
+
+          generateSummaryBtn.textContent = 'Generating...';
+          generateSummaryBtn.disabled = true;
+
+          try {
+            const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+              },
+            });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || 'Error generating summary');
+          return;
+        }
+
+        showImpactSummaryUI(data);
+      } catch (err) {
+        console.log(err);
+        alert('Unexpected error generating summary.');
+      }
+
+      generateSummaryBtn.textContent = 'Generate Summary';
+      generateSummaryBtn.disabled = false;
+    });
+
+    exportGoalPdfBtn.addEventListener('click', async () => {
+  if (!currentGoalId) {
+    return;
+  }
+
+  exportGoalPdfBtn.textContent = 'Exporting...';
+  exportGoalPdfBtn.disabled = true;
+
+  try {
+    const response = await fetch(`/manager/goals/${currentGoalId}/export-pdf`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': csrfToken,
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Error exporting PDF.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        console.log(jsonError);
+      }
+      alert(errorMessage);
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `goal_impact_${currentGoalId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.log(err);
+    alert('Unexpected error exporting PDF.');
+  }
+
+  exportGoalPdfBtn.textContent = 'Export PDF';
+  exportGoalPdfBtn.disabled = false;
+});
+
   saveDraftButton.addEventListener('click', () => {
     submitGoal('draft');
   });
@@ -565,6 +1559,7 @@
   editGoalButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const goalId = button.dataset.goalId;
+      activateGoalsTab('manageGoalsPanel');
       loadGoalForEdit(goalId);
     });
   });
@@ -637,6 +1632,18 @@
 
   cancelEditButton.addEventListener('click', () => {
     disableEditMode();
+  });
+
+  goalsTabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activateGoalsTab(button.dataset.tabTarget);
+    });
+  });
+
+  impactGoalItems.forEach((button) => {
+    button.addEventListener('click', () => {
+      showImpactGoalDetails(button);
+    });
   });
 
   const markInvalid = (input) => {

@@ -271,4 +271,115 @@ module.exports = class Log {
       [weekOffset.toString()],
     );
   }
+
+    // (MANAGER): Metodo para contar cuantas entradas del historial cumplen con los filtros del manager
+  static countHistoryByManagerFilters(filters = {}) {
+
+    // Construye la consulta con joins para usuario, proyecto y equipo
+    let query = `
+      SELECT COUNT(DISTINCT l.id_log) AS total
+      FROM log l
+      INNER JOIN user u ON l.id_user = u.id_user
+      LEFT JOIN log_project lp ON l.id_log = lp.id_log
+      LEFT JOIN project p ON lp.id_project = p.id_project
+      LEFT JOIN team t ON lp.id_team = t.id_team
+      WHERE 1 = 1
+    `;
+
+    const params = [];
+
+    // Filtra por usuario seleccionado
+    if (filters.id_user) {
+      query += ' AND l.id_user = ?';
+      params.push(filters.id_user);
+    }
+
+    // Filtra por proyecto seleccionado
+    if (filters.id_project) {
+      query += ' AND lp.id_project = ?';
+      params.push(filters.id_project);
+    }
+
+    // Filtra por equipo seleccionado
+    if (filters.id_team) {
+      query += ' AND lp.id_team = ?';
+      params.push(filters.id_team);
+    }
+
+    // Filtra por fecha inicial
+    if (filters.date_from) {
+      query += ' AND DATE(l.created_at) >= ?';
+      params.push(filters.date_from);
+    }
+
+    // Filtra por fecha final
+    if (filters.date_to) {
+      query += ' AND DATE(l.created_at) <= ?';
+      params.push(filters.date_to);
+    }
+
+    return db.execute(query, params);
+  }
+
+  // (MANAGER) Metodo para traer el historial del manager aplicando 
+  // filtros por usuario, proyecto, equipo y fechas
+  static fetchHistoryByManagerFilters(filters = {}) {
+    // Cconsulta con joins para usuario, proyecto y equipo
+    let query = `
+      SELECT DISTINCT
+        l.id_log,
+        l.completed,
+        l.planned,
+        l.created_at,
+        u.id_user,
+        u.full_name,
+        p.id_project,
+        p.project_name,
+        t.id_team,
+        t.team_name
+      FROM log l
+      INNER JOIN user u ON l.id_user = u.id_user
+      LEFT JOIN log_project lp ON l.id_log = lp.id_log
+      LEFT JOIN project p ON lp.id_project = p.id_project
+      LEFT JOIN team t ON lp.id_team = t.id_team
+      WHERE 1 = 1
+    `;
+
+    const params = [];
+
+    // Filtra por usuario seleccionado
+    if (filters.id_user) {
+      query += ' AND l.id_user = ?';
+      params.push(filters.id_user);
+    }
+
+    // Filtra por proyecto seleccionado
+    if (filters.id_project) {
+      query += ' AND lp.id_project = ?';
+      params.push(filters.id_project);
+    }
+
+    // Filtra por equipo seleccionado
+    if (filters.id_team) {
+      query += ' AND lp.id_team = ?';
+      params.push(filters.id_team);
+    }
+
+    // Filtra por fecha inicial
+    if (filters.date_from) {
+      query += ' AND DATE(l.created_at) >= ?';
+      params.push(filters.date_from);
+    }
+
+    // Filtra por fecha final
+    if (filters.date_to) {
+      query += ' AND DATE(l.created_at) <= ?';
+      params.push(filters.date_to);
+    }
+
+    // Ordena del mas reciente al mas antiguo
+    query += ' ORDER BY l.created_at DESC';
+
+    return db.execute(query, params);
+  }
 };

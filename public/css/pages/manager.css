@@ -1207,3 +1207,184 @@
   border-radius: 8px;
   cursor: pointer;
 }
+  .goal-impact-data-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .goal-impact-data-block h4 {
+    margin-bottom: 10px;
+  }
+
+  .goal-impact-tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .goal-impact-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff4ed;
+    border: 1px solid #f6c7b2;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .goal-impact-tag.project {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .goal-impact-tag.team {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+  }
+
+  .goal-impact-empty-text {
+    margin: 0;
+    color: #6b7280;
+  }
+  .goal-impact-logs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-impact-log-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.goal-impact-log-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.goal-impact-log-user {
+  font-weight: 600;
+  color: #111827;
+}
+
+.goal-impact-log-project {
+  font-size: 0.8rem;
+  color: #2563eb;
+}
+
+.goal-impact-log-text {
+  font-size: 0.9rem;
+  color: #374151;
+}.goal-impact-highlights-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-impact-highlight-card {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #f3e8ff;
+  background: #faf5ff;
+}
+
+.goal-impact-highlight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.goal-impact-highlight-title {
+  font-weight: 700;
+  color: #4c1d95;
+}
+
+.goal-impact-highlight-type {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-weight: 600;
+}
+
+.goal-impact-highlight-meta {
+  font-size: 0.84rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.goal-impact-highlight-text {
+  font-size: 0.92rem;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.goal-impact-highlight-impact {
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.goal-impact-summary-section {
+  margin-top: 8px;
+}
+
+.goal-impact-summary-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 16px;
+  background: #ffffff;
+  color: #6b7280;
+}
+
+.goal-impact-summary-content.hidden {
+  display: none;
+}
+
+.goal-impact-summary-content {
+  display: block;
+}
+
+.goal-impact-summary-block {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.goal-impact-summary-block h5 {
+  margin: 0 0 8px 0;
+  color: #f15a24;
+  font-size: 0.95rem;
+}
+
+.goal-impact-summary-block p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.goal-impact-summary-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+
+.goal-impact-summary-list li {
+  margin-bottom: 6px;
+}
