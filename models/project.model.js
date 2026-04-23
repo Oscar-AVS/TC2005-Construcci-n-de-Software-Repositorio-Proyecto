@@ -258,7 +258,7 @@ module.exports = class Project {
        JOIN project p ON lp.id_project = p.id_project
        ORDER BY l.created_at DESC
        LIMIT ?`,
-      [limit]
+      [parseInt(limit, 10)]
     );
   }
 
