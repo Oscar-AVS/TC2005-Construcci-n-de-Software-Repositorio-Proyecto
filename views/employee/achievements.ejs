@@ -1,7 +1,7 @@
 <h1 id="pageTitle" class="page-title">Achievements</h1>
 
 <!-- Feedback message -->
-<div id="achievementMsg" style="display:none; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px;"></div>
+<div id="achievementMsg" style="display:none;"></div>
 
 <!-- New Achievement Form -->
 <div class="report-card">
@@ -229,18 +229,19 @@
 
   function showMsg(text, type) {
     const el = document.getElementById('achievementMsg');
-    el.textContent = text;
-    el.style.display = 'block';
-    if (type === 'success') {
-      el.style.background = '#f0fdf4';
-      el.style.color = '#15803d';
-      el.style.border = '1px solid #bbf7d0';
-    } else {
-      el.style.background = '#fef2f2';
-      el.style.color = '#b91c1c';
-      el.style.border = '1px solid #fecaca';
-    }
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+    
+    el.innerHTML = `<i class="fa-solid ${icon}"></i> ${text}`;
+    el.className = `toast-notification ${type === 'success' ? 'success' : 'error'}`;
+    el.style.display = 'inline-flex';
+    
+    setTimeout(() => { 
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.style.display = 'none';
+        el.style.opacity = '1';
+      }, 300);
+    }, 4000);
   }
 
   async function saveAchievement() {

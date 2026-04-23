@@ -11,10 +11,10 @@
 
 <!-- Dashboard Tabs -->
 <div class="dashboard-tabs">
-  <button type="button" class="dashboard-tab active" data-tab="system-dashboard">
+  <button type="button" class="dashboard-tab <%= activeTab === 'system-dashboard' ? 'active' : '' %>" data-tab="system-dashboard">
     <i class="fa-solid fa-gauge-high"></i> System Dashboard
   </button>
-  <button type="button" class="dashboard-tab" data-tab="activity">
+  <button type="button" class="dashboard-tab <%= activeTab === 'activity' ? 'active' : '' %>" data-tab="activity">
     <i class="fa-solid fa-chart-line"></i> Activity
   </button>
 </div>
@@ -22,7 +22,7 @@
 <!-- =============================================
      TAB 1: SYSTEM DASHBOARD
      ============================================= -->
-<div class="tab-content active" id="tab-system-dashboard">
+<div class="tab-content <%= activeTab === 'system-dashboard' ? 'active' : '' %>" id="tab-system-dashboard">
 
   <div class="stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
     <div class="stat-card">
@@ -145,19 +145,19 @@
 <!-- =============================================
      TAB 2: ACTIVITY (Personal / Organization)
      ============================================= -->
-<div class="tab-content" id="tab-activity">
+<div class="tab-content <%= activeTab === 'activity' ? 'active' : '' %>" id="tab-activity">
 
   <div class="view-mode-toggle">
-    <button type="button" class="view-mode-btn active" data-view="personal">
+    <button type="button" class="view-mode-btn <%= activeView === 'personal' ? 'active' : '' %>" data-view="personal">
       <i class="fa-solid fa-user"></i> Personal
     </button>
-    <button type="button" class="view-mode-btn" data-view="organization">
+    <button type="button" class="view-mode-btn <%= activeView === 'organization' ? 'active' : '' %>" data-view="organization">
       <i class="fa-solid fa-building"></i> Organization
     </button>
   </div>
 
   <!-- PERSONAL VIEW -->
-  <div class="activity-view active" id="view-personal">
+  <div class="activity-view <%= activeView === 'personal' ? 'active' : '' %>" id="view-personal">
 
     <div class="stats-row">
       <div class="stat-card">
@@ -191,10 +191,19 @@
 
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Weekly Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's tasks</p>
+            <p class="media-card-sub">Logs submitted per day <%= weekOffset == 0 ? 'this week' : 'selected week' %> — click a bar to filter</p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset='+this.value+'&orgWeekOffset=<%= orgWeekOffset %>&view=personal&tab=activity'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= weekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= weekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= weekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= weekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= weekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -239,7 +248,7 @@
   </div>
 
   <!-- ORGANIZATION VIEW -->
-  <div class="activity-view" id="view-organization">
+  <div class="activity-view <%= activeView === 'organization' ? 'active' : '' %>" id="view-organization">
 
     <div class="stats-row">
       <div class="stat-card">
@@ -273,10 +282,19 @@
 
     <div class="media-row single-chart-row">
       <div class="media-card chart-card">
-        <div class="media-card-header">
+        <div class="media-card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="media-card-title">Organization Activity</p>
-            <p class="media-card-sub">Click a bar to see that day's team activities</p>
+            <p class="media-card-sub">Organization-wide activities per day <%= orgWeekOffset == 0 ? 'this week' : 'selected week' %></p>
+          </div>
+          <div>
+            <select class="form-select" onchange="window.location.href='?weekOffset=<%= weekOffset %>&orgWeekOffset='+this.value+'&view=organization&tab=activity'" style="width: auto; margin: 0; padding: 8px 12px; font-size: 13px;">
+              <option value="0" <%= orgWeekOffset == 0 ? 'selected' : '' %>>This Week</option>
+              <option value="1" <%= orgWeekOffset == 1 ? 'selected' : '' %>>Last Week</option>
+              <option value="2" <%= orgWeekOffset == 2 ? 'selected' : '' %>>2 Weeks Ago</option>
+              <option value="3" <%= orgWeekOffset == 3 ? 'selected' : '' %>>3 Weeks Ago</option>
+              <option value="4" <%= orgWeekOffset == 4 ? 'selected' : '' %>>4 Weeks Ago</option>
+            </select>
           </div>
         </div>
         <div class="chart-area">
@@ -289,7 +307,7 @@
       <div class="report-card-header">
         <div class="header-title-group">
           <h2 id="orgFeedTitle">Team Activity Feed</h2>
-          <span class="report-date" id="orgActivityDate" style="display: none;"></span>
+          <span class="report-date" id="orgActivityDate"></span>
         </div>
         <select id="teamFilter" class="team-filter-select">
           <option value="">All Teams</option>

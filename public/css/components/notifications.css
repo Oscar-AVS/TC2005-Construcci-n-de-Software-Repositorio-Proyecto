@@ -1,0 +1,39 @@
+/**
+ * Shared Notification Styles
+ * Provides standardized toast notifications for success and error messages.
+ */
+
+.toast-notification {
+  padding: 12px 24px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  animation: toastSlideDown 0.3s ease-out forwards;
+}
+
+.toast-notification.success {
+  background: #10b981;
+  color: white;
+}
+
+.toast-notification.error {
+  background: #ef4444;
+  color: white;
+}
+
+@keyframes toastSlideDown {
+  from {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

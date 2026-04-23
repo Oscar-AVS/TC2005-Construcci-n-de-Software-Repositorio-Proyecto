@@ -16,6 +16,8 @@ exports.getDashboard = async (req, res) => {
   const activeUserId = req.session.userId;
   const weekOffset = parseInt(req.query.weekOffset) || 0;
   const orgWeekOffset = parseInt(req.query.orgWeekOffset) || 0;
+  const activeTab = req.query.tab || 'system-dashboard';
+  const activeView = req.query.view || 'personal';
 
   try {
     const [[{ totalUsers }]] = await db.query(
@@ -117,6 +119,10 @@ exports.getDashboard = async (req, res) => {
       orgWeeklyData,
       orgLogsByDay,
       teams,
+      weekOffset,
+      orgWeekOffset,
+      activeTab,
+      activeView,
     });
   } catch (err) {
     console.error('getDashboard error:', err);

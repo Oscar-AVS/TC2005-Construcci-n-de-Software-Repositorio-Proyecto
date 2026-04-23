@@ -6,6 +6,7 @@
 @import url('./components/sidebar.css');
 @import url('./components/topbar.css');
 @import url('./components/report.css');
+@import url('./components/notifications.css');
 
 /* Pages */
 @import url('./pages/login.css');
