@@ -17,6 +17,22 @@
             <i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>
             <%= success %>
           </div>
+          <p style="text-align: center; color: #5f6b85; font-size: 14px; margin-bottom: 12px;">
+            Redirecting to login in <strong id="countdown" style="color: #f25c2a;">5</strong>s…
+          </p>
+          <a href="/login" class="btn-login" style="display: flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none;">
+            <span>Go to Login</span>
+            <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+          </a>
+          <script>
+            let secs = 5;
+            const el = document.getElementById('countdown');
+            const timer = setInterval(() => {
+              secs--;
+              el.textContent = secs;
+              if (secs <= 0) { clearInterval(timer); window.location.href = '/login'; }
+            }, 1000);
+          </script>
         <% } else { %>
           <form class="login-form" action="/signup" method="POST" autocomplete="off">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

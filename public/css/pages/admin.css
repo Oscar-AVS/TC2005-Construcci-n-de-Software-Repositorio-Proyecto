@@ -314,35 +314,57 @@
   color: #92400e;
 }
 
+.status-badge.denied {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
 /* Role badge */
 .role-badge {
   display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 11px;
-  font-weight: 600;
-  background: var(--bg);
-  color: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  text-transform: uppercase;
 }
 
 .role-badge.admin {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 
 .role-badge.manager {
-  background: #f3e8ff;
+  background: #faf5ff;
   color: #7c3aed;
+  border-color: #e9d5ff;
 }
 
 .role-badge.team-leader {
-  background: #dbeafe;
+  background: #eff6ff;
   color: #1d4ed8;
+  border-color: #bfdbfe;
 }
 
 .role-badge.employee {
-  background: #dcfce7;
-  color: #166534;
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.role-badge.project-manager {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
 }
 
 /* Table actions */

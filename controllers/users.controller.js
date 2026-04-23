@@ -49,6 +49,14 @@ exports.postLogin = (req, res) => {
         });
       }
 
+      if (user.status === 'denied') {
+        return res.render('auth/login', {
+          layout: false,
+          error: 'Your account request was denied. Please contact an administrator for more information.',
+          csrfToken: req.csrfToken(),
+        });
+      }
+
       return bcrypt.compare(password, user.password).then((match) => {
         if (!match) {
           return res.render('auth/login', {

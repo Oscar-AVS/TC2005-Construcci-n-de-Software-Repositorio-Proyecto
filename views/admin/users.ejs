@@ -19,9 +19,10 @@
           <label class="form-label" for="userName">Full Name</label>
           <input type="text" id="userName" name="full_name" class="form-input" placeholder="Enter full name..." />
         </div>
-        <div class="form-field">
+        <div class="form-field" style="position: relative;">
           <label class="form-label" for="userEmail">Email</label>
-          <input type="text" id="userEmail" name="email" class="form-input" placeholder="email@change.org" />
+          <input type="text" id="userEmail" name="email" class="form-input" placeholder="email@change.org" autocomplete="off" />
+          <div id="createEmailSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); z-index: 100; overflow: hidden; margin-top: 4px;"></div>
         </div>
       </div>
       <div class="form-row-grid">
@@ -160,9 +161,13 @@
             <% } %>
           </td>
           <td>
-            <span id="status-badge-<%= user.id %>" class="status-badge <%= user.status === 'active' ? 'active' : 'inactive' %>">
-              <%= user.status === 'active' ? 'Active' : 'Inactive' %>
-            </span>
+            <% if (user.status === 'active') { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge active">Active</span>
+            <% } else if (user.status === 'denied') { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge denied">Denied</span>
+            <% } else { %>
+              <span id="status-badge-<%= user.id %>" class="status-badge inactive">Inactive</span>
+            <% } %>
           </td>
           <td>
             <div class="table-actions">
@@ -170,6 +175,7 @@
                 onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', <%= user.id_role %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
+              <% if (user.status !== 'denied') { %>
               <button
                 class="btn-icon <%= user.status === 'active' ? 'btn-danger' : '' %>"
                 type="button"
@@ -180,6 +186,9 @@
               >
                 <i id="toggle-icon-<%= user.id %>" class="fa-solid <%= user.status === 'active' ? 'fa-user-slash' : 'fa-user-check' %>"></i>
               </button>
+              <% } else { %>
+              <span style="display: inline-block; width: 32px;"></span>
+              <% } %>
               <button class="btn-icon btn-danger" type="button" title="Delete"
                 onclick="openDeleteUserModal(<%= user.id %>, '<%= user.full_name %>')">
                 <i class="fa-solid fa-trash"></i>
@@ -325,6 +334,40 @@
 
 <script>
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  // Email domain autocomplete (Create User form)
+  (function () {
+    const emailInput = document.getElementById('userEmail');
+    const suggestions = document.getElementById('createEmailSuggestions');
+    const domains = ['@change.org', '@gmail.com', '@hotmail.com', '@outlook.com'];
+
+    emailInput.addEventListener('input', () => {
+      const val = emailInput.value;
+      if (!val || val.includes('@')) {
+        suggestions.style.display = 'none';
+        suggestions.innerHTML = '';
+        return;
+      }
+      suggestions.innerHTML = domains.map(domain => `
+        <button type="button" data-value="${val}${domain}" style="width:100%;border:none;background:#fff;padding:10px 14px;text-align:left;cursor:pointer;font-size:14px;color:#1f2a44;display:block;border-bottom:1px solid #f0f0f0;">
+          ${val}<strong style="color:#f25c2a;">${domain}</strong>
+        </button>
+      `).join('');
+      suggestions.style.display = 'block';
+      suggestions.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mouseenter', () => btn.style.background = '#f7f8fb');
+        btn.addEventListener('mouseleave', () => btn.style.background = '#fff');
+        btn.addEventListener('click', () => {
+          emailInput.value = btn.dataset.value;
+          suggestions.style.display = 'none';
+        });
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target !== emailInput) suggestions.style.display = 'none';
+    });
+  })();
   let pendingToggleUserId = null;
   let pendingToggleStatus = null;
 
