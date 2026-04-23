@@ -54,6 +54,11 @@ router.get("/log", pmController.getLog);
 router.post("/log", pmController.postLog);
 router.post("/log/edit", pmController.postEditLog);
 router.post("/log/delete", pmController.postDeleteLog);
+
+router.get("/achievements", pmController.getAchievements);
+router.post("/achievements", pmController.postAchievement);
+router.post("/achievements/delete", pmController.deleteAchievement);
+router.post("/achievements/edit", pmController.editAchievement);
 router.get("/self-review", pmController.getSelfReview);
 router.get(
   "/self-review/generate",

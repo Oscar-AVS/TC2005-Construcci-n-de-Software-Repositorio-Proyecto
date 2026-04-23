@@ -9,6 +9,7 @@ const Project = require("../models/project.model");
 const Team = require("../models/team.model");
 const Blocker = require("../models/blocker.model");
 const Log = require("../models/log.model");
+const Achievement = require("../models/achievement.model");
 const bcrypt = require("bcrypt");
 
 const renderProjectDetailView = async (req, res, project, options = {}) => {
@@ -922,178 +923,113 @@ exports.exportProjectReportPDF = async (req, res) => {
     doc.pipe(res);
 
     // Header
-    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke("#EFF6FF", "#3b82f6");
+    doc.roundedRect(40, 35, 515, 95, 10).fillAndStroke("#FFF4ED", "#E84C1E");
 
     doc
-      .fillColor("#3b82f6")
+      .fillColor("#E84C1E")
       .fontSize(20)
       .text("Project Progress Report", 60, 50, { align: "center", width: 475 });
 
     doc
-      .fillColor("#64748b")
+      .fillColor("#444444")
       .fontSize(10)
       .text("Mufasa — Project Management Platform", 60, 80, {
         align: "center",
         width: 475,
       });
 
-    doc.fillColor("#1e293b").fontSize(10);
+    doc.fillColor("#000000").fontSize(10);
     doc.text(`Project: ${data.proyecto.project_name}`, 60, 108, { width: 160 });
     doc.text(`Status: ${data.proyecto.status}`, 240, 108, { width: 120 });
     doc.text(`Progress: ${data.proyecto.progress_percentage || 0}%`, 380, 108, {
       width: 140,
     });
 
-    doc.y = 150;
-    doc.moveDown(1.2);
-
-    // Progress bar
-    const barX = 50;
-    const barY = doc.y;
-    const barWidth = 495;
-    const barHeight = 12;
-    const fillWidth = Math.round(
-      ((data.proyecto.progress_percentage || 0) / 100) * barWidth,
-    );
-
-    doc
-      .roundedRect(barX, barY, barWidth, barHeight, 6)
-      .fillAndStroke("#e2e8f0", "#e2e8f0");
-    if (fillWidth > 0) {
-      doc
-        .roundedRect(barX, barY, fillWidth, barHeight, 6)
-        .fillAndStroke("#3b82f6", "#3b82f6");
-    }
-
-    doc.y = barY + barHeight + 6;
-
-    const progressLabels = {
-      not_started: "Not Started",
-      in_progress: "In Progress",
-      on_hold: "On Hold",
-      at_risk: "At Risk",
-      completed: "Completed",
-    };
-
-    doc
-      .fontSize(9)
-      .fillColor("#64748b")
-      .text(
-        `Progress status: ${progressLabels[data.proyecto.progress_status] || "—"}   |   Start: ${
-          data.proyecto.start_date
-            ? new Date(data.proyecto.start_date).toLocaleDateString("en-US")
-            : "—"
-        }   |   Due: ${
-          data.proyecto.end_date
-            ? new Date(data.proyecto.end_date).toLocaleDateString("en-US")
-            : "—"
-        }`,
-        { align: "center" },
-      );
-
-    doc.moveDown(1);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+    // Reset x to left margin before body content
+    doc.x = 50;
+    doc.moveDown(2);
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
     doc.moveDown(0.8);
 
     // Description
     if (data.proyecto.description) {
-      doc.fontSize(13).fillColor("#3b82f6").text("Description");
+      doc.fontSize(13).fillColor("#E84C1E").text("Description", 50, doc.y);
       doc.moveDown(0.3);
-      doc
-        .fontSize(10)
-        .fillColor("#475569")
-        .text(data.proyecto.description, { width: 470 });
+      doc.fontSize(10).fillColor("#333333").text(data.proyecto.description, 50, doc.y, { width: 500 });
       doc.moveDown(0.8);
-      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
       doc.moveDown(0.8);
     }
 
     // Assigned Teams
-    doc.fontSize(13).fillColor("#3b82f6").text("Assigned Teams");
+    doc.fontSize(13).fillColor("#E84C1E").text("Assigned Teams", 50, doc.y);
     doc.moveDown(0.3);
-    doc.fontSize(10).fillColor("#1e293b");
+    doc.fontSize(10);
 
     if (data.equipos.length === 0) {
-      doc.fillColor("#94a3b8").text("No teams assigned.");
+      doc.fillColor("#94a3b8").text("No teams assigned.", 50, doc.y);
     } else {
       data.equipos.forEach((team) => {
-        doc
-          .fillColor("#1e293b")
-          .text(`• ${team.team_name}`, { continued: true });
-        doc.fillColor("#64748b").text(`  —  Lead: ${team.leader_name || "—"}`);
+        doc.fillColor("#333333").text(`• ${team.team_name}  —  Lead: ${team.leader_name || "—"}`, 50, doc.y, { width: 500 });
       });
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
     doc.moveDown(0.8);
 
     // Team Members
-    doc.fontSize(13).fillColor("#3b82f6").text("Team Members");
+    doc.fontSize(13).fillColor("#E84C1E").text("Team Members", 50, doc.y);
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.miembros.length === 0) {
-      doc.fillColor("#94a3b8").text("No members assigned.");
+      doc.fillColor("#94a3b8").text("No members assigned.", 50, doc.y);
     } else {
       data.miembros.forEach((member) => {
-        doc
-          .fillColor("#1e293b")
-          .text(`• ${member.full_name}`, { continued: true });
-        doc
-          .fillColor("#64748b")
-          .text(`  —  ${member.email}  |  ${member.team_name || "No team"}`);
+        doc.fillColor("#333333").text(`• ${member.full_name}  —  ${member.email}  |  ${member.team_name || "No team"}`, 50, doc.y, { width: 500 });
       });
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
     doc.moveDown(0.8);
 
     // Blockers
-    doc.fontSize(13).fillColor("#3b82f6").text("Organizational Blockers");
+    doc.fontSize(13).fillColor("#E84C1E").text("Organizational Blockers", 50, doc.y);
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.bloqueos.length === 0) {
-      doc.fillColor("#94a3b8").text("No blockers recorded.");
+      doc.fillColor("#94a3b8").text("No blockers recorded.", 50, doc.y);
     } else {
       data.bloqueos.forEach((blocker) => {
-        doc
-          .fillColor("#1e293b")
-          .text(`• ${blocker.reporter_name}:`, { continued: true });
-        doc.fillColor("#475569").text(` ${blocker.description}`);
-        doc
-          .fontSize(9)
-          .fillColor("#94a3b8")
-          .text(
-            `  Severity: ${blocker.severity || "—"}   |   Status: ${blocker.resolution_status}   |   ${new Date(blocker.detected_at).toLocaleDateString("en-US")}`,
-            { indent: 10 },
-          );
+        doc.fillColor("#333333").text(`• ${blocker.reporter_name}: ${blocker.description}`, 50, doc.y, { width: 500 });
+        doc.fontSize(9).fillColor("#444444").text(
+          `  Severity: ${blocker.severity || "—"}   |   Status: ${blocker.resolution_status}   |   ${new Date(blocker.detected_at).toLocaleDateString("en-US")}`,
+          60, doc.y, { width: 490 },
+        );
         doc.fontSize(10);
         doc.moveDown(0.3);
       });
     }
 
     doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
     doc.moveDown(0.8);
 
     // Goals
-    doc.fontSize(13).fillColor("#3b82f6").text("Project Goals");
+    doc.fontSize(13).fillColor("#E84C1E").text("Project Goals", 50, doc.y);
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.metas.length === 0) {
-      doc.fillColor("#94a3b8").text("No goals defined for this project.");
+      doc.fillColor("#94a3b8").text("No goals defined for this project.", 50, doc.y);
     } else {
       data.metas.forEach((goal) => {
-        doc.fillColor("#1e293b").text(`• ${goal.title}`);
+        doc.fillColor("#333333").text(`• ${goal.title}`, 50, doc.y, { width: 500 });
         if (goal.description) {
-          doc
-            .fontSize(9)
-            .fillColor("#64748b")
-            .text(`  ${goal.description}`, { indent: 10 });
+          doc.fontSize(9).fillColor("#444444").text(`  ${goal.description}`, 60, doc.y, { width: 490 });
           doc.fontSize(10);
         }
         doc.moveDown(0.2);
@@ -1101,60 +1037,45 @@ exports.exportProjectReportPDF = async (req, res) => {
     }
 
     doc.moveDown(0.8);
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#e2e8f0");
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E6E6E6");
     doc.moveDown(0.8);
 
     // Recent Activity
-    doc.fontSize(13).fillColor("#3b82f6").text("Recent Activity");
+    doc.fontSize(13).fillColor("#E84C1E").text("Recent Activity", 50, doc.y);
     doc.moveDown(0.3);
     doc.fontSize(10);
 
     if (data.bitacoras.length === 0) {
-      doc.fillColor("#94a3b8").text("No activity recorded.");
+      doc.fillColor("#94a3b8").text("No activity recorded.", 50, doc.y);
     } else {
       data.bitacoras.slice(0, 30).forEach((log) => {
-        doc
-          .fillColor("#1e293b")
-          .text(
-            `• [${new Date(log.created_at).toLocaleDateString("en-US")}] ${log.full_name}`,
-          );
-
+        doc.fillColor("#333333").text(
+          `• [${new Date(log.created_at).toLocaleDateString("en-US")}] ${log.full_name}`,
+          50, doc.y, { width: 500 },
+        );
         if (log.completed) {
-          doc
-            .fontSize(9)
-            .fillColor("#475569")
-            .text(`  Completed: ${log.completed}`, { indent: 10, width: 460 });
+          doc.fontSize(9).fillColor("#333333").text(`  Completed: ${log.completed}`, 60, doc.y, { width: 490 });
         }
-
         if (log.planned) {
-          doc
-            .fontSize(9)
-            .fillColor("#94a3b8")
-            .text(`  Planned: ${log.planned}`, { indent: 10, width: 460 });
+          doc.fontSize(9).fillColor("#444444").text(`  Planned: ${log.planned}`, 60, doc.y, { width: 490 });
         }
-
         doc.fontSize(10);
         doc.moveDown(0.3);
       });
 
       if (data.bitacoras.length > 30) {
-        doc
-          .fontSize(9)
-          .fillColor("#94a3b8")
-          .text(`Showing 30 of ${data.bitacoras.length} entries.`);
+        doc.fontSize(9).fillColor("#94a3b8").text(`Showing 30 of ${data.bitacoras.length} entries.`, 50, doc.y);
       }
     }
 
     // Footer
     doc.moveDown();
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#3b82f6");
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke("#E84C1E");
     doc.moveDown(0.5);
-    doc
-      .fontSize(9)
-      .fillColor("#94a3b8")
-      .text(`Report generated on ${new Date().toLocaleDateString("en-US")}`, {
-        align: "center",
-      });
+    doc.fontSize(9).fillColor("#94a3b8").text(
+      `Report generated on ${new Date().toLocaleDateString("en-US")}`,
+      50, doc.y, { align: "center", width: 500 },
+    );
 
     doc.end();
   } catch (err) {
@@ -1165,4 +1086,56 @@ exports.exportProjectReportPDF = async (req, res) => {
       );
     }
   }
+};
+
+exports.getAchievements = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Achievement.countAllByUser(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    res.render('employee/achievements', {
+      currentPage: 'achievements',
+      role: 'project-manager',
+      achievementsBase: '/project-manager',
+      achievements,
+      projects,
+      filters,
+      totalRecords,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.postAchievement(req, res);
+};
+
+exports.deleteAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.deleteAchievement(req, res);
+};
+
+exports.editAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.editAchievement(req, res);
 };
