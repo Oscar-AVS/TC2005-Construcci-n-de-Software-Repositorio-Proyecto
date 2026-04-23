@@ -62,9 +62,9 @@ module.exports = class Log {
     }
 
     query += " GROUP BY l.id_log ORDER BY l.created_at DESC LIMIT ? OFFSET ?";
-    params.push(limit.toString(), offset.toString());
+    params.push(parseInt(limit, 10), parseInt(offset, 10));
 
-    return db.execute(query, params);
+    return db.query(query, params);
   }
 
   static create(id_user, completed, planned) {

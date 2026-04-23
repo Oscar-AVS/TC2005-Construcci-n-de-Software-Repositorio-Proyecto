@@ -21,8 +21,8 @@ module.exports = class Achievement {
     if (filters.date_from) { query += ' AND DATE(created_at) >= ?'; params.push(filters.date_from); }
     if (filters.date_to)   { query += ' AND DATE(created_at) <= ?'; params.push(filters.date_to); }
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit.toString(), offset.toString());
-    return db.execute(query, params);
+    params.push(parseInt(limit, 10), parseInt(offset, 10));
+    return db.query(query, params);
   }
 
   static create(id_user, title, description, created_at) {

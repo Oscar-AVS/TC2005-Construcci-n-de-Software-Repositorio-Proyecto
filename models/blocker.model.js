@@ -95,10 +95,10 @@ module.exports = class Blocker {
     
     if (limit !== undefined && offset !== undefined) {
       query += ` LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
+      params.push(parseInt(limit, 10), parseInt(offset, 10));
     }
 
-    return db.execute(query, params);
+    return db.query(query, params);
   }
 
   static countByProject(id_project) {
