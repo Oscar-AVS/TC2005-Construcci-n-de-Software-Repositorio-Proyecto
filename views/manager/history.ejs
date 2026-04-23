@@ -93,85 +93,56 @@
   <div class="report-card-body">
     <div class="history-list">
 
-      <!-- Entry 1 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-        <div class="history-content">
-          <p class="history-author">Lakshmi Martinez Jara</p>
-          <p class="history-text">Designed team member management UI, Created wireframes for reports</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Dashboard Redesign</span>
-          <span class="history-date">Mar 18, 2026</span>
-        </div>
+  <% if (logs.length === 0) { %>
+    <!-- Mensaje cuando no hay resultados -->
+    <p class="empty-text">No contributions found for the selected filters.</p>
+  <% } %>
+
+  <% logs.forEach((log) => { %>
+    <div class="history-entry">
+      
+      <!-- Avatar -->
+      <img
+        class="history-avatar"
+        src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg"
+        alt="<%= log.full_name %>"
+      />
+
+      <!-- Contenido principal -->
+      <div class="history-content">
+        <!-- Nombre del usuario -->
+        <p class="history-author"><%= log.full_name %></p>
+
+        <!-- Texto del log -->
+        <p class="history-text">
+          <%= log.completed || '' %>
+          <% if (log.planned) { %>
+            • Next: <%= log.planned %>
+          <% } %>
+        </p>
       </div>
 
-      <!-- Entry 2 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-        <div class="history-content">
-          <p class="history-author">Oscar Vilchis</p>
-          <p class="history-text">Set up MySQL database schema, Configured connection pooling</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">API Integration</span>
-          <span class="history-date">Mar 18, 2026</span>
-        </div>
-      </div>
+      <!-- Meta info -->
+      <div class="history-meta">
+        <!-- Proyecto -->
+        <span class="history-project">
+          <%= log.project_name || 'No project' %>
+        </span>
 
-      <!-- Entry 3 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-        <div class="history-content">
-          <p class="history-author">Francisco Arreola</p>
-          <p class="history-text">Built MVC structure, Created employee views and routes</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Internal Tools</span>
-          <span class="history-date">Mar 17, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 4 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-        <div class="history-content">
-          <p class="history-author">Lakshmi Martinez Jara</p>
-          <p class="history-text">Created login page design, Implemented responsive layout</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Dashboard Redesign</span>
-          <span class="history-date">Mar 16, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 5 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-        <div class="history-content">
-          <p class="history-author">Oscar Vilchis</p>
-          <p class="history-text">Implemented authentication middleware, Added session management</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">API Integration</span>
-          <span class="history-date">Mar 15, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 6 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-        <div class="history-content">
-          <p class="history-author">Francisco Arreola</p>
-          <p class="history-text">Set up Express server, Configured EJS templates</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Internal Tools</span>
-          <span class="history-date">Mar 14, 2026</span>
-        </div>
+        <!-- Fecha -->
+        <span class="history-date">
+          <%= new Date(log.created_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }) %>
+        </span>
       </div>
 
     </div>
+  <% }); %>
+
+</div>
 
     <!-- Pagination hint -->
     <div class="action-row" style="justify-content: center; margin-top: 24px;">
