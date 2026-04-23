@@ -117,9 +117,13 @@
       </div>
 
       <!-- Boton para aplicar filtros -->
-      <button class="btn-submit" type="submit">Apply Filters</button>
-    </form>
-  </div>
+          <!-- Boton para aplicar filtros -->
+<button class="btn-submit" type="submit">Apply Filters</button>
+
+<!-- Boton para limpiar filtros y volver al historial completo -->
+<a href="/manager/history" class="btn-draft clear-filters-button">
+  Clear Filters
+</a>
 </div>
 
 <!-- History List -->
@@ -311,9 +315,10 @@
   });
 </script>
 
+  <style>
 
-<style>
-  /* Contenedor del buscador de usuario */
+
+/* Contenedor del buscador de usuario */
   .user-search-group {
     position: relative;
   }
@@ -354,4 +359,13 @@
   .hidden {
     display: none !important;
   }
+
+  /* Ajusta el boton de limpiar filtros para que se vea alineado con el submit */
+  .clear-filters-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+
 </style>
