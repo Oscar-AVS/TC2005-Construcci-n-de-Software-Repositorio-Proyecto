@@ -51,7 +51,7 @@
 
       <span class="project-progress-badge <%= project.progress_status %>">
         <i class="fa-solid fa-chart-simple"></i>
-        <%= progressLabels[project.progress_status] || project.progress_status %> · <%= project.progress_percentage || 0 %>%
+        <%= progressLabels[project.progress_status] || project.progress_status %>
       </span>
     </div>
   </div>
@@ -63,168 +63,274 @@
     <button class="btn-draft" type="button" id="btnEditProject" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-pen"></i> Edit Project
     </button>
-    <button class="btn-submit" type="button" id="btnAssignUser" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
-      <i class="fa-solid fa-user-plus"></i> Add Member
-    </button>
-    <button class="btn-draft" type="button" id="btnEditProgress" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
-      <i class="fa-solid fa-chart-simple"></i> Progress
-    </button>
     <button class="btn-draft" type="button" id="btnAssignTeam" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
       <i class="fa-solid fa-users"></i> Assign Team
     </button>
+    <button class="btn-submit" type="button" id="btnAssignUser" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;">
+      <i class="fa-solid fa-user-plus"></i> Add Member
+    </button>
   </div>
 </div>
 
- <!-- Barra Progreso -->
- <div class="report-card" style="padding: 16px 24px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-    <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">Overall Progress</span>
-    <span style="font-size:13px; font-weight:700; color:var(--text-primary);"><%= project.progress_percentage || 0 %>%</span>
-  </div>
-  <div class="progress-bar-track">
-    <div class="progress-bar-fill" style="width: <%= project.progress_percentage || 0 %>%;"></div>
-  </div>
-  <% if (project.last_progress_update) { %>
-  <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">
-    Last updated: <%= new Date(project.last_progress_update).toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' }) %>
-  </p>
-  <% } %>
-</div>
-
- <!-- Description -->
- <div class="report-card">
-  <div class="report-card-header">
-    <h2>Description</h2>
-  </div>
-  <div class="report-card-body">
-    <p class="project-description">
-      <%= project.description || 'This project has no description yet.' %>
-    </p>
-  </div>
- </div>
- 
- 
- <!-- Two Column -->
-<div class="project-detail-grid">
-  <div class="report-card">
-    <div class="report-card-header">
-      <h2>Assigned Teams</h2>
-      <span class="item-count"><%= teams.length %> team<%= teams.length !== 1 ? 's' : '' %></span>
-    </div>
-    <div class="report-card-body">
-      <% if (teams.length === 0) { %>
-        <p style="color: var(--text-secondary); font-size: 14px;">No teams assigned yet.</p>
-      <% } else { %>
-        <ul class="members-list">
-          <% teams.forEach(team => { %>
-          <li class="member-item">
-            <div class="member-avatar">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <div class="member-info">
-              <span class="member-name"><%= team.team_name %></span>
-              <span class="member-role"><%= team.leader_name ? 'Lead: ' + team.leader_name : 'No leader assigned' %></span>
-            </div>
-            <form action="/project-manager/project/<%= project.id_project %>/teams/<%= team.id_team %>/remove" method="POST" style="margin:0;">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <button
-                type="submit"
-                class="btn-icon btn-danger"
-                title="Remove team"
-                onclick="return confirm('Remove team <%= team.team_name %> from this project?')">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </form>
-          </li>
-          <% }) %>
-        </ul>
-      <% } %>
-    </div>
-  </div>
-
-  <div class="report-card">
-    <div class="report-card-header">
-      <h2>Team Members</h2>
-      <span class="item-count"><%= users.length %> member<%= users.length !== 1 ? 's' : '' %></span>
-    </div>
-    <div class="report-card-body">
-      <% if (users.length === 0) { %>
-        <p style="color: var(--text-secondary); font-size: 14px;">No members assigned yet.</p>
-      <% } else { %>
-        <ul class="members-list">
-          <% users.forEach(user => { %>
-          <li class="member-item">
-            <div class="member-avatar">
-              <i class="fa-solid fa-user"></i>
-            </div>
-            <div class="member-info">
-              <span class="member-name"><%= user.full_name %></span>
-              <span class="member-role"><%= user.team_name || 'No team' %></span>
-            </div>
-            <form action="/project-manager/project/<%= project.id_project %>/users/<%= user.id_user %>/remove" method="POST" style="margin:0;">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <button type="submit" class="btn-icon btn-danger" title="Remove member"
-                onclick="return confirm('Remove <%= user.full_name %> from this project?')">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </form>
-          </li>
-          <% }) %>
-        </ul>
-      <% } %>
-    </div>
-  </div>
-
-  <div class="report-card">
-    <div class="report-card-header">
-      <h2>Active Blockers</h2>
-      <span class="item-count">0 blockers</span>
-    </div>
-    <div class="report-card-body">
-      <p style="color: var(--text-secondary); font-size: 14px;">No active blockers.</p>
-    </div>
-  </div>
-</div>
- 
- 
- <!-- Recent Activity -->
- <div class="report-card">
-  <div class="report-card-header">
-    <h2>Recent Activity</h2>
-    <% if (activity && activity.length > 0) { %>
-      <form action="/project-manager/project/<%= project.id_project %>/report/export-pdf" method="POST" style="margin:0;">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <button type="submit" class="btn-export">
-          <i class="fa-solid fa-file-pdf"></i> Export PDF
-        </button>
-      </form>
+<!-- Project Tabs -->
+<div class="dashboard-tabs" style="margin-bottom: 24px;">
+  <button type="button" class="dashboard-tab active" data-tab="overview">
+    <i class="fa-solid fa-circle-info"></i> Overview
+  </button>
+  <button type="button" class="dashboard-tab" data-tab="activity-tab">
+    <i class="fa-solid fa-list-check"></i> Activity
+  </button>
+  <button type="button" class="dashboard-tab" data-tab="blockers-tab">
+    <i class="fa-solid fa-triangle-exclamation"></i> Blockers 
+    <% if (totalBlockersRecords > 0) { %>
+      <span id="blocker-tab-badge" style="background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 6px;"><%= totalBlockersRecords %></span>
     <% } %>
-  </div>
+  </button>
+</div>
 
-  <div class="report-card-body">
-    <% if (!activity || activity.length === 0) { %>
-      <p style="color: var(--text-secondary); font-size: 14px;">No recent activity.</p>
-    <% } else { %>
-      <div class="activity-log-list">
-        <% activity.forEach(log => { %>
-          <div class="activity-log-item">
-            <div class="log-date">
-              <%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) %>
+<div class="tab-content active" id="tab-overview">
+  <div class="project-detail-grid">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- Description -->
+      <div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+        <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 20px 24px;">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">Description</h2>
+        </div>
+        <div class="report-card-body" style="padding: 24px;">
+          <p class="project-description" style="margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">
+            <%= project.description || 'This project has no description yet.' %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Teams -->
+      <div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+        <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 20px 24px;">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">Assigned Teams</h2>
+          <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;"><%= teams.length %></span>
+        </div>
+        <div class="report-card-body" style="padding: 0;">
+          <% if (teams.length === 0) { %>
+            <div style="padding: 40px 24px; text-align: center;">
+              <p style="color: #94a3b8; font-size: 14px; margin: 0;">No teams assigned.</p>
             </div>
-            <div class="log-entries">
-              <div class="log-entry">
-                <span class="log-time">
-                  <%= new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
-                </span>
-                <span class="log-text">
-                  <strong><%= log.full_name %></strong> — <%= log.completed %>
-                </span>
+          <% } else { %>
+            <ul style="list-style: none; margin: 0; padding: 0;">
+              <% teams.forEach((team, index) => { %>
+              <li style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; <%= index < teams.length - 1 ? 'border-bottom: 1px solid #f1f3f7;' : '' %>">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <div style="background: #e0e7ff; color: #4338ca; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-users"></i>
+                  </div>
+                  <div>
+                    <span style="display: block; font-weight: 700; color: #1f2a44; font-size: 14px;"><%= team.team_name %></span>
+                    <span style="display: block; font-size: 12px; color: #64748b;">Lead: <%= team.leader_name || 'N/A' %></span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" 
+                    style="background:transparent; border:none; color:#cbd5e1; cursor:pointer; font-size: 16px; padding: 4px;" 
+                    onmouseenter="this.style.color='#ef4444'" 
+                    onmouseleave="this.style.color='#cbd5e1'" 
+                    onclick="openDeleteTeamModal('<%= team.id_team %>', '<%= team.team_name %>')">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+      <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 20px 24px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">Team Members</h2>
+        <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;"><%= users.length %></span>
+      </div>
+      <div class="report-card-body" style="padding: 0;">
+        <% if (users.length === 0) { %>
+          <div style="padding: 40px 24px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">No members assigned.</p>
+          </div>
+        <% } else { %>
+          <ul style="list-style: none; margin: 0; padding: 0;">
+            <% users.forEach((user, index) => { %>
+            <li style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; <%= index < users.length - 1 ? 'border-bottom: 1px solid #f1f3f7;' : '' %>">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="background: #fb0202; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                  <%= (user.full_name || '?').charAt(0).toUpperCase() %>
+                </div>
+                <div>
+                  <span style="display: block; font-weight: 700; color: #1f2a44; font-size: 14px;"><%= user.full_name %></span>
+                  <span style="display: block; font-size: 12px; color: #64748b;"><%= user.team_name || 'No team' %></span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" 
+                  style="background:transparent; border:none; color:#cbd5e1; cursor:pointer; font-size: 16px; padding: 4px;" 
+                  onmouseenter="this.style.color='#ef4444'" 
+                  onmouseleave="this.style.color='#cbd5e1'" 
+                  onclick="openDeleteMemberModal('<%= user.id_user %>', '<%= user.full_name %>')">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-activity-tab">
+  <div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+    <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">Recent Activity</h2>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span class="item-count" id="activity-total-count"><%= totalRecords %> entries</span>
+        <form action="/project-manager/project/<%= project.id_project %>/report/export-pdf" method="POST" style="margin:0;">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button type="submit" class="btn-export" style="background: #fff; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Filters Section -->
+    <div style="background: #f8f9fc; border-bottom: 1px solid #f1f3f7; padding: 20px 24px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+        <div class="filter-group">
+          <label class="form-label">Quick Filters</label>
+          <select id="logQuickFilter" class="form-select">
+            <option value="">Custom Range</option>
+            <option value="LAST_WEEK">Last Week</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="Q1">Q1 (Jan - Mar)</option>
+            <option value="Q2">Q2 (Apr - Jun)</option>
+            <option value="Q3">Q3 (Jul - Sep)</option>
+            <option value="Q4">Q4 (Oct - Dec)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label">Team</label>
+          <select id="filterActivityTeam" class="form-select" onchange="loadActivityPage(1)">
+            <option value="">All Teams</option>
+            <% teams.forEach(t => { %>
+              <option value="<%= t.id_team %>"><%= t.team_name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label">Member</label>
+          <select id="filterActivityMember" class="form-select" onchange="loadActivityPage(1)">
+            <option value="">All Members</option>
+            <% users.forEach(u => { %>
+              <option value="<%= u.id_user %>"><%= u.full_name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label">From</label>
+          <input type="date" id="filterActivityFrom" class="form-input" onchange="loadActivityPage(1)">
+        </div>
+        <div class="filter-group">
+          <label class="form-label">To</label>
+          <input type="date" id="filterActivityTo" class="form-input" onchange="loadActivityPage(1)">
+        </div>
+      </div>
+    </div>
+    <div class="report-card-body" id="activity-tab-content" style="padding: 0;">
+      <% if (activity && activity.length > 0) { %>
+        <div id="activity-timeline" style="padding: 16px 0;">
+          <% activity.forEach((log, index) => { %>
+            <div style="display: flex; gap: 16px; padding: 12px 24px; position: relative;">
+              <div style="flex-shrink: 0; width: 70px; text-align: right;">
+                <span style="display: block; font-size: 12px; font-weight: 700; color: #1f2a44;"><%= new Date(log.created_at).toLocaleDateString('en-GB') %></span>
+                <span style="display: block; font-size: 11px; color: #94a3b8;"><%= new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %></span>
+              </div>
+              <div style="position: relative; width: 12px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #fb0202; position: absolute; top: 4px; left: 2px;"></div>
+                <% if (index < activity.length - 1) { %>
+                  <div style="width: 2px; background: #f1f3f7; position: absolute; top: 12px; bottom: -12px; left: 5px;"></div>
+                <% } %>
+              </div>
+              <div style="flex: 1;">
+                <p style="margin: 0; font-size: 14px; color: #334155;">
+                  <strong style="color: #1a1a2e; font-weight: 800;"><%= log.full_name %></strong>: <%= log.completed %>
+                </p>
               </div>
             </div>
+          <% }) %>
+        </div>
+
+        <!-- Standardized Pagination Footer -->
+        <% if (totalPages > 1) { %>
+          <div class="pagination-footer" id="activity-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #f8f9fc; border-top: 1px solid #e1e4e8;">
+            <button onclick="loadActivityPage(<%= page - 1 %>)" class="btn-draft" id="activity-prev-btn" <%= !hasPrevPage ? 'disabled style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <span id="activity-page-info" style="color: #5f6b85; font-size: 14px; font-weight: 500;">Page <%= page %> of <%= totalPages %></span>
+            <button onclick="loadActivityPage(<%= page + 1 %>)" class="btn-draft" id="activity-next-btn" <%= !hasNextPage ? 'disabled style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
-        <% }) %>
-      </div>
-    <% } %>
+        <% } %>
+      <% } else { %>
+        <div style="padding: 48px 24px; text-align: center; color: #94a3b8;">No activity recorded yet.</div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-blockers-tab">
+  <div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+    <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 20px 24px;">
+      <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">Active Blockers</h2>
+    </div>
+    <div class="report-card-body" id="blockers-tab-content" style="padding: 24px;">
+      <% if (blockers && blockers.length > 0) { %>
+        <div id="blockers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <% blockers.forEach(blocker => { %>
+            <div style="background: #fff; border: 1px solid #f1f3f7; border-left: 4px solid #ef4444; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; font-weight: 700; color: #ef4444; text-transform: uppercase;"><%= blocker.severity %></span>
+                <span style="font-size: 11px; color: #94a3b8;"><%= new Date(blocker.detected_at).toLocaleDateString() %></span>
+              </div>
+              <p style="margin: 0 0 12px; font-size: 13px; color: #1f2a44; font-weight: 500;"><%= blocker.description %></p>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="background: #fb0202; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;">
+                  <%= (blocker.reporter_name || '?').charAt(0).toUpperCase() %>
+                </div>
+                <span style="font-size: 11px; color: #64748b;">By <%= blocker.reporter_name %></span>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Blockers Pagination Footer -->
+        <% if (totalBlockerPages > 1) { %>
+          <div class="pagination-footer" id="blockers-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #f8f9fc; border: 1px solid #e1e4e8; border-radius: 12px;">
+            <button onclick="loadBlockersPage(<%= blockerPage - 1 %>)" class="btn-draft" id="blockers-prev-btn" <%= !hasPrevBlockerPage ? 'disabled style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <span id="blockers-page-info" style="color: #5f6b85; font-size: 14px; font-weight: 500;">Page <%= blockerPage %> of <%= totalBlockerPages %></span>
+            <button onclick="loadBlockersPage(<%= blockerPage + 1 %>)" class="btn-draft" id="blockers-next-btn" <%= !hasNextBlockerPage ? 'disabled style="pointer-events: none; opacity: 0.5;"' : '' %>>
+              Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div style="padding: 40px 24px; text-align: center;">
+          <div style="color: #cbd5e1; font-size: 32px; margin-bottom: 12px;"><i class="fa-solid fa-shield-check"></i></div>
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">No active blockers for this project.</p>
+        </div>
+      <% } %>
+    </div>
   </div>
 </div>
  
@@ -260,7 +366,7 @@
  
       <div class="form-field">
         <label class="form-label" for="editProjectStatus">Status</label>
-        <select id="editProjectStatus" name="progress_status" class="form-select">
+        <select id="editProjectStatus" name="status" class="form-select">
           <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
           <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
           <option value="on_hold"     <%= project.progress_status === 'on_hold'     ? 'selected' : '' %>>On Hold</option>
@@ -333,67 +439,6 @@
       </div>
     </form>
   </div>
- </div>
- 
- <!-- MODAL: Caso 4.5 -->
-<div class="modal-overlay" id="modalEditProgress">
-  <div class="modal" style="max-width: 440px;">
-    <div class="modal-header">
-      <h2>Update Progress</h2>
-      <button class="modal-close" type="button" id="btnCloseProgress">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <form action="/project-manager/project/<%= project.id_project %>/progress" method="POST">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
-      <div class="form-field">
-        <label class="form-label" for="progressStatus">Status *</label>
-        <select id="progressStatus" name="progress_status" class="form-select" required>
-          <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
-          <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
-          <option value="on_hold"     <%= project.progress_status === 'on_hold' ? 'selected' : '' %>>On Hold</option>
-          <option value="at_risk"     <%= project.progress_status === 'at_risk' ? 'selected' : '' %>>At Risk</option>
-          <option value="completed"   <%= project.progress_status === 'completed' ? 'selected' : '' %>>Completed</option>
-        </select>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Progress Percentage *</label>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <input
-            type="range"
-            id="progressRange"
-            min="0"
-            max="100"
-            step="5"
-            value="<%= project.progress_percentage || 0 %>"
-            style="flex:1; accent-color:#f97316;"
-            oninput="document.getElementById('progressPct').value = this.value" />
-
-          <input
-            type="number"
-            id="progressPct"
-            name="progress_percentage"
-            class="form-input"
-            min="0"
-            max="100"
-            style="width:72px; text-align:center;"
-            value="<%= project.progress_percentage || 0 %>"
-            oninput="document.getElementById('progressRange').value = this.value"
-            required />
-        </div>
-      </div>
-
-      <div class="action-row" style="justify-content: flex-end; gap: 12px;">
-        <button type="button" class="btn-draft" id="btnCancelProgress">Cancel</button>
-        <button type="submit" class="btn-submit">
-          <i class="fa-solid fa-floppy-disk"></i> Save
-        </button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <!-- MODAL: Caso 4.6 - Asigna equipos -->
@@ -447,21 +492,19 @@
     </div>
     <form action="/project-manager/project/<%= project.id_project %>/users/assign" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div class="form-field">
-        <label class="form-label" for="selectUser">User *</label>
-        <select id="selectUser" name="id_user" class="form-select" required>
-          <option value="">Select a user...</option>
-          <%
-            const assignedUserIds = users.map(u => String(u.id_user));
-          %>
-          <% allUsers.forEach(u => { %>
-            <% if (!assignedUserIds.includes(String(u.id_user))) { %>
-              <option value="<%= u.id_user %>">
-                <%= u.full_name %> — <%= u.role || 'No role' %>
-              </option>
-            <% } %>
-          <% }) %>
-        </select>
+      <div class="form-field" style="position: relative;">
+        <label class="form-label" for="memberSearch">User *</label>
+        <input
+          type="text"
+          id="memberSearch"
+          class="form-input"
+          placeholder="Search by name or email..."
+          autocomplete="off"
+          style="width: 100%;"
+        />
+        <input type="hidden" name="id_user" id="selectedUserId" required>
+        <div id="memberSuggestions" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #dcdcdc; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden; z-index: 100;"></div>
+        <small id="selectedUserLabel" style="display: block; color: #5f6b85; margin-top: 4px; min-height: 18px; font-size: 12px;"></small>
       </div>
       <div class="form-field">
         <label class="form-label" for="selectUserTeam">Team (optional)</label>
@@ -490,6 +533,17 @@
     if (isNaN(d)) return '';
     return d.toISOString().split('T')[0];
   }
+
+  // Tab Switching Logic
+  document.querySelectorAll('.dashboard-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.getAttribute('data-tab');
+      document.getElementById('tab-' + target).classList.add('active');
+    });
+  });
  
  
   function openModal(modal)  { modal.classList.add('active'); }
@@ -515,12 +569,6 @@
   document.getElementById('btnEditDates').addEventListener('click',   () => openModal(modalDates));
   document.getElementById('btnCloseDates').addEventListener('click',  () => closeModal(modalDates));
   document.getElementById('btnCancelDates').addEventListener('click', () => closeModal(modalDates));
-
-  // Modal Progress (4.5)
-  const modalProgress = document.getElementById('modalEditProgress');
-  document.getElementById('btnEditProgress').addEventListener('click',   () => openModal(modalProgress));
-  document.getElementById('btnCloseProgress').addEventListener('click',  () => closeModal(modalProgress));
-  document.getElementById('btnCancelProgress').addEventListener('click', () => closeModal(modalProgress));
 
   // Modal Teams (4.6)
   const modalAssignTeam = document.getElementById('modalAssignTeam');
@@ -561,5 +609,336 @@
   document.querySelectorAll('.alert').forEach(el => {
     setTimeout(() => el.style.display = 'none', 4000);
   });
- </script>
+
+  // --- DYNAMIC MEMBER SEARCH (Add Member Modal) ---
+  const memberSearch = document.getElementById('memberSearch');
+  const memberSuggestions = document.getElementById('memberSuggestions');
+  const selectedUserId = document.getElementById('selectedUserId');
+  const selectedUserLabel = document.getElementById('selectedUserLabel');
+  let searchTimeout;
+
+  function renderSuggestions(users) {
+    memberSuggestions.innerHTML = '';
+    if (!users.length) {
+      memberSuggestions.innerHTML = `<div style="padding:12px 14px;color:#5f6b85;font-size:14px;">No matching users found</div>`;
+      memberSuggestions.style.display = 'block';
+      return;
+    }
+    users.forEach(user => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      Object.assign(item.style, { width:'100%', border:'none', background:'#fff', padding:'12px 14px', textAlign:'left', cursor:'pointer', display:'flex', flexDirection:'column', gap:'2px' });
+      item.onmouseenter = () => item.style.background = '#f7f8fb';
+      item.onmouseleave = () => item.style.background = '#fff';
+      item.innerHTML = `<span style="font-weight:700;color:#1f2a44;">${user.full_name}</span><span style="font-size:13px;color:#9ca3af;">${user.email}</span>`;
+      item.addEventListener('click', () => {
+        memberSearch.value = user.full_name;
+        selectedUserId.value = user.id_user;
+        selectedUserLabel.textContent = `Selected: ${user.full_name}`;
+        selectedUserLabel.style.color = '#15803d';
+        memberSuggestions.style.display = 'none';
+      });
+      memberSuggestions.appendChild(item);
+    });
+    memberSuggestions.style.display = 'block';
+  }
+
+  if (memberSearch) {
+    memberSearch.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      selectedUserId.value = '';
+      selectedUserLabel.textContent = '';
+      searchTimeout = setTimeout(async () => {
+        const q = memberSearch.value.trim();
+        if (!q) { memberSuggestions.style.display = 'none'; return; }
+        try {
+          const res = await fetch(`/project-manager/project/<%= project.id_project %>/users/search?q=${encodeURIComponent(q)}`);
+          renderSuggestions(await res.json());
+        } catch (e) { console.error(e); }
+      }, 300);
+    });
+
+    memberSearch.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+
+    document.addEventListener('click', e => {
+      if (!memberSuggestions.contains(e.target) && e.target !== memberSearch)
+        memberSuggestions.style.display = 'none';
+    });
+  }
+  // Modal logic for delete confirmation
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalDeleteMember = document.getElementById('modalDeleteMember');
+    const modalDeleteTeam = document.getElementById('modalDeleteTeam');
+
+    window.openDeleteMemberModal = function(userId, fullName) {
+      document.getElementById('deleteMemberId').value = userId;
+      document.getElementById('deleteMemberText').textContent = `Are you sure you want to remove ${fullName} from this project?`;
+      openModal(modalDeleteMember);
+    };
+
+    window.openDeleteTeamModal = function(teamId, teamName) {
+      document.getElementById('deleteTeamId').value = teamId;
+      document.getElementById('deleteTeamText').textContent = `Are you sure you want to remove the team "${teamName}" from this project?`;
+      openModal(modalDeleteTeam);
+    };
+
+    document.getElementById('btnCloseDeleteMember').addEventListener('click', () => closeModal(modalDeleteMember));
+    document.getElementById('btnCancelDeleteMember').addEventListener('click', () => closeModal(modalDeleteMember));
+    document.getElementById('btnCloseDeleteTeam').addEventListener('click', () => closeModal(modalDeleteTeam));
+    document.getElementById('btnCancelDeleteTeam').addEventListener('click', () => closeModal(modalDeleteTeam));
+
+    // Handle Tab from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+      const tabBtn = document.querySelector(`.dashboard-tab[data-tab="${activeTab}"]`);
+      if (tabBtn) tabBtn.click();
+    }
+
+    // Quick Filters Logic
+    const logQuickFilter = document.getElementById('logQuickFilter');
+    const filterFrom = document.getElementById('filterActivityFrom');
+    const filterTo = document.getElementById('filterActivityTo');
+
+    if (logQuickFilter && filterFrom && filterTo) {
+      logQuickFilter.addEventListener('change', () => {
+        const val = logQuickFilter.value;
+        if (!val) return;
+        const year = new Date().getFullYear();
+        let startDate = '', endDate = '';
+
+        switch (val) {
+          case 'LAST_WEEK': {
+            const today = new Date();
+            const last = new Date();
+            last.setDate(today.getDate() - 7);
+            startDate = last.toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            break;
+          }
+          case 'LAST_MONTH': {
+            const today = new Date();
+            const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const last = new Date(today.getFullYear(), today.getMonth(), 0);
+            startDate = first.toISOString().split('T')[0];
+            endDate = last.toISOString().split('T')[0];
+            break;
+          }
+          case 'Q1': startDate = `${year}-01-01`; endDate = `${year}-03-31`; break;
+          case 'Q2': startDate = `${year}-04-01`; endDate = `${year}-06-30`; break;
+          case 'Q3': startDate = `${year}-07-01`; endDate = `${year}-09-30`; break;
+          case 'Q4': startDate = `${year}-10-01`; endDate = `${year}-12-31`; break;
+        }
+
+        filterFrom.value = startDate;
+        filterTo.value = endDate;
+        loadActivityPage(1);
+      });
+
+      filterFrom.addEventListener('change', () => { logQuickFilter.value = ''; });
+      filterTo.addEventListener('change', () => { logQuickFilter.value = ''; });
+    }
+  });
+
+  async function loadActivityPage(page) {
+    const timeline = document.getElementById('activity-timeline');
+    const pagination = document.getElementById('activity-pagination');
+    const pageInfo = document.getElementById('activity-page-info');
+    const prevBtn = document.getElementById('activity-prev-btn');
+    const nextBtn = document.getElementById('activity-next-btn');
+    const totalCount = document.getElementById('activity-total-count');
+
+    // Show loading state (optional, just dim for now)
+    timeline.style.opacity = '0.5';
+
+    // Get filters
+    const idTeam = document.getElementById('filterActivityTeam').value;
+    const idUser = document.getElementById('filterActivityMember').value;
+    const dateFrom = document.getElementById('filterActivityFrom').value;
+    const dateTo = document.getElementById('filterActivityTo').value;
+
+    try {
+      const params = new URLSearchParams({
+        page: page,
+        id_team: idTeam,
+        id_user: idUser,
+        date_from: dateFrom,
+        date_to: dateTo
+      });
+
+      const res = await fetch(`/project-manager/project/<%= project.id_project %>/activity?${params.toString()}`);
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+
+      // Render Timeline
+      timeline.innerHTML = '';
+      if (totalCount) totalCount.textContent = `${data.totalRecords} entries`;
+      data.activity.forEach((log, index) => {
+        const dateStr = new Date(log.created_at).toLocaleDateString('en-GB');
+        const timeStr = new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        const entry = document.createElement('div');
+        entry.style.cssText = 'display: flex; gap: 16px; padding: 12px 24px; position: relative;';
+        entry.innerHTML = `
+          <div style="flex-shrink: 0; width: 70px; text-align: right;">
+            <span style="display: block; font-size: 12px; font-weight: 700; color: #1f2a44;">${dateStr}</span>
+            <span style="display: block; font-size: 11px; color: #94a3b8;">${timeStr}</span>
+          </div>
+          <div style="position: relative; width: 12px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #fb0202; position: absolute; top: 4px; left: 2px;"></div>
+            ${index < data.activity.length - 1 ? '<div style="width: 2px; background: #f1f3f7; position: absolute; top: 12px; bottom: -12px; left: 5px;"></div>' : ''}
+          </div>
+          <div style="flex: 1;">
+            <p style="margin: 0; font-size: 14px; color: #334155;">
+              <strong style="color: #1a1a2e; font-weight: 800;">${log.full_name}</strong>: ${log.completed}
+            </p>
+          </div>
+        `;
+        timeline.appendChild(entry);
+      });
+
+      // Update Pagination
+      pageInfo.textContent = `Page ${data.page} of ${data.totalPages}`;
+      
+      prevBtn.onclick = () => loadActivityPage(data.page - 1);
+      prevBtn.disabled = !data.hasPrevPage;
+      prevBtn.style.opacity = data.hasPrevPage ? '1' : '0.5';
+      prevBtn.style.pointerEvents = data.hasPrevPage ? 'auto' : 'none';
+
+      nextBtn.onclick = () => loadActivityPage(data.page + 1);
+      nextBtn.disabled = !data.hasNextPage;
+      nextBtn.style.opacity = data.hasNextPage ? '1' : '0.5';
+      nextBtn.style.pointerEvents = data.hasNextPage ? 'auto' : 'none';
+
+    } catch (err) {
+      console.error('Error loading activity:', err);
+    } finally {
+      timeline.style.opacity = '1';
+    }
+  }
+
+  async function loadBlockersPage(page) {
+    const grid = document.getElementById('blockers-grid');
+    const pageInfo = document.getElementById('blockers-page-info');
+    const prevBtn = document.getElementById('blockers-prev-btn');
+    const nextBtn = document.getElementById('blockers-next-btn');
+    const badge = document.getElementById('blocker-tab-badge');
+
+    grid.style.opacity = '0.5';
+
+    try {
+      const res = await fetch(`/project-manager/project/<%= project.id_project %>/blockers?page=${page}`);
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+
+      // Update Badge
+      if (badge) {
+        badge.textContent = data.totalRecords;
+        badge.style.display = data.totalRecords > 0 ? 'inline-block' : 'none';
+      }
+
+      // Render Grid
+      grid.innerHTML = '';
+      data.blockers.forEach(blocker => {
+        const dateStr = new Date(blocker.detected_at).toLocaleDateString();
+        const card = document.createElement('div');
+        card.style.cssText = 'background: #fff; border: 1px solid #f1f3f7; border-left: 4px solid #ef4444; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 11px; font-weight: 700; color: #ef4444; text-transform: uppercase;">${blocker.severity}</span>
+            <span style="font-size: 11px; color: #94a3b8;">${dateStr}</span>
+          </div>
+          <p style="margin: 0 0 12px; font-size: 13px; color: #1f2a44; font-weight: 500;">${blocker.description}</p>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="background: #fb0202; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;">
+              ${(blocker.reporter_name || '?').charAt(0).toUpperCase()}
+            </div>
+            <span style="font-size: 11px; color: #64748b;">By ${blocker.reporter_name}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // Update Pagination
+      if (pageInfo) {
+        pageInfo.textContent = `Page ${data.page} of ${data.totalPages}`;
+        
+        prevBtn.onclick = () => loadBlockersPage(data.page - 1);
+        prevBtn.disabled = !data.hasPrevPage;
+        prevBtn.style.opacity = data.hasPrevPage ? '1' : '0.5';
+        prevBtn.style.pointerEvents = data.hasPrevPage ? 'auto' : 'none';
+
+        nextBtn.onclick = () => loadBlockersPage(data.page + 1);
+        nextBtn.disabled = !data.hasNextPage;
+        nextBtn.style.opacity = data.hasNextPage ? '1' : '0.5';
+        nextBtn.style.pointerEvents = data.hasNextPage ? 'auto' : 'none';
+      }
+
+    } catch (err) {
+      console.error('Error loading blockers:', err);
+    } finally {
+      grid.style.opacity = '1';
+    }
+  }
+</script>
+
+<!-- Delete Member Modal -->
+<div class="modal-overlay" id="modalDeleteMember">
+  <div class="modal" style="max-width: 400px; text-align: center; padding: 32px;">
+    <div style="width: 64px; height: 64px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px;">
+      <i class="fa-solid fa-user-xmark"></i>
+    </div>
+    <h3 style="font-size: 20px; font-weight: 700; color: #1f2a44; margin: 0 0 12px;">Remove Member</h3>
+    <p id="deleteMemberText" style="font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 24px;"></p>
+    <form action="/project-manager/project/<%= project.id_project %>/users/remove" method="POST" id="formDeleteMember">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="id_user" id="deleteMemberId" />
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn-draft" id="btnCancelDeleteMember" style="flex: 1;">Cancel</button>
+        <button type="submit" class="btn-submit" style="flex: 1; background: #ef4444; border-color: #ef4444;">Remove</button>
+      </div>
+    </form>
+    <button class="modal-close" id="btnCloseDeleteMember"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
+
+<!-- Delete Team Modal -->
+<div class="modal-overlay" id="modalDeleteTeam">
+  <div class="modal" style="max-width: 400px; text-align: center; padding: 32px;">
+    <div style="width: 64px; height: 64px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px;">
+      <i class="fa-solid fa-users-slash"></i>
+    </div>
+    <h3 style="font-size: 20px; font-weight: 700; color: #1f2a44; margin: 0 0 12px;">Remove Team</h3>
+    <p id="deleteTeamText" style="font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 24px;"></p>
+    <form id="formDeleteTeam" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="id_team" id="deleteTeamId" />
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn-draft" id="btnCancelDeleteTeam" style="flex: 1;">Cancel</button>
+        <button type="submit" id="submitDeleteTeam" style="flex: 1; background: #ef4444; border-color: #ef4444; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">Remove</button>
+      </div>
+    </form>
+    <button class="modal-close" id="btnCloseDeleteTeam"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
+
+<script>
+  // Update team delete form action dynamically
+  const formDeleteTeam = document.getElementById('formDeleteTeam');
+  const deleteTeamIdInput = document.getElementById('deleteTeamId');
+  
+  formDeleteTeam.onsubmit = function() {
+    this.action = `/project-manager/project/<%= project.id_project %>/teams/${deleteTeamIdInput.value}/remove`;
+  };
+  
+  // Update member delete form action dynamically
+  const formDeleteMember = document.getElementById('formDeleteMember');
+  const deleteMemberIdInput = document.getElementById('deleteMemberId');
+  
+  formDeleteMember.onsubmit = function() {
+    this.action = `/project-manager/project/<%= project.id_project %>/users/${deleteMemberIdInput.value}/remove`;
+  };
+</script>
  

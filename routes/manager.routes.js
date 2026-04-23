@@ -17,13 +17,21 @@ const selfReviewLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
+ 
 router.get('/dashboard', managerController.getDashboard);
+router.get('/achievements', managerController.getAchievements);
+router.post('/achievements', managerController.postAchievement);
+router.post('/achievements/delete', managerController.deleteAchievement);
+router.post('/achievements/edit', managerController.editAchievement);
+router.get('/projects', managerController.getProjects);
 router.get('/goals', managerController.getGoals);
 router.post('/goals', managerController.createGoal);
 router.get('/goals/:id', managerController.getGoalById);
 router.put('/goals/:id', managerController.updateGoal);
 router.get('/highlights', managerController.getHighlights);
+router.post('/highlights', managerController.createHighlight);
+router.delete('/highlights/:id', managerController.deleteHighlight);
+router.put('/highlights/:id', managerController.updateHighlight);
 router.get('/history', managerController.getHistory);
 router.get('/reports', managerController.getReports);
 router.get('/log', managerController.getLog);
@@ -33,5 +41,10 @@ router.post('/self-review/export-pdf', selfReviewLimiter, managerController.expo
 router.get('/profile', managerController.getProfile);
 router.post('/profile/slack', managerController.postSlack);
 router.post('/profile/password', managerController.postPassword);
+router.post('/goals/:id/link-project', managerController.linkProjectToGoal);
+router.post('/goals/:id/unlink-project', managerController.unlinkProjectFromGoal);
+router.delete('/goals/:id', managerController.deleteGoal);
+router.post('/goals/:id/impact-summary', managerController.generateGoalImpactSummary);
+router.post('/goals/:id/export-pdf', managerController.exportGoalImpactPDF);
 
 module.exports = router;

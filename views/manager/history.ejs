@@ -8,145 +8,362 @@
   </div>
 
   <div class="report-card-body">
-    <div class="filters-grid">
-      <div class="filter-group">
-        <label class="form-label" for="filterUser">User</label>
-        <select id="filterUser" class="form-select">
-          <option value="">All Users</option>
-          <option value="1">Francisco Arreola</option>
-          <option value="2">Lakshmi Martinez Jara</option>
-          <option value="3">Oscar Vilchis</option>
-        </select>
-      </div>
+    <!-- Formulario que manda los filtros por query params -->
+    <form action="/manager/history" method="GET" class="filters-grid">
+      <div class="filter-group user-search-group">
+  <!-- Buscador de usuario para filtrar historial -->
+  <label class="form-label" for="filterUserSearch">User</label>
+
+  <!-- Input visible donde el manager escribe el nombre -->
+  <input
+    type="text"
+    id="filterUserSearch"
+    class="form-input"
+    placeholder="Search user by name..."
+    value="<%= (() => {
+      const selectedUser = users.find((user) => String(user.id_user) === String(filters.id_user));
+      return selectedUser ? selectedUser.full_name : '';
+    })() %>"
+    autocomplete="off"
+  />
+
+  <!-- Input oculto que guarda el id_user real para el backend -->
+  <input
+    type="hidden"
+    id="filterUser"
+    name="id_user"
+    value="<%= filters.id_user || '' %>"
+  />
+
+  <!-- Lista de sugerencias -->
+  <div id="filterUserSuggestions" class="user-suggestions hidden">
+    <% users.forEach((user) => { %>
+      <button
+        type="button"
+        class="user-suggestion-item"
+        data-user-id="<%= user.id_user %>"
+        data-user-name="<%= user.full_name %>"
+      >
+        <%= user.full_name %>
+      </button>
+    <% }); %>
+  </div>
+</div>
 
       <div class="filter-group">
         <label class="form-label" for="filterProject">Project</label>
-        <select id="filterProject" class="form-select">
+        <select id="filterProject" name="id_project" class="form-select">
           <option value="">All Projects</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
+          <% projects.forEach((project) => { %>
+            <option
+              value="<%= project.id_project %>"
+              <%= String(filters.id_project) === String(project.id_project) ? 'selected' : '' %>
+            >
+              <%= project.project_name %>
+            </option>
+          <% }); %>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterTeam">Team</label>
-        <select id="filterTeam" class="form-select">
+        <select id="filterTeam" name="id_team" class="form-select">
           <option value="">All Teams</option>
-          <option value="1">Mufasa Solutions</option>
-          <option value="2">Phoenix Team</option>
-          <option value="3">Delta Squad</option>
+          <% teams.forEach((team) => { %>
+            <option
+              value="<%= team.id_team %>"
+              <%= String(filters.id_team) === String(team.id_team) ? 'selected' : '' %>
+            >
+              <%= team.team_name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="filter-group">
+  <!-- Filtro rapido de fechas predefinidas -->
+        <label class="form-label" for="quickDateFilter">Quick Filter</label>
+        <select id="quickDateFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="last_week">Last Week</option>
+          <option value="last_month">Last Month</option>
+          <option value="q1">Q1 (Jan - Mar)</option>
+          <option value="q2">Q2 (Apr - Jun)</option>
+          <option value="q3">Q3 (Jul - Sep)</option>
+          <option value="q4">Q4 (Oct - Dec)</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterFrom">From</label>
-        <input type="date" id="filterFrom" class="form-input" />
+        <input
+          type="date"
+          id="filterFrom"
+          name="date_from"
+          class="form-input"
+          value="<%= filters.date_from || '' %>"
+        />
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterTo">To</label>
-        <input type="date" id="filterTo" class="form-input" />
+        <input
+          type="date"
+          id="filterTo"
+          name="date_to"
+          class="form-input"
+          value="<%= filters.date_to || '' %>"
+        />
       </div>
 
-      <button class="btn-submit" type="button">Apply Filters</button>
-    </div>
-  </div>
+      <!-- Boton para aplicar filtros -->
+          <!-- Boton para aplicar filtros -->
+<button class="btn-submit" type="submit">Apply Filters</button>
+
+<!-- Boton para limpiar filtros y volver al historial completo -->
+<a href="/manager/history" class="btn-draft clear-filters-button">
+  Clear Filters
+</a>
 </div>
 
 <!-- History List -->
 <div class="report-card">
   <div class="report-card-header">
     <h2>Activity Log</h2>
-    <span class="item-count">156 entries</span>
+    <span class="item-count"><%= totalEntries %> entr<%= totalEntries === 1 ? 'y' : 'ies' %></span>
   </div>
 
   <div class="report-card-body">
     <div class="history-list">
 
-      <!-- Entry 1 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-        <div class="history-content">
-          <p class="history-author">Lakshmi Martinez Jara</p>
-          <p class="history-text">Designed team member management UI, Created wireframes for reports</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Dashboard Redesign</span>
-          <span class="history-date">Mar 18, 2026</span>
-        </div>
+  <% if (logs.length === 0) { %>
+    <!-- Mensaje cuando no hay resultados -->
+    <p class="empty-text">No contributions found for the selected filters.</p>
+  <% } %>
+
+  <% logs.forEach((log) => { %>
+    <div class="history-entry">
+      
+      <!-- Avatar -->
+      <img
+        class="history-avatar"
+        src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg"
+        alt="<%= log.full_name %>"
+      />
+
+      <!-- Contenido principal -->
+      <div class="history-content">
+        <!-- Nombre del usuario -->
+        <p class="history-author"><%= log.full_name %></p>
+
+        <!-- Texto del log -->
+        <p class="history-text">
+          <%= log.completed || '' %>
+          <% if (log.planned) { %>
+            • Next: <%= log.planned %>
+          <% } %>
+        </p>
       </div>
 
-      <!-- Entry 2 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-        <div class="history-content">
-          <p class="history-author">Oscar Vilchis</p>
-          <p class="history-text">Set up MySQL database schema, Configured connection pooling</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">API Integration</span>
-          <span class="history-date">Mar 18, 2026</span>
-        </div>
-      </div>
+      <!-- Meta info -->
+      <div class="history-meta">
+        <!-- Proyecto -->
+        <span class="history-project">
+          <%= log.project_name || 'No project' %>
+        </span>
 
-      <!-- Entry 3 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-        <div class="history-content">
-          <p class="history-author">Francisco Arreola</p>
-          <p class="history-text">Built MVC structure, Created employee views and routes</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Internal Tools</span>
-          <span class="history-date">Mar 17, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 4 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Lakshmi Martinez Jara" />
-        <div class="history-content">
-          <p class="history-author">Lakshmi Martinez Jara</p>
-          <p class="history-text">Created login page design, Implemented responsive layout</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Dashboard Redesign</span>
-          <span class="history-date">Mar 16, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 5 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Oscar Vilchis" />
-        <div class="history-content">
-          <p class="history-author">Oscar Vilchis</p>
-          <p class="history-text">Implemented authentication middleware, Added session management</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">API Integration</span>
-          <span class="history-date">Mar 15, 2026</span>
-        </div>
-      </div>
-
-      <!-- Entry 6 -->
-      <div class="history-entry">
-        <img class="history-avatar" src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" alt="Francisco Arreola" />
-        <div class="history-content">
-          <p class="history-author">Francisco Arreola</p>
-          <p class="history-text">Set up Express server, Configured EJS templates</p>
-        </div>
-        <div class="history-meta">
-          <span class="history-project">Internal Tools</span>
-          <span class="history-date">Mar 14, 2026</span>
-        </div>
+        <!-- Fecha -->
+        <span class="history-date">
+          <%= new Date(log.created_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }) %>
+        </span>
       </div>
 
     </div>
+  <% }); %>
+
+</div>
 
     <!-- Pagination hint -->
     <div class="action-row" style="justify-content: center; margin-top: 24px;">
       <button class="btn-draft" type="button">Load More</button>
     </div>
   </div>
-</div>
+</div> 
+
+<script>
+  // Toma los inputs de fechas y el select del filtro rapido
+  const quickDateFilter = document.getElementById('quickDateFilter');
+  const filterFrom = document.getElementById('filterFrom');
+  const filterTo = document.getElementById('filterTo');
+
+  // Convierte una fecha a formato YYYY-MM-DD para usarla en input type="date"
+  const formatDateInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // Calcula el rango segun el filtro rapido elegido
+  const applyQuickDateFilter = (value) => {
+    const today = new Date();
+    let startDate = null;
+    let endDate = new Date(today);
+
+    // Semana pasada
+    if (value === 'last_week') {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 7);
+    }
+
+    // Mes pasado
+    if (value === 'last_month') {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 30);
+    }
+
+    // Trimestres del año actual
+    if (value === 'q1') {
+      startDate = new Date(today.getFullYear(), 0, 1);
+      endDate = new Date(today.getFullYear(), 2, 31);
+    }
+
+    if (value === 'q2') {
+      startDate = new Date(today.getFullYear(), 3, 1);
+      endDate = new Date(today.getFullYear(), 5, 30);
+    }
+
+    if (value === 'q3') {
+      startDate = new Date(today.getFullYear(), 6, 1);
+      endDate = new Date(today.getFullYear(), 8, 30);
+    }
+
+    if (value === 'q4') {
+      startDate = new Date(today.getFullYear(), 9, 1);
+      endDate = new Date(today.getFullYear(), 11, 31);
+    }
+    if (!startDate) {
+      return;
+    }
+
+    // Llena los campos From y To
+    filterFrom.value = formatDateInput(startDate);
+    filterTo.value = formatDateInput(endDate);
+  };
+
+  // Aplica el filtro rapido cuando cambia el select
+  quickDateFilter.addEventListener('change', () => {
+    applyQuickDateFilter(quickDateFilter.value);
+  });
+
+  // Elementos del buscador de usuario
+  const filterUserSearch = document.getElementById('filterUserSearch');
+  const filterUser = document.getElementById('filterUser');
+  const filterUserSuggestions = document.getElementById('filterUserSuggestions');
+  const userSuggestionItems = document.querySelectorAll('.user-suggestion-item');
+
+  // Muestra solo las sugerencias que coinciden con lo escrito
+  const filterUserSuggestionsList = (searchText) => {
+    const normalizedSearch = searchText.trim().toLowerCase();
+    let visibleItems = 0;
+
+    userSuggestionItems.forEach((item) => {
+      const userName = item.dataset.userName.toLowerCase();
+      const matches = userName.includes(normalizedSearch);
+
+      item.classList.toggle('hidden', !matches);
+      if (matches) {
+        visibleItems += 1;
+      }
+    });
+
+    // Si hay texto y hay coincidencias, muestra la lista
+    if (normalizedSearch && visibleItems > 0) {
+      filterUserSuggestions.classList.remove('hidden');
+    } else {
+      filterUserSuggestions.classList.add('hidden');
+    }
+  };
+
+  // Cuando escriben en el input, limpia id_user y filtra sugerencias
+  filterUserSearch.addEventListener('input', () => {
+    filterUser.value = '';
+    filterUserSuggestionsList(filterUserSearch.value);
+  });
+
+  // Cuando seleccionan una sugerencia, guarda nombre e id
+  userSuggestionItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      filterUserSearch.value = item.dataset.userName;
+      filterUser.value = item.dataset.userId;
+      filterUserSuggestions.classList.add('hidden');
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    const clickedInsideUserSearch = event.target.closest('.user-search-group');
+
+    if (!clickedInsideUserSearch) {
+      filterUserSuggestions.classList.add('hidden');
+    }
+  });
+</script>
+
+  <style>
+
+
+/* Contenedor del buscador de usuario */
+  .user-search-group {
+    position: relative;
+  }
+
+  /* Caja de sugerencias debajo del input */
+  .user-suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 20;
+    padding: 6px;
+  }
+
+  /* Item individual de sugerencia */
+  .user-suggestion-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #374151;
+  }
+
+  .user-suggestion-item:hover {
+    background: #fff4ed;
+    color: #c2410c;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .clear-filters-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+
+</style>

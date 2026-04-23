@@ -1,7 +1,8 @@
-<div class="projects-grid">
+<div class="projects-grid" id="projectsGrid">
   <% if (projects.length > 0) { %>
     <% for (let project of projects) { %>
-      <div class="project-card">
+      <div class="project-card" style="display:none;"
+        data-name="<%= project.project_name.toLowerCase() %>">
         <div class="project-status <%= project.progress_status %>">
           <%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
         </div>
@@ -25,3 +26,45 @@
     <p>No projects assigned yet.</p>
   <% } %>
 </div>
+
+<div id="paginationBar" style="display:none; align-items:center; justify-content:center; gap:12px; margin-top:24px; flex-wrap:wrap;">
+  <button id="pgPrev" class="btn-draft" type="button" style="padding:8px 18px; display:flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-chevron-left"></i> Prev
+  </button>
+  <span id="pgInfo" style="font-size:14px; color:var(--text-secondary); font-weight:500;"></span>
+  <button id="pgNext" class="btn-draft" type="button" style="padding:8px 18px; display:flex; align-items:center; gap:6px;">
+    Next <i class="fa-solid fa-chevron-right"></i>
+  </button>
+</div>
+
+<script>
+  const CARDS_PER_PAGE = 6;
+  let currentPage = 1;
+
+  function applyPage() {
+    const allCards = [...document.querySelectorAll('#projectsGrid .project-card')];
+    const total = Math.ceil(allCards.length / CARDS_PER_PAGE) || 1;
+    if (currentPage > total) currentPage = 1;
+
+    allCards.forEach(c => c.style.display = 'none');
+    const start = (currentPage - 1) * CARDS_PER_PAGE;
+    allCards.slice(start, start + CARDS_PER_PAGE).forEach(c => c.style.display = '');
+
+    const bar = document.getElementById('paginationBar');
+    if (total <= 1) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('pgPrev').disabled = currentPage === 1;
+    document.getElementById('pgNext').disabled = currentPage === total;
+    document.getElementById('pgInfo').textContent = `Page ${currentPage} of ${total}`;
+  }
+
+  document.getElementById('pgPrev').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; applyPage(); }
+  });
+  document.getElementById('pgNext').addEventListener('click', () => {
+    const total = Math.ceil(document.querySelectorAll('#projectsGrid .project-card').length / CARDS_PER_PAGE) || 1;
+    if (currentPage < total) { currentPage++; applyPage(); }
+  });
+
+  applyPage();
+</script>

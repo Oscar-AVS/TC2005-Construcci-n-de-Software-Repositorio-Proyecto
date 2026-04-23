@@ -36,6 +36,19 @@
       </div>
 
       <div class="filter-group">
+        <label class="form-label" for="quickFilter">Quick Filters</label>
+        <select id="quickFilter" class="form-select">
+          <option value="">Select a filter</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="Q1">Q1 (Jan - Mar)</option>
+          <option value="Q2">Q2 (Apr - Jun)</option>
+          <option value="Q3">Q3 (Jul - Sep)</option>
+          <option value="Q4">Q4 (Oct - Dec)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
         <label class="form-label" for="filterFrom">From</label>
         <input
           type="date"
@@ -187,7 +200,55 @@
     if (projectSelect && teamSelect && projectSelect.value && teamSelect.value) {
       loadProjectTeamRange();
     }
+
+    const quickFilter = document.getElementById('quickFilter');
+    const filterFrom = document.getElementById('filterFrom');
+    const filterTo = document.getElementById('filterTo');
+
+    const quickFilterMap = {
+      LAST_WEEK: 'lastWeek',
+      LAST_MONTH: 'lastMonth',
+      Q1: 'q1', Q2: 'q2', Q3: 'q3', Q4: 'q4'
+    };
+
+    quickFilter.addEventListener('change', () => {
+      const mapped = quickFilterMap[quickFilter.value];
+      if (mapped) setDates(mapped);
+    });
+
+    filterFrom.addEventListener('change', () => { quickFilter.value = ''; });
+    filterTo.addEventListener('change', () => { quickFilter.value = ''; });
   });
+
+  function setDates(shortcut) {
+    const today = new Date();
+    const year = today.getFullYear();
+    let fromDate, toDate;
+
+    const formatDate = (date) => date.toISOString().split('T')[0];
+
+    switch (shortcut) {
+      case 'lastWeek':
+        toDate = new Date(today);
+        fromDate = new Date(today);
+        fromDate.setDate(today.getDate() - 7);
+        break;
+      case 'lastMonth':
+        toDate = new Date(today);
+        fromDate = new Date(today);
+        fromDate.setMonth(today.getMonth() - 1);
+        break;
+      case 'q1': fromDate = new Date(year, 0, 1);  toDate = new Date(year, 2, 31);  break;
+      case 'q2': fromDate = new Date(year, 3, 1);  toDate = new Date(year, 5, 30);  break;
+      case 'q3': fromDate = new Date(year, 6, 1);  toDate = new Date(year, 8, 30);  break;
+      case 'q4': fromDate = new Date(year, 9, 1);  toDate = new Date(year, 11, 31); break;
+    }
+
+    if (fromDate && toDate) {
+      document.getElementById('filterFrom').value = formatDate(fromDate);
+      document.getElementById('filterTo').value = formatDate(toDate);
+    }
+  }
 </script>
 
 <script>

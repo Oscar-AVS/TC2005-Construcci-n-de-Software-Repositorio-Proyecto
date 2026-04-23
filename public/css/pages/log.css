@@ -323,11 +323,15 @@
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   padding: 32px 40px;
-  display: flex;
+  display: none; /* Changed from flex to none */
   flex-direction: column;
   gap: 12px;
   position: relative;
   margin-left: var(--sidebar-width);
+}
+
+.modal-overlay.active .modal {
+  display: flex;
 }
 
 .modal-header {

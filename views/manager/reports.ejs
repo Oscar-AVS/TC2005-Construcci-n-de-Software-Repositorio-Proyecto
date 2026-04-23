@@ -1,11 +1,31 @@
 <!-- Manager Reports View -->
 <h1 id="pageTitle" class="page-title">Reports</h1>
+<!-- Tabs del modulo de reportes -->
+<div class="reports-tabs">
+  <button
+    type="button"
+    class="reports-tab-button active"
+    data-tab-target="standardReportPanel"
+  >
+    Standard Report
+  </button>
 
-<!-- Report Filters -->
-<div class="report-card reports-filters-card">
-  <div class="report-card-header">
-    <h2>Generate Report</h2>
-  </div>
+  <button
+    type="button"
+    class="reports-tab-button"
+    data-tab-target="periodComparisonPanel"
+  >
+    Period Comparison
+  </button>
+</div>
+
+<div id="standardReportPanel" class="reports-tab-panel active"></div>
+
+  <!-- Report Filters -->
+  <div class="report-card reports-filters-card">
+    <div class="report-card-header">
+      <h2>Generate Report</h2>
+    </div>
 
   <div class="report-card-body">
     <div class="filter-row">
@@ -21,7 +41,7 @@
   <option value="Q2">Q2 (Apr - Jun)</option>
   <option value="Q3">Q3 (Jul - Sep)</option>
   <option value="Q4">Q4 (Oct - Dec)</option>
-</select>
+  </select>
       </div>
 
       <div class="filter-group">
@@ -37,12 +57,14 @@
       <div class="filter-group">
         <label class="form-label" for="reportTeam">Team</label>
         <select id="reportTeam" class="form-select">
-          <option value="">Select a Team</option>
-          <option value="1">Mufasa Solutions</option>
-          <option value="2">Phoenix Team</option>
-          <option value="3">Delta Squad</option>
-        </select>
-      </div>
+        <option value="">Select a Team</option>
+        <% if (teams && teams.length > 0) { %>
+          <% teams.forEach((team) => { %>
+            <option value="<%= team.id_team %>"><%= team.team_name %></option>
+            <% }) %>
+          <% } %>
+  </select>
+  </div>
 
       <button class="btn-generate-ai" type="button" onclick="generateSummary()">
         <i class="fa-solid fa-sparkles"></i>
@@ -98,7 +120,81 @@
     </div>
 
 
+<style>
+  /* Tabs del modulo de reportes */
+  .reports-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
 
+  .reports-tab-button {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .reports-tab-button.active {
+    background: #f15a24;
+    color: #ffffff;
+    border-color: #f15a24;
+  }
+
+  .reports-tab-panel {
+    display: none;
+  }
+
+  .reports-tab-panel.active {
+    display: block;
+  }
+
+  /* Layout de los dos periodos a comparar */
+  .comparison-periods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .comparison-period-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 18px;
+  }
+
+  .comparison-period-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #111827;
+  }
+
+  .comparison-placeholder {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #6b7280;
+    text-align: center;
+  }
+
+  .comparison-placeholder i {
+    font-size: 2rem;
+    color: #f15a24;
+  }
+
+  @media (max-width: 900px) {
+    .comparison-periods-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
     <script>
   let aiSummaryGenerated = false;
 
@@ -355,7 +451,90 @@
       });
     }
   });
+
+    // Maneja el cambio entre tabs del modulo de reportes
+  const reportsTabButtons = document.querySelectorAll('.reports-tab-button');
+  const reportsTabPanels = document.querySelectorAll('.reports-tab-panel');
+
+  const activateReportsTab = (targetId) => {
+    reportsTabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === targetId;
+      button.classList.toggle('active', isActive);
+    });
+
+    reportsTabPanels.forEach((panel) => {
+      panel.classList.toggle('active', panel.id === targetId);
+    });
+  };
+
+  reportsTabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activateReportsTab(button.dataset.tabTarget);
+    });
+  });
 </script>
 
+  </div>
+</div>
+
+</div>
+
+<div id="periodComparisonPanel" class="reports-tab-panel">
+  <div class="report-card reports-filters-card">
+    <div class="report-card-header">
+      <h2>Compare Activity Between Periods</h2>
+    </div>
+
+    <div class="report-card-body">
+      <div class="comparison-periods-grid">
+        <div class="comparison-period-card">
+          <h3>Period A</h3>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodAFrom">From</label>
+            <input type="date" id="periodAFrom" class="form-input" />
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodATo">To</label>
+            <input type="date" id="periodATo" class="form-input" />
+          </div>
+        </div>
+
+        <div class="comparison-period-card">
+          <h3>Period B</h3>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodBFrom">From</label>
+            <input type="date" id="periodBFrom" class="form-input" />
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodBTo">To</label>
+            <input type="date" id="periodBTo" class="form-input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row-left" style="margin-top: 20px;">
+        <button type="button" class="btn-generate-ai" id="comparePeriodsBtn">
+          <i class="fa-solid fa-code-compare"></i>
+          Compare Periods
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Comparison Results</h2>
+    </div>
+
+    <div class="report-card-body">
+      <div class="comparison-placeholder" id="comparisonPlaceholder">
+        <i class="fa-solid fa-chart-column"></i>
+        <p>Select Period A and Period B to compare team activity.</p>
+      </div>
+    </div>
   </div>
 </div>

@@ -16,19 +16,6 @@ module.exports = class Project {
     );
   }
 
-  static fetchAllByTeams(id_teams) {
-    if (!id_teams || id_teams.length === 0) return Promise.resolve([[]]);
-    return db.query(
-      `SELECT DISTINCT p.id_project, p.project_name, p.description, p.progress_status, p.start_date,
-              t.team_name, lp.id_team
-       FROM project p
-       JOIN log_project lp ON p.id_project = lp.id_project
-       LEFT JOIN team t ON lp.id_team = t.id_team
-       WHERE lp.id_team IN (?)
-       ORDER BY p.project_name`,
-      [id_teams]
-    );
-  }
 
   static fetchAllByEmployee(id_user) {
     return db.execute(
@@ -95,43 +82,107 @@ module.exports = class Project {
     );
   }
 
-  static updateProgressStatus(id_project, progress_status, progress_percentage) {
-    return db.execute(
-      `UPDATE project
-       SET progress_status = ?, progress_percentage = ?, last_progress_update = NOW()
-       WHERE id_project = ?`,
-      [progress_status, progress_percentage, id_project]
-    );
-  }
-
   static fetchAssignedTeams(id_project) {
     return db.execute(
-      `SELECT t.id_team, t.team_name, t.description,
-              u.full_name AS leader_name,
-              pt.assigned_at
+      `SELECT t.id_team, t.team_name, u.full_name AS leader_name
        FROM project_team pt
        JOIN team t ON pt.id_team = t.id_team
        LEFT JOIN user u ON t.id_leader = u.id_user
-       WHERE pt.id_project = ?
-       ORDER BY pt.assigned_at DESC`,
+       WHERE pt.id_project = ?`,
       [id_project]
     );
   }
-  
-  static assignTeam(id_project, id_team, assigned_by) {
+
+  static fetchAssignedUsers(id_project) {
     return db.execute(
-      `INSERT INTO project_team (id_project, id_team, assigned_by) VALUES (?, ?, ?)`,
-      [id_project, id_team, assigned_by]
+      `SELECT u.id_user, u.full_name, u.email, t.team_name
+       FROM user_assignment ua
+       JOIN user u ON ua.id_user = u.id_user
+       LEFT JOIN team t ON ua.id_team = t.id_team
+       WHERE ua.id_project = ?`,
+      [id_project]
     );
   }
-  
+
+  static fetchActivity(id_project, limit, offset, filters = {}) {
+    let query = `
+      SELECT l.id_log, l.created_at, u.full_name, l.completed
+      FROM log l
+      JOIN user u ON l.id_user = u.id_user
+      JOIN log_project lp ON l.id_log = lp.id_log
+      LEFT JOIN user_assignment ua ON u.id_user = ua.id_user AND lp.id_project = ua.id_project
+      WHERE lp.id_project = ?
+    `;
+    const params = [id_project];
+
+    if (filters.id_team) {
+      query += ` AND ua.id_team = ?`;
+      params.push(filters.id_team);
+    }
+    if (filters.id_user) {
+      query += ` AND l.id_user = ?`;
+      params.push(filters.id_user);
+    }
+    if (filters.date_from) {
+      query += ` AND DATE(l.created_at) >= ?`;
+      params.push(filters.date_from);
+    }
+    if (filters.date_to) {
+      query += ` AND DATE(l.created_at) <= ?`;
+      params.push(filters.date_to);
+    }
+
+    query += ` ORDER BY l.created_at DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    return db.execute(query, params);
+  }
+
+  static countActivity(id_project, filters = {}) {
+    let query = `
+      SELECT COUNT(DISTINCT l.id_log) AS total
+      FROM log l
+      JOIN log_project lp ON l.id_log = lp.id_log
+      LEFT JOIN user u ON l.id_user = u.id_user
+      LEFT JOIN user_assignment ua ON u.id_user = ua.id_user AND lp.id_project = ua.id_project
+      WHERE lp.id_project = ?
+    `;
+    const params = [id_project];
+
+    if (filters.id_team) {
+      query += ` AND ua.id_team = ?`;
+      params.push(filters.id_team);
+    }
+    if (filters.id_user) {
+      query += ` AND l.id_user = ?`;
+      params.push(filters.id_user);
+    }
+    if (filters.date_from) {
+      query += ` AND DATE(l.created_at) >= ?`;
+      params.push(filters.date_from);
+    }
+    if (filters.date_to) {
+      query += ` AND DATE(l.created_at) <= ?`;
+      params.push(filters.date_to);
+    }
+
+    return db.execute(query, params);
+  }
+
   static isTeamAssigned(id_project, id_team) {
     return db.execute(
-      `SELECT id_project FROM project_team WHERE id_project = ? AND id_team = ?`,
+      `SELECT * FROM project_team WHERE id_project = ? AND id_team = ?`,
       [id_project, id_team]
     );
   }
-  
+
+  static assignTeam(id_project, id_team, id_assigned_by) {
+    return db.execute(
+      `INSERT INTO project_team (id_project, id_team, assigned_by) VALUES (?, ?, ?)`,
+      [id_project, id_team, id_assigned_by]
+    );
+  }
+
   static removeTeam(id_project, id_team) {
     return db.execute(
       `DELETE FROM project_team WHERE id_project = ? AND id_team = ?`,
@@ -139,34 +190,20 @@ module.exports = class Project {
     );
   }
 
-  static fetchAssignedUsers(id_project) {
-    return db.execute(
-      `SELECT u.id_user, u.full_name, u.email,
-              t.team_name,
-              ua.assigned_at
-       FROM user_assignment ua
-       JOIN user u ON ua.id_user = u.id_user
-       LEFT JOIN team t ON ua.id_team = t.id_team
-       WHERE ua.id_project = ?
-       ORDER BY ua.assigned_at DESC`,
-      [id_project]
-    );
-  }
-  
-  static assignUser(id_project, id_user, id_team, assigned_by) {
-    return db.execute(
-      `INSERT INTO user_assignment (id_user, id_project, id_team, assigned_by) VALUES (?, ?, ?, ?)`,
-      [id_user, id_project, id_team || null, assigned_by]
-    );
-  }
-  
   static isUserAssigned(id_project, id_user) {
     return db.execute(
-      `SELECT id_user FROM user_assignment WHERE id_project = ? AND id_user = ?`,
+      `SELECT * FROM user_assignment WHERE id_project = ? AND id_user = ?`,
       [id_project, id_user]
     );
   }
-  
+
+  static assignUser(id_project, id_user, id_team, id_assigned_by) {
+    return db.execute(
+      `INSERT INTO user_assignment (id_project, id_user, id_team, assigned_by) VALUES (?, ?, ?, ?)`,
+      [id_project, id_user, id_team, id_assigned_by]
+    );
+  }
+
   static removeUser(id_project, id_user) {
     return db.execute(
       `DELETE FROM user_assignment WHERE id_project = ? AND id_user = ?`,
@@ -174,23 +211,57 @@ module.exports = class Project {
     );
   }
 
-  static fetchActivity(id_project, limit = 50) {
+  static updateProgressStatus(id_project, progress_status, progress_percentage) {
     return db.execute(
-      `SELECT l.id_log, l.completed, l.planned, l.created_at,
-              u.full_name,
-              GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
+      `UPDATE project 
+       SET progress_status = ?, progress_percentage = ?, last_progress_update = NOW() 
+       WHERE id_project = ?`,
+      [progress_status, progress_percentage, id_project]
+    );
+  }
+
+  static fetchAvailableForGoalLink() {
+    return db.execute(
+      `SELECT
+        id_project,
+        project_name,
+        description,
+        progress_status AS status,
+        start_date
+      FROM project
+      WHERE progress_status != 'archived'
+      ORDER BY project_name ASC`
+    );
+  }
+
+  static countActive() {
+    return db.execute(`SELECT COUNT(*) AS count FROM project WHERE progress_status = 'in_progress' OR progress_status = 'at_risk'`);
+  }
+
+  static countCompletedThisMonth() {
+    return db.execute(
+      `SELECT COUNT(*) AS count
+       FROM project
+       WHERE progress_status = 'completed'
+         AND COALESCE(end_date, start_date) IS NOT NULL
+         AND MONTH(COALESCE(end_date, start_date)) = MONTH(CURRENT_DATE())
+         AND YEAR(COALESCE(end_date, start_date)) = YEAR(CURRENT_DATE())`
+    );
+  }
+
+  static fetchGlobalActivity(limit = 10) {
+    return db.execute(
+      `SELECT l.created_at, u.full_name, l.completed, p.project_name
        FROM log l
-       JOIN log_project lp ON l.id_log = lp.id_log
        JOIN user u ON l.id_user = u.id_user
-       LEFT JOIN team t ON lp.id_team = t.id_team
-       WHERE lp.id_project = ?
-       GROUP BY l.id_log
+       JOIN log_project lp ON l.id_log = lp.id_log
+       JOIN project p ON lp.id_project = p.id_project
        ORDER BY l.created_at DESC
        LIMIT ?`,
-      [id_project, limit.toString()]
+      [limit]
     );
   }
 
 };
 
-
+// prueba 2

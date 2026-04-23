@@ -1,12 +1,6 @@
 <header class="topbar">
   <div class="topbar-actions" style="margin-left: auto;">
     <div class="notif-wrapper" style="position: relative;">
-      <button class="icon-btn" type="button" id="notifBtn" aria-label="Notifications">
-        <i class="fa-regular fa-bell" aria-hidden="true"></i>
-        <% if (locals.pendingCount > 0) { %>
-          <span class="notif-badge"><%= pendingCount %></span>
-        <% } %>
-      </button>
 
       <% if (locals.pendingCount > 0) { %>
         <div class="notif-dropdown" id="notifDropdown" style="display: none;">

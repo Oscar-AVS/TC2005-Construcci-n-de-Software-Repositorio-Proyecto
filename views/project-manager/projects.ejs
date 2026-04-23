@@ -38,9 +38,9 @@
   <% if (projects.length === 0) { %>
     <p style="color: var(--text-secondary); padding: 1rem 0;">No hay proyectos registrados aún.</p>
   <% } %>
- 
+
   <% projects.forEach(project => { %>
-    <div class="project-card"
+    <div class="project-card" style="display:none;"
       data-status="<%= project.progress_status %>"
       data-name="<%= project.project_name.toLowerCase() %>">
  
@@ -85,6 +85,16 @@
     </div>
   <% }) %>
  </div>
+
+<div id="paginationBar" style="display:none; align-items:center; justify-content:center; gap:12px; margin-top:24px; flex-wrap:wrap;">
+  <button id="pgPrev" class="btn-draft" type="button" style="padding:8px 18px; display:flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-chevron-left"></i> Prev
+  </button>
+  <span id="pgInfo" style="font-size:14px; color:var(--text-secondary); font-weight:500;"></span>
+  <button id="pgNext" class="btn-draft" type="button" style="padding:8px 18px; display:flex; align-items:center; gap:6px;">
+    Next <i class="fa-solid fa-chevron-right"></i>
+  </button>
+</div>
 
  <!-- MODAL: Caso 4.1 — Alta de proyecto -->
 <div class="modal-overlay" id="modalCreateProject">
@@ -170,22 +180,56 @@
  </div>
 
  <script>
-  // Filtros en tiempo real
   const searchInput  = document.getElementById('searchInput');
   const statusFilter = document.getElementById('statusFilter');
-  const cards        = document.querySelectorAll('.project-card');
- 
-  function filterCards() {
+
+  const CARDS_PER_PAGE = 6;
+  let currentPage = 1;
+
+  function getFilteredCards() {
     const query  = searchInput.value.toLowerCase().trim();
     const status = statusFilter.value;
-    cards.forEach(card => {
-      const nameMatch   = card.dataset.name.includes(query);
-      const statusMatch = !status || card.dataset.status === status;
-      card.style.display = (nameMatch && statusMatch) ? '' : 'none';
-    });
+    return [...document.querySelectorAll('#projectsGrid .project-card')].filter(card =>
+      card.dataset.name.includes(query) && (!status || card.dataset.status === status)
+    );
   }
-  searchInput.addEventListener('input', filterCards);
-  statusFilter.addEventListener('change', filterCards);
+
+  function renderPagination(current, total) {
+    const bar = document.getElementById('paginationBar');
+    if (total <= 1) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('pgPrev').disabled = current === 1;
+    document.getElementById('pgNext').disabled = current === total;
+    document.getElementById('pgInfo').textContent = `Page ${current} of ${total}`;
+  }
+
+  function applyPage() {
+    const filtered = getFilteredCards();
+    const total = Math.ceil(filtered.length / CARDS_PER_PAGE) || 1;
+    if (currentPage > total) currentPage = 1;
+
+    document.querySelectorAll('#projectsGrid .project-card')
+      .forEach(c => c.style.display = 'none');
+
+    const start = (currentPage - 1) * CARDS_PER_PAGE;
+    filtered.slice(start, start + CARDS_PER_PAGE)
+      .forEach(c => c.style.display = '');
+
+    renderPagination(currentPage, total);
+  }
+
+  searchInput.addEventListener('input',  () => { currentPage = 1; applyPage(); });
+  statusFilter.addEventListener('change', () => { currentPage = 1; applyPage(); });
+
+  document.getElementById('pgPrev').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; applyPage(); }
+  });
+  document.getElementById('pgNext').addEventListener('click', () => {
+    const total = Math.ceil(getFilteredCards().length / CARDS_PER_PAGE) || 1;
+    if (currentPage < total) { currentPage++; applyPage(); }
+  });
+
+  applyPage();
  
   // Modal helpers — igual que en log.ejs
   function openModal(modal)  { modal.classList.add('active'); }
