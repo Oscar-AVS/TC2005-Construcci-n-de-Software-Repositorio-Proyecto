@@ -10,20 +10,45 @@
   <div class="report-card-body">
     <!-- Formulario que manda los filtros por query params -->
     <form action="/manager/history" method="GET" class="filters-grid">
-      <div class="filter-group">
-        <label class="form-label" for="filterUser">User</label>
-        <select id="filterUser" name="id_user" class="form-select">
-          <option value="">All Users</option>
-          <% users.forEach((user) => { %>
-            <option
-              value="<%= user.id_user %>"
-              <%= String(filters.id_user) === String(user.id_user) ? 'selected' : '' %>
-            >
-              <%= user.full_name %>
-            </option>
-          <% }); %>
-        </select>
-      </div>
+      <div class="filter-group user-search-group">
+  <!-- Buscador de usuario para filtrar historial -->
+  <label class="form-label" for="filterUserSearch">User</label>
+
+  <!-- Input visible donde el manager escribe el nombre -->
+  <input
+    type="text"
+    id="filterUserSearch"
+    class="form-input"
+    placeholder="Search user by name..."
+    value="<%= (() => {
+      const selectedUser = users.find((user) => String(user.id_user) === String(filters.id_user));
+      return selectedUser ? selectedUser.full_name : '';
+    })() %>"
+    autocomplete="off"
+  />
+
+  <!-- Input oculto que guarda el id_user real para el backend -->
+  <input
+    type="hidden"
+    id="filterUser"
+    name="id_user"
+    value="<%= filters.id_user || '' %>"
+  />
+
+  <!-- Lista de sugerencias -->
+  <div id="filterUserSuggestions" class="user-suggestions hidden">
+    <% users.forEach((user) => { %>
+      <button
+        type="button"
+        class="user-suggestion-item"
+        data-user-id="<%= user.id_user %>"
+        data-user-name="<%= user.full_name %>"
+      >
+        <%= user.full_name %>
+      </button>
+    <% }); %>
+  </div>
+</div>
 
       <div class="filter-group">
         <label class="form-label" for="filterProject">Project</label>
@@ -231,4 +256,102 @@
   quickDateFilter.addEventListener('change', () => {
     applyQuickDateFilter(quickDateFilter.value);
   });
+
+  // Elementos del buscador de usuario
+  const filterUserSearch = document.getElementById('filterUserSearch');
+  const filterUser = document.getElementById('filterUser');
+  const filterUserSuggestions = document.getElementById('filterUserSuggestions');
+  const userSuggestionItems = document.querySelectorAll('.user-suggestion-item');
+
+  // Muestra solo las sugerencias que coinciden con lo escrito
+  const filterUserSuggestionsList = (searchText) => {
+    const normalizedSearch = searchText.trim().toLowerCase();
+    let visibleItems = 0;
+
+    userSuggestionItems.forEach((item) => {
+      const userName = item.dataset.userName.toLowerCase();
+      const matches = userName.includes(normalizedSearch);
+
+      item.classList.toggle('hidden', !matches);
+      if (matches) {
+        visibleItems += 1;
+      }
+    });
+
+    // Si hay texto y hay coincidencias, muestra la lista
+    if (normalizedSearch && visibleItems > 0) {
+      filterUserSuggestions.classList.remove('hidden');
+    } else {
+      filterUserSuggestions.classList.add('hidden');
+    }
+  };
+
+  // Cuando escriben en el input, limpia id_user y filtra sugerencias
+  filterUserSearch.addEventListener('input', () => {
+    filterUser.value = '';
+    filterUserSuggestionsList(filterUserSearch.value);
+  });
+
+  // Cuando seleccionan una sugerencia, guarda nombre e id
+  userSuggestionItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      filterUserSearch.value = item.dataset.userName;
+      filterUser.value = item.dataset.userId;
+      filterUserSuggestions.classList.add('hidden');
+    });
+  });
+
+  // Si hacen click fuera del buscador, ocultamos sugerencias
+  document.addEventListener('click', (event) => {
+    const clickedInsideUserSearch = event.target.closest('.user-search-group');
+
+    if (!clickedInsideUserSearch) {
+      filterUserSuggestions.classList.add('hidden');
+    }
+  });
 </script>
+
+
+<style>
+  /* Contenedor del buscador de usuario */
+  .user-search-group {
+    position: relative;
+  }
+
+  /* Caja de sugerencias debajo del input */
+  .user-suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 20;
+    padding: 6px;
+  }
+
+  /* Item individual de sugerencia */
+  .user-suggestion-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #374151;
+  }
+
+  .user-suggestion-item:hover {
+    background: #fff4ed;
+    color: #c2410c;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+</style>
