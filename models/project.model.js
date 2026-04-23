@@ -133,9 +133,9 @@ module.exports = class Project {
     }
 
     query += ` ORDER BY l.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    params.push(parseInt(limit, 10), parseInt(offset, 10));
 
-    return db.execute(query, params);
+    return db.query(query, params);
   }
 
   static countActivity(id_project, filters = {}) {

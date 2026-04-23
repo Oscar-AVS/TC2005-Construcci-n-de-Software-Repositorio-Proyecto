@@ -27,6 +27,7 @@ const reportRoutes = require('./routes/report.routes');
 const slackRoutes = require('./routes/slack.routes');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const csrfProtection = csrf();
 
