@@ -380,6 +380,8 @@
             </div>
 
             <div class="goal-impact-data-section">
+
+
               <div class="goal-impact-data-block">
                 <h4>Linked Projects</h4>
                 <div id="impactProjectsList" class="goal-impact-tags-wrap">
@@ -402,57 +404,68 @@
               </div>
 
               <div class="goal-impact-data-block">
-                <h4>Contributions / Logs</h4>
-                <div id="impactLogsList" class="goal-impact-logs-wrap">
+                <div class="goal-impact-section-header">
+                  <h4>Contributions / Logs</h4>
+                  <span class="goal-impact-section-hint">Recent activity</span>
+                </div>
+
+                <div id="impactLogsList" class="goal-impact-logs-wrap compact">
                   <p class="goal-impact-empty-text">No contributions found.</p>
                 </div>
               </div>
             </div>
+
+
             <div class="goal-impact-summary-section">
-  <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
-    <h4>AI Goal Impact Summary</h4>
-    <p>Generate a summary to see the executive overview for this goal.</p>
+                <div id="impactSummaryEmpty" class="goal-impact-summary-empty">
+                  <h4>AI Goal Impact Summary</h4>
+                  <p>Generate a summary to see the executive overview for this goal.</p>
+                </div>
+
+              <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
+                <div class="goal-impact-summary-header">
+                  <h4>AI Goal Impact Summary</h4>
+                  <span class="goal-impact-summary-badge">Executive View</span>
+                </div>
+
+              <div class="goal-impact-summary-hero">
+                <h5>Overall Impact</h5>
+                <p id="impactSummaryOverall">—</p>
+              </div>
+
+            <div class="goal-impact-summary-grid">
+              <div class="goal-impact-summary-block">
+                <h5>Projects Driving This Goal</h5>
+                <ul id="impactSummaryProjects" class="goal-impact-summary-list"></ul>
+              </div>
+
+              <div class="goal-impact-summary-block">
+                <h5>Team Participation</h5>
+                <p id="impactSummaryTeamParticipation">—</p>
+              </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Key Contributions</h5>
+              <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Relevant Highlights</h5>
+              <ul id="impactSummaryHighlights" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Risks / Gaps</h5>
+              <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
+            </div>
+
+            <div class="goal-impact-summary-block">
+              <h5>Recommendations</h5>
+              <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
+            </div>
+    </div>
   </div>
-
-  <div id="impactSummaryContent" class="goal-impact-summary-content hidden">
-    <h4>AI Goal Impact Summary</h4>
-
-    <div class="goal-impact-summary-block">
-      <h5>Overall Impact</h5>
-      <p id="impactSummaryOverall">—</p>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Projects Driving This Goal</h5>
-      <ul id="impactSummaryProjects" class="goal-impact-summary-list"></ul>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Team Participation</h5>
-      <p id="impactSummaryTeamParticipation">—</p>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Key Contributions</h5>
-      <ul id="impactSummaryContributions" class="goal-impact-summary-list"></ul>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Relevant Highlights</h5>
-      <ul id="impactSummaryHighlights" class="goal-impact-summary-list"></ul>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Risks / Gaps</h5>
-      <ul id="impactSummaryRisks" class="goal-impact-summary-list"></ul>
-    </div>
-
-    <div class="goal-impact-summary-block">
-      <h5>Recommendations</h5>
-      <ul id="impactSummaryRecommendations" class="goal-impact-summary-list"></ul>
-    </div>
-  </div>
-</div>
+</div>       
 
            
 
@@ -461,9 +474,9 @@
                 Generate Summary
               </button>
 
-              <button type="button" class="btn-submit" disabled>
-                Export PDF
-              </button>
+              <button type="button" id="exportGoalPdfBtn" class="btn-submit">
+                  Export PDF
+                </button>
             </div>
           </div>
         </div>
@@ -521,6 +534,10 @@
   .goals-tab-panel.active {
     display: block;
   }
+
+  .hidden {
+  display: none !important;
+}
 
   .goal-impact-intro {
     margin-top: 0;
@@ -811,6 +828,135 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .goal-impact-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.goal-impact-section-hint {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.goal-impact-summary-section {
+  margin-top: 8px;
+}
+
+.goal-impact-summary-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+  padding: 18px;
+  background: #ffffff;
+  color: #6b7280;
+}
+
+.goal-impact-summary-content.hidden {
+  display: none;
+}
+
+.goal-impact-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.goal-impact-summary-header h4 {
+  margin: 0;
+}
+
+.goal-impact-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff4ed;
+  color: #c2410c;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.goal-impact-summary-hero {
+  border: 1px solid #f6c7b2;
+  background: #fff8f3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.goal-impact-summary-hero h5 {
+  margin: 0 0 8px 0;
+  color: #f15a24;
+  font-size: 1rem;
+}
+
+.goal-impact-summary-hero p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.goal-impact-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.goal-impact-summary-block {
+  margin-bottom: 0;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  min-height: 100%;
+}
+
+.goal-impact-summary-block h5 {
+  margin: 0 0 8px 0;
+  color: #f15a24;
+  font-size: 0.95rem;
+}
+
+.goal-impact-summary-block p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.goal-impact-summary-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+
+.goal-impact-summary-list li {
+  margin-bottom: 6px;
+}
+
+.goal-impact-logs-wrap.compact {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.goal-impact-logs-wrap.compact .goal-impact-log-card {
+  padding: 10px 12px;
+}
+
+.goal-impact-logs-wrap.compact .goal-impact-log-text {
+  font-size: 0.86rem;
+}
+
+@media (max-width: 980px) {
+  .goal-impact-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 
 <script>
@@ -848,6 +994,7 @@
   const impactLogsList = document.getElementById('impactLogsList');
   const impactHighlightsList = document.getElementById('impactHighlightsList');
   const generateSummaryBtn = document.getElementById('generateSummaryBtn');
+  const exportGoalPdfBtn = document.getElementById('exportGoalPdfBtn');
   const impactSummaryEmpty = document.getElementById('impactSummaryEmpty');
   const impactSummaryContent = document.getElementById('impactSummaryContent');
   const impactSummaryOverall = document.getElementById('impactSummaryOverall');
@@ -1320,37 +1467,85 @@ const showImpactSummaryUI = (summary) => {
   };
 
      generateSummaryBtn.addEventListener('click', async () => {
+        if (!currentGoalId) {
+          return;
+        }
+
+          generateSummaryBtn.textContent = 'Generating...';
+          generateSummaryBtn.disabled = true;
+
+          try {
+            const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+              },
+            });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || 'Error generating summary');
+          return;
+        }
+
+        showImpactSummaryUI(data);
+      } catch (err) {
+        console.log(err);
+        alert('Unexpected error generating summary.');
+      }
+
+      generateSummaryBtn.textContent = 'Generate Summary';
+      generateSummaryBtn.disabled = false;
+    });
+
+    exportGoalPdfBtn.addEventListener('click', async () => {
   if (!currentGoalId) {
     return;
   }
 
-  generateSummaryBtn.textContent = 'Generating...';
-  generateSummaryBtn.disabled = true;
+  exportGoalPdfBtn.textContent = 'Exporting...';
+  exportGoalPdfBtn.disabled = true;
 
   try {
-    const response = await fetch(`/manager/goals/${currentGoalId}/impact-summary`, {
+    const response = await fetch(`/manager/goals/${currentGoalId}/export-pdf`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
       },
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      alert(data.error || 'Error generating summary');
+      let errorMessage = 'Error exporting PDF.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        console.log(jsonError);
+      }
+      alert(errorMessage);
       return;
     }
 
-    showImpactSummaryUI(data);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `goal_impact_${currentGoalId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
   } catch (err) {
     console.log(err);
-    alert('Unexpected error generating summary.');
+    alert('Unexpected error exporting PDF.');
   }
 
-  generateSummaryBtn.textContent = 'Generate Summary';
-  generateSummaryBtn.disabled = false;
+  exportGoalPdfBtn.textContent = 'Export PDF';
+  exportGoalPdfBtn.disabled = false;
 });
 
   saveDraftButton.addEventListener('click', () => {
