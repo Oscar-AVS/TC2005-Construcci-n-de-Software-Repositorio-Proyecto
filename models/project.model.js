@@ -240,10 +240,12 @@ module.exports = class Project {
 
   static countCompletedThisMonth() {
     return db.execute(
-      `SELECT COUNT(*) AS count FROM project 
-       WHERE progress_status = 'completed' 
-       AND MONTH(COALESCE(end_date, created_at)) = MONTH(CURRENT_DATE()) 
-       AND YEAR(COALESCE(end_date, created_at)) = YEAR(CURRENT_DATE())`
+      `SELECT COUNT(*) AS count
+       FROM project
+       WHERE progress_status = 'completed'
+         AND COALESCE(end_date, start_date) IS NOT NULL
+         AND MONTH(COALESCE(end_date, start_date)) = MONTH(CURRENT_DATE())
+         AND YEAR(COALESCE(end_date, start_date)) = YEAR(CURRENT_DATE())`
     );
   }
 
