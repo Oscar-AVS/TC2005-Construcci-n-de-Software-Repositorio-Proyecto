@@ -1,4 +1,4 @@
-git; /**
+/**
  * User model.
  * Handles database operations for the user table.
  */
