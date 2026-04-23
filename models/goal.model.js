@@ -216,7 +216,7 @@ module.exports = class Goal {
         gp.linked_by,
         gp.linked_at,
         p.project_name,
-        p.status
+        p.progress_status AS status
       FROM goal g
       LEFT JOIN goal_project gp
         ON g.id_goal = gp.id_goal
@@ -234,7 +234,7 @@ module.exports = class Goal {
         g.id_goal,
         p.id_project,
         p.project_name,
-        p.status
+        p.progress_status AS status
       FROM goal g
       INNER JOIN goal_project gp
         ON g.id_goal = gp.id_goal

@@ -19,6 +19,11 @@ const selfReviewLimiter = rateLimit({
 });
  
 router.get('/dashboard', managerController.getDashboard);
+router.get('/achievements', managerController.getAchievements);
+router.post('/achievements', managerController.postAchievement);
+router.post('/achievements/delete', managerController.deleteAchievement);
+router.post('/achievements/edit', managerController.editAchievement);
+router.get('/projects', managerController.getProjects);
 router.get('/goals', managerController.getGoals);
 router.post('/goals', managerController.createGoal);
 router.get('/goals/:id', managerController.getGoalById);

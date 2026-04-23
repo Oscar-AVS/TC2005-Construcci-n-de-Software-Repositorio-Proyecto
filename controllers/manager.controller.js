@@ -11,6 +11,7 @@ const Goal = require('../models/goal.model');
 const Team = require('../models/team.model');
 const bcrypt = require('bcrypt');
 const Highlight = require('../models/highlight.model');
+const Achievement = require('../models/achievement.model');
 const { generateText, Output } = require('ai');
 const PDFDocument = require('pdfkit');
 const { openai } = require('@ai-sdk/openai');
@@ -923,42 +924,48 @@ exports.getReports = (req, res) => {
     });
 };
 
-exports.getLog = (req, res) => {
+exports.getLog = async (req, res) => {
   const activeUserId = req.session.userId;
   const filters = {
     id_project: req.query.id_project || null,
     date_from: req.query.date_from || null,
     date_to: req.query.date_to || null,
   };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
 
-  Promise.all([
-    Log.fetchAllByEmployee(activeUserId, filters),
-    Project.fetchAllByEmployee(activeUserId),
-  ])
-    .then(([[logs], [projects]]) => {
-      return Promise.all(
-        logs.map((log) =>
-          Blocker.fetchByLog(log.id_log).then(([blockers]) => ({
-            ...log,
-            blockers,
-          }))
-        )
-      ).then((logsWithBlockers) => {
-        res.render('shared/log', {
-          currentPage: 'log',
-          role: 'manager',
-          logBase: '/manager',
-          logs: logsWithBlockers,
-          projects,
-          filters,
-          csrfToken: req.csrfToken(),
-        });
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
+  try {
+    const [[countResult]] = await Log.countAllByEmployee(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [logs] = await Log.fetchAllByEmployee(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    const logsWithBlockers = await Promise.all(
+      logs.map(async (log) => {
+        const [blockers] = await Blocker.fetchByLog(log.id_log);
+        return { ...log, blockers };
+      })
+    );
+
+    res.render('shared/log', {
+      currentPage: 'log',
+      role: 'manager',
+      logBase: '/manager',
+      logs: logsWithBlockers,
+      projects,
+      filters,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.getSelfReview = (req, res) => {
@@ -1482,4 +1489,65 @@ Give actionable recommendations for the manager.
       return res.status(500).json({ error: 'Error generating PDF.' });
     }
   }
+};
+
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+
+exports.getAchievements = async (req, res) => {
+  const activeUserId = req.session.userId;
+  const filters = {
+    date_from: req.query.date_from || null,
+    date_to: req.query.date_to || null,
+  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[countResult]] = await Achievement.countAllByUser(activeUserId, filters);
+    const totalRecords = countResult.total;
+    const totalPages = Math.ceil(totalRecords / limit) || 1;
+    const [achievements] = await Achievement.fetchAllByUser(activeUserId, filters, limit, offset);
+    const [projects] = await Project.fetchAllByEmployee(activeUserId);
+
+    res.render('employee/achievements', {
+      currentPage: 'achievements',
+      role: 'manager',
+      achievementsBase: '/manager',
+      achievements,
+      projects,
+      filters,
+      totalRecords,
+      page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.postAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.postAchievement(req, res);
+};
+
+exports.deleteAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.deleteAchievement(req, res);
+};
+
+exports.editAchievement = async (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.editAchievement(req, res);
+};
+
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+
+exports.getProjects = (req, res) => {
+  const employeeController = require('./employee.controller');
+  return employeeController.getProjects(req, res);
 };
