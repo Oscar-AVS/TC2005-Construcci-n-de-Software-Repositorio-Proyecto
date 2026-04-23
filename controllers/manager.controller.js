@@ -861,11 +861,50 @@ exports.deleteHighlight = async (req, res) => {
   }
 };
 
-exports.getHistory = (req, res) => {
-  res.render('manager/history', {
-    currentPage: 'history',
-    role: 'manager',
-  });
+exports.getHistory = async (req, res) => {
+  try {
+    // Lee los filtros que vienen desde la URL
+    const filters = {
+      id_user: req.query.id_user || '',
+      id_project: req.query.id_project || '',
+      id_team: req.query.id_team || '',
+      date_from: req.query.date_from || '',
+      date_to: req.query.date_to || '',
+    };
+
+    // Trae  los datos necesarios para filtros y resultados
+    const [
+      [historyLogs],
+      [historyCountRows],
+      [users],
+      [projects],
+      [teams],
+    ] = await Promise.all([
+      Log.fetchHistoryByManagerFilters(filters),
+      Log.countHistoryByManagerFilters(filters),
+      User.fetchUsersForHistory(),
+      Project.fetchAll(),
+      Team.fetchAllForSelect(),
+    ]);
+
+    // Toma el total de resultados filtrados
+    const totalEntries = historyCountRows.length > 0 ? historyCountRows[0].total : 0;
+
+    res.render('manager/history', {
+      currentPage: 'history',
+      role: 'manager',
+      logs: historyLogs,
+      totalEntries,
+      users,
+      projects,
+      teams,
+      filters,
+      csrfToken: req.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 exports.getReports = (req, res) => {
