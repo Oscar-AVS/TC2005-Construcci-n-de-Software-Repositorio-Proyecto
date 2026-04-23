@@ -16,8 +16,7 @@ const getReportData = async (idEquipo, idProyecto, fechaInicio, fechaFin) => {
     `SELECT u.id_user, u.full_name, u.email
      FROM user u
      INNER JOIN user_team ut ON u.id_user = ut.id_user
-     WHERE ut.id_team = ?
-       AND u.is_active = 1`,
+     WHERE ut.id_team = ?`,
     [idEquipo]
   );
 
