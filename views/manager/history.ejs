@@ -8,49 +8,78 @@
   </div>
 
   <div class="report-card-body">
-    <div class="filters-grid">
+    <!-- Formulario que manda los filtros por query params -->
+    <form action="/manager/history" method="GET" class="filters-grid">
       <div class="filter-group">
         <label class="form-label" for="filterUser">User</label>
-        <select id="filterUser" class="form-select">
+        <select id="filterUser" name="id_user" class="form-select">
           <option value="">All Users</option>
-          <option value="1">Francisco Arreola</option>
-          <option value="2">Lakshmi Martinez Jara</option>
-          <option value="3">Oscar Vilchis</option>
+          <% users.forEach((user) => { %>
+            <option
+              value="<%= user.id_user %>"
+              <%= String(filters.id_user) === String(user.id_user) ? 'selected' : '' %>
+            >
+              <%= user.full_name %>
+            </option>
+          <% }); %>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterProject">Project</label>
-        <select id="filterProject" class="form-select">
+        <select id="filterProject" name="id_project" class="form-select">
           <option value="">All Projects</option>
-          <option value="1">Internal Tools</option>
-          <option value="2">API Integration</option>
-          <option value="3">Dashboard Redesign</option>
+          <% projects.forEach((project) => { %>
+            <option
+              value="<%= project.id_project %>"
+              <%= String(filters.id_project) === String(project.id_project) ? 'selected' : '' %>
+            >
+              <%= project.project_name %>
+            </option>
+          <% }); %>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterTeam">Team</label>
-        <select id="filterTeam" class="form-select">
+        <select id="filterTeam" name="id_team" class="form-select">
           <option value="">All Teams</option>
-          <option value="1">Mufasa Solutions</option>
-          <option value="2">Phoenix Team</option>
-          <option value="3">Delta Squad</option>
+          <% teams.forEach((team) => { %>
+            <option
+              value="<%= team.id_team %>"
+              <%= String(filters.id_team) === String(team.id_team) ? 'selected' : '' %>
+            >
+              <%= team.team_name %>
+            </option>
+          <% }); %>
         </select>
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterFrom">From</label>
-        <input type="date" id="filterFrom" class="form-input" />
+        <input
+          type="date"
+          id="filterFrom"
+          name="date_from"
+          class="form-input"
+          value="<%= filters.date_from || '' %>"
+        />
       </div>
 
       <div class="filter-group">
         <label class="form-label" for="filterTo">To</label>
-        <input type="date" id="filterTo" class="form-input" />
+        <input
+          type="date"
+          id="filterTo"
+          name="date_to"
+          class="form-input"
+          value="<%= filters.date_to || '' %>"
+        />
       </div>
 
-      <button class="btn-submit" type="button">Apply Filters</button>
-    </div>
+      <!-- Boton para aplicar filtros -->
+      <button class="btn-submit" type="submit">Apply Filters</button>
+    </form>
   </div>
 </div>
 
@@ -58,7 +87,7 @@
 <div class="report-card">
   <div class="report-card-header">
     <h2>Activity Log</h2>
-    <span class="item-count">156 entries</span>
+    <span class="item-count"><%= totalEntries %> entr<%= totalEntries === 1 ? 'y' : 'ies' %></span>
   </div>
 
   <div class="report-card-body">
