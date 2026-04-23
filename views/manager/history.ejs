@@ -305,7 +305,6 @@
     });
   });
 
-  // Si hacen click fuera del buscador, ocultamos sugerencias
   document.addEventListener('click', (event) => {
     const clickedInsideUserSearch = event.target.closest('.user-search-group');
 
@@ -360,7 +359,6 @@
     display: none !important;
   }
 
-  /* Ajusta el boton de limpiar filtros para que se vea alineado con el submit */
   .clear-filters-button {
     display: inline-flex;
     align-items: center;
