@@ -503,6 +503,8 @@
   </div>
 </div>
 
+
+
 <style>
   .goals-tabs {
     display: flex;
@@ -957,6 +959,92 @@
     grid-template-columns: 1fr;
   }
 }
+
+.custom-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-modal.hidden {
+  display: none !important;
+}
+
+.custom-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.65);
+}
+
+.custom-modal-content {
+  position: relative;
+  z-index: 1;
+  width: 320px;
+  max-width: 90%;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+}
+
+.custom-modal-content h3 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.custom-modal-content p {
+  margin: 0 0 22px;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-secondary {
+  border: none;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-danger {
+  border: none;
+  background: #ed1d01;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.goal-actions,
+.goal-secondary-actions {
+  position: relative;
+  z-index: 5;
+}
+
+.delete-goal-button,
+.edit-goal-button {
+  pointer-events: auto;
+}
+
+.project-dropdown-menu:not(.open) {
+  display: none;
+  pointer-events: none;
+}
 </style>
 
 <script>
@@ -1186,36 +1274,38 @@
     }
   };
 
+
   const deleteGoal = async (goalId) => {
-    clearGoalsListMessage();
-    clearFormMessage();
+  clearGoalsListMessage();
+  clearFormMessage();
 
-    try {
-      const response = await fetch(`/manager/goals/${goalId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        showGoalsListMessage(data.message || 'Could not delete goal.', 'error');
-        return;
+  try {
+    const response = await fetch(`/manager/goals/${goalId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
       }
+    });
 
-      showGoalsListMessage(data.message || 'Goal deleted successfully.', 'success');
+    const data = await response.json();
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 900);
-    } catch (err) {
-      console.log(err);
-      showGoalsListMessage('Unexpected error while deleting goal.', 'error');
+    if (!response.ok) {
+      showGoalsListMessage(data.message || 'Could not delete goal.', 'error');
+      return;
     }
-  };
+
+    showGoalsListMessage(data.message || 'Goal deleted successfully.', 'success');
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 900);
+
+  } catch (err) {
+    console.log(err);
+    showGoalsListMessage('Unexpected error while deleting goal.', 'error');
+  }
+};
 
   const submitGoal = async (saveMode) => {
     clearFormMessage();
@@ -1564,27 +1654,49 @@ const showImpactSummaryUI = (summary) => {
     });
   });
 
-  deleteGoalButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      goalToDelete = button.dataset.goalId;
-      deleteModal.classList.remove('hidden');
-    });
-  });
+document.addEventListener('click', (event) => {
+  const deleteButton = event.target.closest('.delete-goal-button');
 
-  cancelDeleteBtn.addEventListener('click', () => {
+  if (!deleteButton) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  goalToDelete = deleteButton.dataset.goalId;
+  deleteModal.classList.remove('hidden');
+});
+
+cancelDeleteBtn.addEventListener('click', () => {
+  deleteModal.classList.add('hidden');
+  goalToDelete = null;
+});
+
+confirmDeleteBtn.addEventListener('click', async () => {
+  if (!goalToDelete) {
+    return;
+  }
+
+  confirmDeleteBtn.disabled = true;
+  confirmDeleteBtn.textContent = 'Deleting...';
+
+  await deleteGoal(goalToDelete);
+
+  confirmDeleteBtn.disabled = false;
+  confirmDeleteBtn.textContent = 'Delete';
+  deleteModal.classList.add('hidden');
+  goalToDelete = null;
+});
+
+deleteModal.addEventListener('click', (event) => {
+  const clickedBackdrop = event.target.classList.contains('custom-modal-backdrop');
+
+  if (clickedBackdrop) {
     deleteModal.classList.add('hidden');
     goalToDelete = null;
-  });
-
-  confirmDeleteBtn.addEventListener('click', () => {
-    if (!goalToDelete) {
-      return;
-    }
-
-    deleteModal.classList.add('hidden');
-    deleteGoal(goalToDelete);
-    goalToDelete = null;
-  });
+  }
+});
 
   linkProjectButtons.forEach((button) => {
     button.addEventListener('click', () => {
