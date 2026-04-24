@@ -1551,3 +1551,96 @@ exports.getProjects = (req, res) => {
   const employeeController = require('./employee.controller');
   return employeeController.getProjects(req, res);
 };
+
+exports.comparePeriods = async (req, res) => {
+  try {
+    // Lee las fechas de ambos periodos desde la URL
+    const {
+      periodAFrom,
+      periodATo,
+      periodBFrom,
+      periodBTo,
+    } = req.query;
+
+    // Valida que todas las fechas existan
+    if (!periodAFrom || !periodATo || !periodBFrom || !periodBTo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select valid dates for both periods.',
+      });
+    }
+
+    // Valida que cada periodo tenga fechas coherentes
+    if (periodAFrom > periodATo || periodBFrom > periodBTo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Start date cannot be later than end date.',
+      });
+    }
+
+    // Valida que los periodos sean válidos 
+    const periodsOverlap = periodAFrom <= periodBTo && periodBFrom <= periodATo;
+
+    if (periodsOverlap) {
+      return res.status(400).json({
+        success: false,
+        message: 'Periods cannot overlap. Please select separate date ranges.',
+      });
+    }
+
+    // Construye los objetos de periodo para reutilizarlos en las consultas
+    const periodA = {
+      date_from: periodAFrom,
+      date_to: periodATo,
+    };
+
+    const periodB = {
+      date_from: periodBFrom,
+      date_to: periodBTo,
+    };
+
+    // Trae metricas de logs, blockers y highlights para ambos periodos
+    const [
+      [[periodALogMetrics]],
+      [[periodBLogMetrics]],
+      [[periodABlockerMetrics]],
+      [[periodBBlockerMetrics]],
+      [[periodAHighlightMetrics]],
+      [[periodBHighlightMetrics]],
+    ] = await Promise.all([
+      Log.fetchMetricsByPeriod(periodA),
+      Log.fetchMetricsByPeriod(periodB),
+      Log.fetchBlockersByPeriod(periodA),
+      Log.fetchBlockersByPeriod(periodB),
+      Log.fetchHighlightsByPeriod(periodA),
+      Log.fetchHighlightsByPeriod(periodB),
+    ]);
+
+    // Respuesta limpia para el frontend
+    return res.status(200).json({
+      success: true,
+      periodA: {
+        from: periodAFrom,
+        to: periodATo,
+        totalLogs: periodALogMetrics.total_logs || 0,
+        totalActivities: periodALogMetrics.total_activities || 0,
+        totalBlockers: periodABlockerMetrics.total_blockers || 0,
+        totalHighlights: periodAHighlightMetrics.total_highlights || 0,
+      },
+      periodB: {
+        from: periodBFrom,
+        to: periodBTo,
+        totalLogs: periodBLogMetrics.total_logs || 0,
+        totalActivities: periodBLogMetrics.total_activities || 0,
+        totalBlockers: periodBBlockerMetrics.total_blockers || 0,
+        totalHighlights: periodBHighlightMetrics.total_highlights || 0,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
