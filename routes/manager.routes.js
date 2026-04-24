@@ -34,6 +34,8 @@ router.delete('/highlights/:id', managerController.deleteHighlight);
 router.put('/highlights/:id', managerController.updateHighlight);
 router.get('/history', managerController.getHistory);
 router.get('/reports', managerController.getReports);
+// Endpoint para comparar actividad entre periodos
+router.get('/reports/compare-periods', managerController.comparePeriods);
 router.get('/log', managerController.getLog);
 router.get('/self-review', managerController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, managerController.generateSelfReview);

@@ -189,6 +189,66 @@
     color: #f15a24;
   }
 
+  /* Grid de resultados de comparacion */
+.comparison-results {
+  width: 100%;
+}
+
+.comparison-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.comparison-metric-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.comparison-metric-card h3 {
+  margin: 0 0 14px 0;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.comparison-values {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.comparison-values span {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  background: #fff4ed;
+  color: #c2410c;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.comparison-metric-card p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1100px) {
+  .comparison-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .comparison-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
   @media (max-width: 900px) {
     .comparison-periods-grid {
       grid-template-columns: 1fr;
@@ -452,7 +512,8 @@
     }
   });
 
-    // Maneja el cambio entre tabs del modulo de reportes
+   // Maneja el cambio entre tabs del modulo de reportes
+document.addEventListener('DOMContentLoaded', () => {
   const reportsTabButtons = document.querySelectorAll('.reports-tab-button');
   const reportsTabPanels = document.querySelectorAll('.reports-tab-panel');
 
@@ -472,6 +533,92 @@
       activateReportsTab(button.dataset.tabTarget);
     });
   });
+});
+
+    // Calcula la diferencia entre periodo B y periodo A
+  const getDifferenceText = (periodAValue, periodBValue) => {
+    const difference = Number(periodBValue) - Number(periodAValue);
+
+    if (difference > 0) {
+      return `Change: +${difference}`;
+    }
+
+    return `Change: ${difference}`;
+  };
+
+  // Pinta las metricas de comparacion en la vista
+  const renderPeriodComparison = (data) => {
+    document.getElementById('comparisonPlaceholder').style.display = 'none';
+    document.getElementById('comparisonResults').style.display = 'block';
+
+    document.getElementById('logsPeriodA').textContent = data.periodA.totalLogs;
+    document.getElementById('logsPeriodB').textContent = data.periodB.totalLogs;
+    document.getElementById('logsDifference').textContent = getDifferenceText(
+      data.periodA.totalLogs,
+      data.periodB.totalLogs
+    );
+
+    document.getElementById('activitiesPeriodA').textContent = data.periodA.totalActivities;
+    document.getElementById('activitiesPeriodB').textContent = data.periodB.totalActivities;
+    document.getElementById('activitiesDifference').textContent = getDifferenceText(
+      data.periodA.totalActivities,
+      data.periodB.totalActivities
+    );
+
+    document.getElementById('blockersPeriodA').textContent = data.periodA.totalBlockers;
+    document.getElementById('blockersPeriodB').textContent = data.periodB.totalBlockers;
+    document.getElementById('blockersDifference').textContent = getDifferenceText(
+      data.periodA.totalBlockers,
+      data.periodB.totalBlockers
+    );
+
+    document.getElementById('highlightsPeriodA').textContent = data.periodA.totalHighlights;
+    document.getElementById('highlightsPeriodB').textContent = data.periodB.totalHighlights;
+    document.getElementById('highlightsDifference').textContent = getDifferenceText(
+      data.periodA.totalHighlights,
+      data.periodB.totalHighlights
+    );
+  };
+
+  // Conecta el boton Compare Periods con el endpoint del backend
+  const comparePeriodsBtn = document.getElementById('comparePeriodsBtn');
+
+  if (comparePeriodsBtn) {
+    comparePeriodsBtn.addEventListener('click', async () => {
+      const periodAFrom = document.getElementById('periodAFrom').value;
+      const periodATo = document.getElementById('periodATo').value;
+      const periodBFrom = document.getElementById('periodBFrom').value;
+      const periodBTo = document.getElementById('periodBTo').value;
+
+      if (!periodAFrom || !periodATo || !periodBFrom || !periodBTo) {
+        showReportMessage('Please select valid dates for both periods.', 'error');
+        return;
+      }
+
+      comparePeriodsBtn.textContent = 'Comparing...';
+      comparePeriodsBtn.disabled = true;
+
+      try {
+        const url = `/manager/reports/compare-periods?periodAFrom=${periodAFrom}&periodATo=${periodATo}&periodBFrom=${periodBFrom}&periodBTo=${periodBTo}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!response.ok) {
+          showReportMessage(data.message || 'Error comparing periods.', 'error');
+          return;
+        }
+
+        renderPeriodComparison(data);
+        showReportMessage('Period comparison generated successfully.', 'success');
+      } catch (err) {
+        console.log(err);
+        showReportMessage('Unexpected error comparing periods.', 'error');
+      }
+
+      comparePeriodsBtn.innerHTML = '<i class="fa-solid fa-code-compare"></i> Compare Periods';
+      comparePeriodsBtn.disabled = false;
+    });
+  }
 
   </script>
 
@@ -529,10 +676,52 @@
     </div>
 
     <div class="report-card-body">
-      <div class="comparison-placeholder" id="comparisonPlaceholder">
-        <i class="fa-solid fa-chart-column"></i>
-        <p>Select Period A and Period B to compare team activity.</p>
+  <!-- Estado inicial antes de comparar -->
+  <div class="comparison-placeholder" id="comparisonPlaceholder">
+    <i class="fa-solid fa-chart-column"></i>
+    <p>Select Period A and Period B to compare team activity.</p>
+  </div>
+
+  <!-- Resultados de la comparativa -->
+  <div id="comparisonResults" class="comparison-results" style="display: none;">
+    <div class="comparison-metrics-grid">
+      <div class="comparison-metric-card">
+        <h3>Total Logs</h3>
+        <div class="comparison-values">
+          <span id="logsPeriodA">0</span>
+          <span id="logsPeriodB">0</span>
+        </div>
+        <p id="logsDifference">Change: 0</p>
+      </div>
+
+      <div class="comparison-metric-card">
+        <h3>Activities Completed</h3>
+        <div class="comparison-values">
+          <span id="activitiesPeriodA">0</span>
+          <span id="activitiesPeriodB">0</span>
+        </div>
+        <p id="activitiesDifference">Change: 0</p>
+      </div>
+
+      <div class="comparison-metric-card">
+        <h3>Blockers</h3>
+        <div class="comparison-values">
+          <span id="blockersPeriodA">0</span>
+          <span id="blockersPeriodB">0</span>
+        </div>
+        <p id="blockersDifference">Change: 0</p>
+      </div>
+
+      <div class="comparison-metric-card">
+        <h3>Highlights</h3>
+        <div class="comparison-values">
+          <span id="highlightsPeriodA">0</span>
+          <span id="highlightsPeriodB">0</span>
+        </div>
+        <p id="highlightsDifference">Change: 0</p>
       </div>
     </div>
+  </div>
+</div>
   </div>
 </div>
