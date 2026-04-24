@@ -382,4 +382,82 @@ module.exports = class Log {
 
     return db.execute(query, params);
   }
+
+  // (MANAGER) Metodo para obtener metricas de actividad en un periodo
+static fetchMetricsByPeriod({ date_from, date_to }) {
+
+  // Consulta principal para logs y actividades
+  let query = `
+    SELECT 
+      COUNT(DISTINCT l.id_log) AS total_logs,
+      COUNT(l.completed) AS total_activities
+    FROM log l
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  // Filtro por fecha inicio
+  if (date_from) {
+    query += ' AND DATE(l.created_at) >= ?';
+    params.push(date_from);
+  }
+
+  // Filtro por fecha fin
+  if (date_to) {
+    query += ' AND DATE(l.created_at) <= ?';
+    params.push(date_to);
+  }
+
+  return db.execute(query, params);
+}
+
+// (MANAGER) Metodo para contar blockers en un periodo
+static fetchBlockersByPeriod({ date_from, date_to }) {
+
+  let query = `
+    SELECT COUNT(*) AS total_blockers
+    FROM blocker b
+    INNER JOIN log l ON b.id_log = l.id_log
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  if (date_from) {
+    query += ' AND DATE(l.created_at) >= ?';
+    params.push(date_from);
+  }
+
+  if (date_to) {
+    query += ' AND DATE(l.created_at) <= ?';
+    params.push(date_to);
+  }
+
+  return db.execute(query, params);
+}
+
+// (MANAGER) Metodo para contar highlights en un periodo
+static fetchHighlightsByPeriod({ date_from, date_to }) {
+
+  let query = `
+    SELECT COUNT(*) AS total_highlights
+    FROM highlight h
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  if (date_from) {
+    query += ' AND DATE(h.highlight_date) >= ?';
+    params.push(date_from);
+  }
+
+  if (date_to) {
+    query += ' AND DATE(h.highlight_date) <= ?';
+    params.push(date_to);
+  }
+
+  return db.execute(query, params);
+}
 };
