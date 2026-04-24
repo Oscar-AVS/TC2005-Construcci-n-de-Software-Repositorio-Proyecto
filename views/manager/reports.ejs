@@ -1,127 +1,258 @@
 <!-- Manager Reports View -->
 <h1 id="pageTitle" class="page-title">Reports</h1>
-<!-- Tabs del modulo de reportes -->
+
 <div class="reports-tabs">
-  <button
-    type="button"
-    class="reports-tab-button active"
-    data-tab-target="standardReportPanel"
-  >
+  <button type="button" class="reports-tab-button active" data-tab-target="standardReportPanel">
     Standard Report
   </button>
 
-  <button
-    type="button"
-    class="reports-tab-button"
-    data-tab-target="periodComparisonPanel"
-  >
+  <button type="button" class="reports-tab-button" data-tab-target="periodComparisonPanel">
     Period Comparison
   </button>
 </div>
 
 <div id="standardReportPanel" class="reports-tab-panel active">
-
-  <!-- Report Filters -->
   <div class="report-card reports-filters-card">
     <div class="report-card-header">
       <h2>Generate Report</h2>
     </div>
 
-  <div class="report-card-body">
-    <div class="filter-row">
-      <div class="filter-group">
-        <label class="form-label" for="quarterSelect">Quick Filters</label>
-        <select id="quarterSelect" class="form-select">
-  <option value="">Select a filter</option>
+    <div class="report-card-body">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="form-label" for="quarterSelect">Quick Filters</label>
+          <select id="quarterSelect" class="form-select">
+            <option value="">Select a filter</option>
+            <option value="LAST_WEEK">Last Week</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="Q1">Q1 (Jan - Mar)</option>
+            <option value="Q2">Q2 (Apr - Jun)</option>
+            <option value="Q3">Q3 (Jul - Sep)</option>
+            <option value="Q4">Q4 (Oct - Dec)</option>
+          </select>
+        </div>
 
-  <option value="LAST_WEEK">Last Week</option>
-  <option value="LAST_MONTH">Last Month</option>
+        <div class="filter-group">
+          <label class="form-label" for="reportFrom">From</label>
+          <input type="date" id="reportFrom" class="form-input" />
+        </div>
 
-  <option value="Q1">Q1 (Jan - Mar)</option>
-  <option value="Q2">Q2 (Apr - Jun)</option>
-  <option value="Q3">Q3 (Jul - Sep)</option>
-  <option value="Q4">Q4 (Oct - Dec)</option>
-  </select>
+        <div class="filter-group">
+          <label class="form-label" for="reportTo">To</label>
+          <input type="date" id="reportTo" class="form-input" />
+        </div>
+
+        <div class="filter-group">
+          <label class="form-label" for="reportTeam">Team</label>
+          <select id="reportTeam" class="form-select">
+            <option value="">Select a Team</option>
+            <% if (teams && teams.length > 0) { %>
+              <% teams.forEach((team) => { %>
+                <option value="<%= team.id_team %>"><%= team.team_name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+
+        <button class="btn-generate-ai" type="button" onclick="generateSummary()">
+          <i class="fa-solid fa-sparkles"></i>
+          Generate Summary &amp; Report
+        </button>
       </div>
-
-      <div class="filter-group">
-        <label class="form-label" for="reportFrom">From</label>
-        <input type="date" id="reportFrom" class="form-input" />
-      </div>
-
-      <div class="filter-group">
-        <label class="form-label" for="reportTo">To</label>
-        <input type="date" id="reportTo" class="form-input" />
-      </div>
-
-      <div class="filter-group">
-        <label class="form-label" for="reportTeam">Team</label>
-        <select id="reportTeam" class="form-select">
-        <option value="">Select a Team</option>
-        <% if (teams && teams.length > 0) { %>
-          <% teams.forEach((team) => { %>
-            <option value="<%= team.id_team %>"><%= team.team_name %></option>
-            <% }) %>
-          <% } %>
-  </select>
+    </div>
   </div>
 
-      <button class="btn-generate-ai" type="button" onclick="generateSummary()">
-        <i class="fa-solid fa-sparkles"></i>
-        Generate Summary &amp; Report
-      </button>
+  <div class="ai-summary-card">
+    <div class="ai-summary-header">
+      <div class="ai-summary-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>AI-Powered Summary</span>
+      </div>
     </div>
+
+    <div class="ai-summary-body" id="aiSummaryBody">
+      <div class="ai-summary-placeholder" id="aiPlaceholder">
+        <i class="fa-solid fa-robot"></i>
+        <p>Click "Generate Summary" to create an AI-powered analysis of your team's activity, achievements, and areas for improvement.</p>
+      </div>
+
+      <div class="ai-summary-placeholder" id="aiLoading" style="display:none;">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Generating summary, please wait...</p>
+      </div>
+
+      <div id="aiResult" style="display:none;">
+        <p id="aiOverall"></p>
+        <h4>Highlights</h4>
+        <ul id="aiHighlights"></ul>
+        <h4>Risks</h4>
+        <ul id="aiRisks"></ul>
+        <h4>Recommendations</h4>
+        <ul id="aiRecommendations"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="reportMessage" class="report-message" style="display:none;"></div>
+
+  <div class="action-row-left">
+    <button class="btn-export-large" type="button" onclick="exportPDF()">
+      <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
   </div>
 </div>
 
-    <div class="ai-summary-card">
-  <div class="ai-summary-header">
-    <div class="ai-summary-title">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>
-      <span>AI-Powered Summary</span>
+<div id="periodComparisonPanel" class="reports-tab-panel">
+  <div class="report-card reports-filters-card">
+    <div class="report-card-header">
+      <h2>Compare Activity Between Periods</h2>
+    </div>
+
+    <div class="report-card-body">
+      <div class="comparison-periods-grid">
+        <div class="comparison-period-card">
+          <h3>Period A</h3>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodAQuickFilter">Quick Filter</label>
+            <select id="periodAQuickFilter" class="form-select">
+              <option value="">Select a filter</option>
+              <option value="LAST_WEEK">Last Week</option>
+              <option value="LAST_MONTH">Last Month</option>
+              <option value="Q1">Q1 (Jan - Mar)</option>
+              <option value="Q2">Q2 (Apr - Jun)</option>
+              <option value="Q3">Q3 (Jul - Sep)</option>
+              <option value="Q4">Q4 (Oct - Dec)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodAFrom">From</label>
+            <input type="date" id="periodAFrom" class="form-input" />
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodATo">To</label>
+            <input type="date" id="periodATo" class="form-input" />
+          </div>
+        </div>
+
+        <div class="comparison-period-card">
+          <h3>Period B</h3>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodBQuickFilter">Quick Filter</label>
+            <select id="periodBQuickFilter" class="form-select">
+              <option value="">Select a filter</option>
+              <option value="LAST_WEEK">Last Week</option>
+              <option value="LAST_MONTH">Last Month</option>
+              <option value="Q1">Q1 (Jan - Mar)</option>
+              <option value="Q2">Q2 (Apr - Jun)</option>
+              <option value="Q3">Q3 (Jul - Sep)</option>
+              <option value="Q4">Q4 (Oct - Dec)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodBFrom">From</label>
+            <input type="date" id="periodBFrom" class="form-input" />
+          </div>
+
+          <div class="filter-group">
+            <label class="form-label" for="periodBTo">To</label>
+            <input type="date" id="periodBTo" class="form-input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row-left" style="margin-top: 20px;">
+        <button type="button" class="btn-generate-ai" id="comparePeriodsBtn">
+          <i class="fa-solid fa-code-compare"></i>
+          Compare Periods
+        </button>
+      </div>
     </div>
   </div>
 
-
-  <div class="ai-summary-body" id="aiSummaryBody">
-    <!-- Placeholder (default state) -->
-    <div class="ai-summary-placeholder" id="aiPlaceholder">
-      <i class="fa-solid fa-robot"></i>
-      <p>Click "Generate Summary" to create an AI-powered analysis of your team's activity, achievements, and areas for improvement.</p>
+  <div class="report-card">
+    <div class="report-card-header">
+      <h2>Comparison Results</h2>
     </div>
 
-    <!-- Loading state -->
-    <div class="ai-summary-placeholder" id="aiLoading" style="display:none;">
-      <i class="fa-solid fa-spinner fa-spin"></i>
-      <p>Generating summary, please wait...</p>
-    </div>
+    <div class="report-card-body">
+      <div class="comparison-placeholder" id="comparisonPlaceholder">
+        <i class="fa-solid fa-chart-column"></i>
+        <p>Select Period A and Period B to compare team activity.</p>
+      </div>
 
-    <!-- Result -->
-    <div id="aiResult" style="display:none;">
-      <p id="aiOverall"></p>
-      <h4>Highlights</h4>
-      <ul id="aiHighlights"></ul>
-      <h4>Risks</h4>
-      <ul id="aiRisks"></ul>
-      <h4>Recommendations</h4>
-      <ul id="aiRecommendations"></ul>
+      <div id="comparisonResults" class="comparison-results" style="display: none;">
+        <div class="comparison-metrics-grid">
+          <div class="comparison-metric-card">
+            <h3>Total Logs</h3>
+            <div class="comparison-values">
+              <div class="comparison-value-box">
+                <small>Period A</small>
+                <span id="logsPeriodA">0</span>
+              </div>
+              <div class="comparison-value-box">
+                <small>Period B</small>
+                <span id="logsPeriodB">0</span>
+              </div>
+            </div>
+            <p id="logsDifference">Change: 0</p>
+          </div>
+
+          <div class="comparison-metric-card">
+            <h3>Activities Completed</h3>
+            <div class="comparison-values">
+              <div class="comparison-value-box">
+                <small>Period A</small>
+                <span id="activitiesPeriodA">0</span>
+              </div>
+              <div class="comparison-value-box">
+                <small>Period B</small>
+                <span id="activitiesPeriodB">0</span>
+              </div>
+            </div>
+            <p id="activitiesDifference">Change: 0</p>
+          </div>
+
+          <div class="comparison-metric-card">
+            <h3>Blockers</h3>
+            <div class="comparison-values">
+              <div class="comparison-value-box">
+                <small>Period A</small>
+                <span id="blockersPeriodA">0</span>
+              </div>
+              <div class="comparison-value-box">
+                <small>Period B</small>
+                <span id="blockersPeriodB">0</span>
+              </div>
+            </div>
+            <p id="blockersDifference">Change: 0</p>
+          </div>
+
+          <div class="comparison-metric-card">
+            <h3>Highlights</h3>
+            <div class="comparison-values">
+              <div class="comparison-value-box">
+                <small>Period A</small>
+                <span id="highlightsPeriodA">0</span>
+              </div>
+              <div class="comparison-value-box">
+                <small>Period B</small>
+                <span id="highlightsPeriodB">0</span>
+              </div>
+            </div>
+            <p id="highlightsDifference">Change: 0</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
-<div id="reportMessage" class="report-message" style="display:none;"></div>
-
-
-    <!-- Export Actions -->
-    <div class="action-row-left">
-      <button class="btn-export-large" type="button" onclick="exportPDF()">
-        <i class="fa-solid fa-file-pdf"></i> Export PDF
-      </button>
-    </div>
-
 
 <style>
-  /* Tabs del modulo de reportes */
   .reports-tabs {
     display: flex;
     gap: 12px;
@@ -153,7 +284,6 @@
     display: block;
   }
 
-  /* Layout de los dos periodos a comparar */
   .comparison-periods-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -189,77 +319,94 @@
     color: #f15a24;
   }
 
-  /* Grid de resultados de comparacion */
-.comparison-results {
-  width: 100%;
-}
-
-.comparison-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.comparison-metric-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: #ffffff;
-  padding: 18px;
-}
-
-.comparison-metric-card h3 {
-  margin: 0 0 14px 0;
-  font-size: 0.95rem;
-  color: #111827;
-}
-
-.comparison-values {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.comparison-values span {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  background: #fff4ed;
-  color: #c2410c;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-
-.comparison-metric-card p {
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.85rem;
-}
-
-@media (max-width: 1100px) {
-  .comparison-metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .comparison-results {
+    width: 100%;
   }
-}
 
-@media (max-width: 700px) {
   .comparison-metrics-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
   }
-}
+
+  .comparison-metric-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 18px;
+  }
+
+  .comparison-metric-card h3 {
+    margin: 0 0 14px 0;
+    font-size: 0.95rem;
+    color: #111827;
+  }
+
+  .comparison-values {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .comparison-value-box {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    background: #fff4ed;
+    text-align: center;
+  }
+
+  .comparison-value-box small {
+    display: block;
+    margin-bottom: 4px;
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .comparison-value-box span {
+    display: block;
+    color: #c2410c;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .comparison-metric-card p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 1100px) {
+    .comparison-metrics-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 
   @media (max-width: 900px) {
     .comparison-periods-grid {
       grid-template-columns: 1fr;
     }
   }
+
+  @media (max-width: 700px) {
+    .comparison-metrics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
-    <script>
+
+<script>
   let aiSummaryGenerated = false;
 
   function showReportMessage(message, type = 'info') {
     const messageBox = document.getElementById('reportMessage');
+
+    if (!messageBox) {
+      return;
+    }
+
     messageBox.textContent = message;
     messageBox.className = `report-message ${type}`;
     messageBox.style.display = 'block';
@@ -267,32 +414,112 @@
 
   function hideReportMessage() {
     const messageBox = document.getElementById('reportMessage');
+
+    if (!messageBox) {
+      return;
+    }
+
     messageBox.textContent = '';
     messageBox.className = 'report-message';
     messageBox.style.display = 'none';
   }
 
-  function generateReport() {
-    const idEquipo = document.getElementById('reportTeam').value;
-    const fechaInicio = document.getElementById('reportFrom').value;
-    const fechaFin = document.getElementById('reportTo').value;
+  function getQuickFilterRange(filterValue) {
+    const today = new Date();
+    const year = today.getFullYear();
 
-    if (!idEquipo) {
-      showReportMessage('Please select a team.', 'error');
-      return;
+    let startDate = '';
+    let endDate = '';
+
+    switch (filterValue) {
+      case 'LAST_WEEK': {
+        const lastWeek = new Date();
+        lastWeek.setDate(today.getDate() - 7);
+
+        startDate = lastWeek.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+        break;
+      }
+
+      case 'LAST_MONTH': {
+        const firstDayLastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1
+        );
+
+        const lastDayLastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          0
+        );
+
+        startDate = firstDayLastMonth.toISOString().split('T')[0];
+        endDate = lastDayLastMonth.toISOString().split('T')[0];
+        break;
+      }
+
+      case 'Q1':
+        startDate = `${year}-01-01`;
+        endDate = `${year}-03-31`;
+        break;
+
+      case 'Q2':
+        startDate = `${year}-04-01`;
+        endDate = `${year}-06-30`;
+        break;
+
+      case 'Q3':
+        startDate = `${year}-07-01`;
+        endDate = `${year}-09-30`;
+        break;
+
+      case 'Q4':
+        startDate = `${year}-10-01`;
+        endDate = `${year}-12-31`;
+        break;
+
+      default:
+        startDate = '';
+        endDate = '';
     }
 
-    if (!fechaInicio || !fechaFin) {
-      showReportMessage('Please select a valid period (From and To).', 'error');
-      return;
+    return { startDate, endDate };
+  }
+
+  function getDifferenceText(periodAValue, periodBValue) {
+    const difference = Number(periodBValue) - Number(periodAValue);
+
+    if (difference > 0) {
+      return `Change: +${difference}`;
     }
 
-    if (fechaInicio > fechaFin) {
-      showReportMessage('Start date cannot be later than end date.', 'error');
-      return;
-    }
+    return `Change: ${difference}`;
+  }
 
-    showReportMessage('Report generated successfully. Ready to export.', 'success');
+  function renderPeriodComparison(data) {
+    document.getElementById('comparisonPlaceholder').style.display = 'none';
+    document.getElementById('comparisonResults').style.display = 'block';
+
+    document.getElementById('logsPeriodA').textContent = data.periodA.totalLogs;
+    document.getElementById('logsPeriodB').textContent = data.periodB.totalLogs;
+    document.getElementById('logsDifference').textContent =
+      getDifferenceText(data.periodA.totalLogs, data.periodB.totalLogs);
+
+    document.getElementById('activitiesPeriodA').textContent = data.periodA.totalActivities;
+    document.getElementById('activitiesPeriodB').textContent = data.periodB.totalActivities;
+    document.getElementById('activitiesDifference').textContent =
+      getDifferenceText(data.periodA.totalActivities, data.periodB.totalActivities);
+
+    document.getElementById('blockersPeriodA').textContent = data.periodA.totalBlockers;
+    document.getElementById('blockersPeriodB').textContent = data.periodB.totalBlockers;
+    document.getElementById('blockersDifference').textContent =
+      getDifferenceText(data.periodA.totalBlockers, data.periodB.totalBlockers);
+
+    document.getElementById('highlightsPeriodA').textContent = data.periodA.totalHighlights;
+    document.getElementById('highlightsPeriodB').textContent = data.periodB.totalHighlights;
+    document.getElementById('highlightsDifference').textContent =
+      getDifferenceText(data.periodA.totalHighlights, data.periodB.totalHighlights);
   }
 
   async function generateSummary() {
@@ -407,10 +634,23 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const reportsTabButtons = document.querySelectorAll('.reports-tab-button');
+    const reportsTabPanels = document.querySelectorAll('.reports-tab-panel');
+
     const quarterSelect = document.getElementById('quarterSelect');
     const reportFrom = document.getElementById('reportFrom');
     const reportTo = document.getElementById('reportTo');
     const reportTeam = document.getElementById('reportTeam');
+
+    const periodAQuickFilter = document.getElementById('periodAQuickFilter');
+    const periodBQuickFilter = document.getElementById('periodBQuickFilter');
+
+    const periodAFrom = document.getElementById('periodAFrom');
+    const periodATo = document.getElementById('periodATo');
+    const periodBFrom = document.getElementById('periodBFrom');
+    const periodBTo = document.getElementById('periodBTo');
+
+    const comparePeriodsBtn = document.getElementById('comparePeriodsBtn');
 
     function resetSummaryState() {
       aiSummaryGenerated = false;
@@ -420,8 +660,29 @@
       hideReportMessage();
     }
 
-    if (quarterSelect) {
-      quarterSelect.addEventListener('change', resetSummaryState);
+    function activateReportsTab(targetId) {
+      reportsTabButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.tabTarget === targetId);
+      });
+
+      reportsTabPanels.forEach((panel) => {
+        panel.classList.toggle('active', panel.id === targetId);
+      });
+    }
+
+    reportsTabButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activateReportsTab(button.dataset.tabTarget);
+      });
+    });
+
+    if (quarterSelect && reportFrom && reportTo) {
+      quarterSelect.addEventListener('change', () => {
+        const { startDate, endDate } = getQuickFilterRange(quarterSelect.value);
+        reportFrom.value = startDate;
+        reportTo.value = endDate;
+        resetSummaryState();
+      });
     }
 
     if (reportFrom) {
@@ -442,287 +703,67 @@
       reportTeam.addEventListener('change', resetSummaryState);
     }
 
-    if (quarterSelect && reportFrom && reportTo) {
-      quarterSelect.addEventListener('change', () => {
-        const selectedQuarter = quarterSelect.value;
-        const year = new Date().getFullYear();
-
-        let startDate = '';
-        let endDate = '';
-
-        switch (selectedQuarter) {
-          case 'LAST_WEEK': {
-            const today = new Date();
-            const lastWeek = new Date();
-            lastWeek.setDate(today.getDate() - 7);
-
-            startDate = lastWeek.toISOString().split('T')[0];
-            endDate = today.toISOString().split('T')[0];
-            break;
-          }
-
-          case 'LAST_MONTH': {
-            const today = new Date();
-
-            const firstDayLastMonth = new Date(
-              today.getFullYear(),
-              today.getMonth() - 1,
-              1
-            );
-
-            const lastDayLastMonth = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              0
-            );
-
-            startDate = firstDayLastMonth.toISOString().split('T')[0];
-            endDate = lastDayLastMonth.toISOString().split('T')[0];
-            break;
-          }
-
-          case 'Q1':
-            startDate = `${year}-01-01`;
-            endDate = `${year}-03-31`;
-            break;
-
-          case 'Q2':
-            startDate = `${year}-04-01`;
-            endDate = `${year}-06-30`;
-            break;
-
-          case 'Q3':
-            startDate = `${year}-07-01`;
-            endDate = `${year}-09-30`;
-            break;
-
-          case 'Q4':
-            startDate = `${year}-10-01`;
-            endDate = `${year}-12-31`;
-            break;
-
-          default:
-            startDate = '';
-            endDate = '';
-        }
-
-        reportFrom.value = startDate;
-        reportTo.value = endDate;
+    if (periodAQuickFilter && periodAFrom && periodATo) {
+      periodAQuickFilter.addEventListener('change', () => {
+        const { startDate, endDate } = getQuickFilterRange(periodAQuickFilter.value);
+        periodAFrom.value = startDate;
+        periodATo.value = endDate;
       });
     }
-  });
 
-   // Maneja el cambio entre tabs del modulo de reportes
-document.addEventListener('DOMContentLoaded', () => {
-  const reportsTabButtons = document.querySelectorAll('.reports-tab-button');
-  const reportsTabPanels = document.querySelectorAll('.reports-tab-panel');
-
-  const activateReportsTab = (targetId) => {
-    reportsTabButtons.forEach((button) => {
-      const isActive = button.dataset.tabTarget === targetId;
-      button.classList.toggle('active', isActive);
-    });
-
-    reportsTabPanels.forEach((panel) => {
-      panel.classList.toggle('active', panel.id === targetId);
-    });
-  };
-
-  reportsTabButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      activateReportsTab(button.dataset.tabTarget);
-    });
-  });
-});
-
-    // Calcula la diferencia entre periodo B y periodo A
-  const getDifferenceText = (periodAValue, periodBValue) => {
-    const difference = Number(periodBValue) - Number(periodAValue);
-
-    if (difference > 0) {
-      return `Change: +${difference}`;
+    if (periodBQuickFilter && periodBFrom && periodBTo) {
+      periodBQuickFilter.addEventListener('change', () => {
+        const { startDate, endDate } = getQuickFilterRange(periodBQuickFilter.value);
+        periodBFrom.value = startDate;
+        periodBTo.value = endDate;
+      });
     }
 
-    return `Change: ${difference}`;
-  };
+    if (comparePeriodsBtn) {
+      comparePeriodsBtn.addEventListener('click', async () => {
+        const periodAFromValue = periodAFrom.value;
+        const periodAToValue = periodATo.value;
+        const periodBFromValue = periodBFrom.value;
+        const periodBToValue = periodBTo.value;
 
-  // Pinta las metricas de comparacion en la vista
-  const renderPeriodComparison = (data) => {
-    document.getElementById('comparisonPlaceholder').style.display = 'none';
-    document.getElementById('comparisonResults').style.display = 'block';
-
-    document.getElementById('logsPeriodA').textContent = data.periodA.totalLogs;
-    document.getElementById('logsPeriodB').textContent = data.periodB.totalLogs;
-    document.getElementById('logsDifference').textContent = getDifferenceText(
-      data.periodA.totalLogs,
-      data.periodB.totalLogs
-    );
-
-    document.getElementById('activitiesPeriodA').textContent = data.periodA.totalActivities;
-    document.getElementById('activitiesPeriodB').textContent = data.periodB.totalActivities;
-    document.getElementById('activitiesDifference').textContent = getDifferenceText(
-      data.periodA.totalActivities,
-      data.periodB.totalActivities
-    );
-
-    document.getElementById('blockersPeriodA').textContent = data.periodA.totalBlockers;
-    document.getElementById('blockersPeriodB').textContent = data.periodB.totalBlockers;
-    document.getElementById('blockersDifference').textContent = getDifferenceText(
-      data.periodA.totalBlockers,
-      data.periodB.totalBlockers
-    );
-
-    document.getElementById('highlightsPeriodA').textContent = data.periodA.totalHighlights;
-    document.getElementById('highlightsPeriodB').textContent = data.periodB.totalHighlights;
-    document.getElementById('highlightsDifference').textContent = getDifferenceText(
-      data.periodA.totalHighlights,
-      data.periodB.totalHighlights
-    );
-  };
-// Conecta el boton Compare Periods con el endpoint del backend
-document.addEventListener('DOMContentLoaded', () => {
-  const comparePeriodsBtn = document.getElementById('comparePeriodsBtn');
-
-  if (comparePeriodsBtn) {
-    comparePeriodsBtn.addEventListener('click', async () => {
-      const periodAFrom = document.getElementById('periodAFrom').value;
-      const periodATo = document.getElementById('periodATo').value;
-      const periodBFrom = document.getElementById('periodBFrom').value;
-      const periodBTo = document.getElementById('periodBTo').value;
-
-      if (!periodAFrom || !periodATo || !periodBFrom || !periodBTo) {
-        showReportMessage('Please select valid dates for both periods.', 'error');
-        return;
-      }
-
-      comparePeriodsBtn.textContent = 'Comparing...';
-      comparePeriodsBtn.disabled = true;
-
-      try {
-        const url = `/manager/reports/compare-periods?periodAFrom=${periodAFrom}&periodATo=${periodATo}&periodBFrom=${periodBFrom}&periodBTo=${periodBTo}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (!response.ok) {
-          showReportMessage(data.message || 'Error comparing periods.', 'error');
+        if (!periodAFromValue || !periodAToValue || !periodBFromValue || !periodBToValue) {
+          showReportMessage('Please select valid dates for both periods.', 'error');
           return;
         }
 
-        renderPeriodComparison(data);
-        showReportMessage('Period comparison generated successfully.', 'success');
-      } catch (err) {
-        console.log(err);
-        showReportMessage('Unexpected error comparing periods.', 'error');
-      }
+        if (periodAFromValue > periodAToValue || periodBFromValue > periodBToValue) {
+          showReportMessage('Invalid date range in one of the periods.', 'error');
+          return;
+        }
 
-      comparePeriodsBtn.innerHTML = '<i class="fa-solid fa-code-compare"></i> Compare Periods';
-      comparePeriodsBtn.disabled = false;
-    });
-  }
-});
+        if (periodAFromValue <= periodBToValue && periodBFromValue <= periodAToValue) {
+          showReportMessage('Periods cannot overlap.', 'error');
+          return;
+        }
 
-        </script>
+        comparePeriodsBtn.innerHTML = 'Comparing...';
+        comparePeriodsBtn.disabled = true;
 
-    </div>
+        try {
+          const url = `/manager/reports/compare-periods?periodAFrom=${periodAFromValue}&periodATo=${periodAToValue}&periodBFrom=${periodBFromValue}&periodBTo=${periodBToValue}`;
+          const response = await fetch(url);
+          const data = await response.json();
 
-<div id="periodComparisonPanel" class="reports-tab-panel">
-  <div class="report-card reports-filters-card">
-    <div class="report-card-header">
-      <h2>Compare Activity Between Periods</h2>
-    </div>
+          if (!response.ok) {
+            showReportMessage(data.message || 'Error comparing periods.', 'error');
+            return;
+          }
 
-    <div class="report-card-body">
-      <div class="comparison-periods-grid">
-        <div class="comparison-period-card">
-          <h3>Period A</h3>
+          renderPeriodComparison(data);
+          showReportMessage('Period comparison generated successfully.', 'success');
+        } catch (err) {
+          console.log(err);
+          showReportMessage('Unexpected error comparing periods.', 'error');
+        }
 
-          <div class="filter-group">
-            <label class="form-label" for="periodAFrom">From</label>
-            <input type="date" id="periodAFrom" class="form-input" />
-          </div>
-
-          <div class="filter-group">
-            <label class="form-label" for="periodATo">To</label>
-            <input type="date" id="periodATo" class="form-input" />
-          </div>
-        </div>
-
-        <div class="comparison-period-card">
-          <h3>Period B</h3>
-
-          <div class="filter-group">
-            <label class="form-label" for="periodBFrom">From</label>
-            <input type="date" id="periodBFrom" class="form-input" />
-          </div>
-
-          <div class="filter-group">
-            <label class="form-label" for="periodBTo">To</label>
-            <input type="date" id="periodBTo" class="form-input" />
-          </div>
-        </div>
-      </div>
-
-      <div class="action-row-left" style="margin-top: 20px;">
-        <button type="button" class="btn-generate-ai" id="comparePeriodsBtn">
-          <i class="fa-solid fa-code-compare"></i>
-          Compare Periods
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="report-card">
-    <div class="report-card-header">
-      <h2>Comparison Results</h2>
-    </div>
-
-    <div class="report-card-body">
-  <!-- Estado inicial antes de comparar -->
-  <div class="comparison-placeholder" id="comparisonPlaceholder">
-    <i class="fa-solid fa-chart-column"></i>
-    <p>Select Period A and Period B to compare team activity.</p>
-  </div>
-
-  <!-- Resultados de la comparativa -->
-  <div id="comparisonResults" class="comparison-results" style="display: none;">
-    <div class="comparison-metrics-grid">
-      <div class="comparison-metric-card">
-        <h3>Total Logs</h3>
-        <div class="comparison-values">
-          <span id="logsPeriodA">0</span>
-          <span id="logsPeriodB">0</span>
-        </div>
-        <p id="logsDifference">Change: 0</p>
-      </div>
-
-      <div class="comparison-metric-card">
-        <h3>Activities Completed</h3>
-        <div class="comparison-values">
-          <span id="activitiesPeriodA">0</span>
-          <span id="activitiesPeriodB">0</span>
-        </div>
-        <p id="activitiesDifference">Change: 0</p>
-      </div>
-
-      <div class="comparison-metric-card">
-        <h3>Blockers</h3>
-        <div class="comparison-values">
-          <span id="blockersPeriodA">0</span>
-          <span id="blockersPeriodB">0</span>
-        </div>
-        <p id="blockersDifference">Change: 0</p>
-      </div>
-
-      <div class="comparison-metric-card">
-        <h3>Highlights</h3>
-        <div class="comparison-values">
-          <span id="highlightsPeriodA">0</span>
-          <span id="highlightsPeriodB">0</span>
-        </div>
-        <p id="highlightsDifference">Change: 0</p>
-      </div>
-    </div>
-  </div>
-</div>
-  </div>
-</div>
+        comparePeriodsBtn.innerHTML = '<i class="fa-solid fa-code-compare"></i> Compare Periods';
+        comparePeriodsBtn.disabled = false;
+      });
+    }
+  });
+</script>
