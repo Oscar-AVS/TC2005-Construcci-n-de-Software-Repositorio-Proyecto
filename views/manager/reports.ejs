@@ -579,8 +579,8 @@ document.addEventListener('DOMContentLoaded', () => {
       data.periodB.totalHighlights
     );
   };
-
-  // Conecta el boton Compare Periods con el endpoint del backend
+// Conecta el boton Compare Periods con el endpoint del backend
+document.addEventListener('DOMContentLoaded', () => {
   const comparePeriodsBtn = document.getElementById('comparePeriodsBtn');
 
   if (comparePeriodsBtn) {
@@ -619,10 +619,11 @@ document.addEventListener('DOMContentLoaded', () => {
       comparePeriodsBtn.disabled = false;
     });
   }
+});
 
-  </script>
+        </script>
 
-</div>
+    </div>
 
 <div id="periodComparisonPanel" class="reports-tab-panel">
   <div class="report-card reports-filters-card">
