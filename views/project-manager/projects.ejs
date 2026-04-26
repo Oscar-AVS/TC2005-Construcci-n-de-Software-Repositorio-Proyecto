@@ -164,8 +164,8 @@
       <h2>Delete Project</h2>
     </div>
     <p style="color: var(--text-secondary); font-size: 14px;">
-      Are you sure you want to delete <strong id="deleteProjectName"></strong>?
-      This action cannot be undone.
+      Are you sure you want to delete
+      <strong id="deleteProjectName" style="color: var(--text-primary); font-weight: 700;"></strong>?
     </p>
     <form id="formDeleteProject" method="POST" action="">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
@@ -265,4 +265,15 @@
   document.querySelectorAll('.alert').forEach(el => {
     setTimeout(() => el.style.display = 'none', 4000);
   });
+
+  // Validación de fechas en frontend
+const newStartDate = document.getElementById('newStartDate');
+const newEndDate = document.getElementById('newEndDate');
+
+if (newStartDate && newEndDate) {
+  newStartDate.addEventListener('change', () => {
+    newEndDate.min = newStartDate.value;
+  });
+}
  </script>
+

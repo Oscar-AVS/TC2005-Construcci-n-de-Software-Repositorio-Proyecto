@@ -366,7 +366,7 @@
  
       <div class="form-field">
         <label class="form-label" for="editProjectStatus">Status</label>
-        <select id="editProjectStatus" name="status" class="form-select">
+        <select id="editProjectStatus" name="progress_status" class="form-select">
           <option value="not_started" <%= project.progress_status === 'not_started' ? 'selected' : '' %>>Not Started</option>
           <option value="in_progress" <%= project.progress_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
           <option value="on_hold"     <%= project.progress_status === 'on_hold'     ? 'selected' : '' %>>On Hold</option>
@@ -386,7 +386,8 @@
         <div class="form-field">
           <label class="form-label" for="editEndDate">End Date</label>
           <input type="date" id="editEndDate" name="end_date" class="form-input"
-            value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
+          min="<%= project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>"
+          value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
         </div>
       </div>
  
@@ -426,7 +427,8 @@
         <div class="form-field">
           <label class="form-label" for="datesEnd">End Date *</label>
           <input type="date" id="datesEnd" name="end_date" class="form-input" required
-            value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
+          min="<%= project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>"
+          value="<%= project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>" />
         </div>
       </div>
  
@@ -559,14 +561,18 @@
  
   // Modal Edit (4.2)
   const modalEdit = document.getElementById('modalEditProject');
-  document.getElementById('btnEditProject').addEventListener('click', () => openModal(modalEdit));
+  document.getElementById('btnEditProject').addEventListener('click', () => {
+  document.getElementById('editEndDate').min = document.getElementById('editStartDate').value;
+  openModal(modalEdit);});
   document.getElementById('btnCloseEdit').addEventListener('click',   () => closeModal(modalEdit));
   document.getElementById('btnCancelEdit').addEventListener('click',  () => closeModal(modalEdit));
  
  
   // Modal Dates (4.4)
   const modalDates = document.getElementById('modalSetDates');
-  document.getElementById('btnEditDates').addEventListener('click',   () => openModal(modalDates));
+  document.getElementById('btnEditDates').addEventListener('click', () => {
+  document.getElementById('datesEnd').min = document.getElementById('datesStart').value;
+  openModal(modalDates);});
   document.getElementById('btnCloseDates').addEventListener('click',  () => closeModal(modalDates));
   document.getElementById('btnCancelDates').addEventListener('click', () => closeModal(modalDates));
 
@@ -882,6 +888,80 @@
       grid.style.opacity = '1';
     }
   }
+
+  // Update delete form actions only after the page is fully loaded
+  document.addEventListener('DOMContentLoaded', () => {
+  const formDeleteTeam = document.getElementById('formDeleteTeam');
+  const deleteTeamIdInput = document.getElementById('deleteTeamId');
+
+  if (formDeleteTeam && deleteTeamIdInput) {
+    formDeleteTeam.onsubmit = function() {
+      this.action = `/project-manager/project/<%= project.id_project %>/teams/${deleteTeamIdInput.value}/remove`;
+    };
+  }
+
+  const formDeleteMember = document.getElementById('formDeleteMember');
+  const deleteMemberIdInput = document.getElementById('deleteMemberId');
+
+  if (formDeleteMember && deleteMemberIdInput) {
+    formDeleteMember.onsubmit = function() {
+      this.action = `/project-manager/project/<%= project.id_project %>/users/${deleteMemberIdInput.value}/remove`;
+    };
+  }
+});
+
+  // Validates that end date is not before start date
+  function setupDateValidation(startId, endId, formSelector) {
+  const startInput = document.getElementById(startId);
+  const endInput = document.getElementById(endId);
+  const form = document.querySelector(formSelector);
+
+  if (!startInput || !endInput || !form) return;
+
+  const updateEndDateLimit = () => {
+    if (startInput.value) {
+      endInput.min = startInput.value;
+    } else {
+      endInput.removeAttribute("min");
+    }
+
+    if (startInput.value && endInput.value && endInput.value < startInput.value) {
+      endInput.value = "";
+    }
+  };
+
+  startInput.addEventListener("change", updateEndDateLimit);
+  startInput.addEventListener("input", updateEndDateLimit);
+
+  endInput.addEventListener("click", updateEndDateLimit);
+  endInput.addEventListener("focus", updateEndDateLimit);
+
+  form.addEventListener("submit", (event) => {
+    updateEndDateLimit();
+
+    if (startInput.value && endInput.value && endInput.value < startInput.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      endInput.value = "";
+      endInput.focus();
+    }
+  });
+
+  updateEndDateLimit();
+}
+
+setupDateValidation(
+  "editStartDate",
+  "editEndDate",
+  'form[action*="/edit"]',
+);
+
+setupDateValidation(
+  "datesStart",
+  "datesEnd",
+  'form[action*="/dates"]',
+);
+
 </script>
 
 <!-- Delete Member Modal -->
@@ -923,22 +1003,4 @@
     <button class="modal-close" id="btnCloseDeleteTeam"><i class="fa-solid fa-xmark"></i></button>
   </div>
 </div>
-
-<script>
-  // Update team delete form action dynamically
-  const formDeleteTeam = document.getElementById('formDeleteTeam');
-  const deleteTeamIdInput = document.getElementById('deleteTeamId');
-  
-  formDeleteTeam.onsubmit = function() {
-    this.action = `/project-manager/project/<%= project.id_project %>/teams/${deleteTeamIdInput.value}/remove`;
-  };
-  
-  // Update member delete form action dynamically
-  const formDeleteMember = document.getElementById('formDeleteMember');
-  const deleteMemberIdInput = document.getElementById('deleteMemberId');
-  
-  formDeleteMember.onsubmit = function() {
-    this.action = `/project-manager/project/<%= project.id_project %>/users/${deleteMemberIdInput.value}/remove`;
-  };
-</script>
  
