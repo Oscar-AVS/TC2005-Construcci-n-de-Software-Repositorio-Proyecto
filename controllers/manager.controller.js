@@ -22,6 +22,7 @@ exports.getDashboard = (req, res) => {
   res.render('manager/dashboard', {
     currentPage: 'dashboard',
     role: 'manager',
+    csrfToken: req.csrfToken(),
   });
 };
 
@@ -987,25 +988,27 @@ exports.exportSelfReviewPDF = async (req, res) => {
   return employeeController.exportSelfReviewPDF(req, res);
 };
 
-exports.getProfile = (req, res) => {
+exports.getProfile = async (req, res) => {
   const activeUserId = req.session.userId;
 
-  User.fetchOne(activeUserId)
-    .then(([rows]) => {
-      if (rows.length > 0) {
-        res.render('shared/profile', {
-          currentPage: 'profile',
-          role: 'manager',
-          user: rows[0],
-        });
-      } else {
-        res.status(404).send('User not found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send('Internal Server Error');
-    });
+  try {
+    const [rows] = await User.fetchOne(activeUserId);
+    if (rows.length > 0) {
+      res.render('shared/profile', {
+        currentPage: 'profile',
+        role: 'manager',
+        user: rows[0],
+        error: '',
+        success: '',
+        csrfToken: req.csrfToken(),
+      });
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 /*exports.getProfile = async (req, res) => {
