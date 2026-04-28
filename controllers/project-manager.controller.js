@@ -12,6 +12,15 @@ const Log = require("../models/log.model");
 const Achievement = require("../models/achievement.model");
 const bcrypt = require("bcrypt");
 
+const isInvalidDateRange = (startDate, endDate) => {
+  if (!startDate || !endDate) return false;
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  return end < start;
+};
+
 const renderProjectDetailView = async (req, res, project, options = {}) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
@@ -543,7 +552,7 @@ exports.getProjectBlockers = async (req, res) => {
 };
 
 exports.postCreateProject = async (req, res) => {
-  const { project_name, description, status, start_date, end_date } = req.body;
+  const { project_name, description, progress_status, start_date, end_date } = req.body;
 
   const renderWithError = async (error) => {
     const [projects] = await Project.fetchAll();
@@ -560,40 +569,34 @@ exports.postCreateProject = async (req, res) => {
   };
 
   if (!project_name || !project_name.trim()) {
-    return renderWithError("El nombre del proyecto es requerido.");
+    return renderWithError("Project name is required.");
   }
 
-  if (start_date && end_date && end_date < start_date) {
-    return renderWithError(
-      "La fecha de fin no puede ser anterior a la fecha de inicio.",
-    );
+  if (isInvalidDateRange(start_date, end_date)) {
+    return renderWithError("End date cannot be earlier than start date.");
   }
 
   try {
     const [[existing]] = await Project.findByName(project_name.trim());
 
     if (existing) {
-      return renderWithError(
-        "Ya existe un proyecto registrado con ese nombre.",
-      );
+      return renderWithError("A project with this name already exists.");
     }
 
     await Project.create(
       project_name.trim(),
       description,
-      status,
+      progress_status,
       start_date || null,
       end_date || null,
     );
 
     return res.redirect(
-      "/project-manager/projects?success=Proyecto+registrado+correctamente",
+      "/project-manager/projects?success=Project+registered+successfully",
     );
   } catch (err) {
     console.error(err);
-    return renderWithError(
-      "No fue posible completar el registro. Intenta nuevamente.",
-    );
+    return renderWithError("The project could not be registered. Please try again.");
   }
 };
 
@@ -660,26 +663,26 @@ exports.postRemoveTeam = async (req, res) => {
 
 exports.postEditProject = async (req, res) => {
   const { id } = req.params;
-  const { project_name, description, status, start_date, end_date } = req.body;
+  const { project_name, description, progress_status, start_date, end_date } = req.body;
 
   try {
     const [[project]] = await Project.fetchOne(id);
 
     if (!project) {
       return res.redirect(
-        "/project-manager/projects?error=El+proyecto+no+está+disponible",
+        "/project-manager/projects?error=Project+not+available",
       );
     }
 
     if (!project_name || !project_name.trim()) {
       return renderProjectDetailView(req, res, project, {
-        error: "El nombre del proyecto es requerido.",
+        error: "Project name is required.",
       });
     }
 
     if (start_date && end_date && end_date < start_date) {
       return renderProjectDetailView(req, res, project, {
-        error: "La fecha de fin no puede ser anterior a la fecha de inicio.",
+        error: "End date cannot be earlier than start date.",
       });
     }
 
@@ -690,7 +693,7 @@ exports.postEditProject = async (req, res) => {
 
     if (duplicate) {
       return renderProjectDetailView(req, res, project, {
-        error: "Ya existe otro proyecto con ese nombre.",
+        error: "Another project with this name already exists.",
       });
     }
 
@@ -698,18 +701,18 @@ exports.postEditProject = async (req, res) => {
       id,
       project_name.trim(),
       description,
-      status,
+      progress_status,
       start_date || null,
       end_date || null,
     );
 
     return res.redirect(
-      `/project-manager/project/${id}?success=Proyecto+actualizado+correctamente`,
+      `/project-manager/project/${id}?success=Project+updated+successfully`,
     );
   } catch (err) {
     console.error(err);
     return res.redirect(
-      `/project-manager/project/${id}?error=No+fue+posible+actualizar+el+proyecto`,
+      `/project-manager/project/${id}?error=The+project+could+not+be+updated`,
     );
   }
 };
@@ -748,31 +751,31 @@ exports.postProjectDates = async (req, res) => {
 
     if (!project) {
       return res.redirect(
-        "/project-manager/projects?error=El+proyecto+no+fue+encontrado",
+        "/project-manager/projects?error=Project+not+found",
       );
     }
 
     if (!start_date || !end_date) {
       return renderProjectDetailView(req, res, project, {
-        error: "Ambas fechas son requeridas.",
+        error: "Both dates are required.",
       });
     }
 
-    if (end_date < start_date) {
+    if (isInvalidDateRange(start_date, end_date)) {
       return renderProjectDetailView(req, res, project, {
-        error: "La fecha de fin no puede ser anterior a la fecha de inicio.",
+        error: "End date cannot be earlier than start date.",
       });
     }
 
     await Project.updateDates(id, start_date, end_date);
 
     return res.redirect(
-      `/project-manager/project/${id}?success=Fechas+actualizadas+correctamente`,
+      `/project-manager/project/${id}?success=Dates+updated+successfully`,
     );
   } catch (err) {
     console.error(err);
     return res.redirect(
-      `/project-manager/project/${id}?error=No+fue+posible+actualizar+las+fechas`,
+      `/project-manager/project/${id}?error=Dates+could+not+be+updated`,
     );
   }
 };

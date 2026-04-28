@@ -139,6 +139,7 @@ app.use(async (req, res, next) => {
 app.use((req, res, next) => {
   res.locals.fullName = req.session.fullName || '';
   res.locals.role = req.session.role || '';
+  res.locals.privileges = req.session.privileges || [];
   next();
 });
 
