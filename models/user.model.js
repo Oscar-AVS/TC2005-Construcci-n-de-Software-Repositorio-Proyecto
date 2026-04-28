@@ -72,10 +72,11 @@ module.exports = class User {
     );
   }
 
-  static updateRole(id_user, id_role) {
-    return db.execute(`UPDATE user_role SET id_role = ? WHERE id_user = ?`, [
-      id_role,
+  static async updateRole(id_user, id_role) {
+    await db.execute(`DELETE FROM user_role WHERE id_user = ?`, [id_user]);
+    return db.execute(`INSERT INTO user_role (id_user, id_role) VALUES (?, ?)`, [
       id_user,
+      id_role,
     ]);
   }
 
