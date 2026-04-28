@@ -8,7 +8,6 @@ const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 const teamLeaderController = require('../controllers/team-leader.controller');
-const { requirePrivilege } = require('../util/is-auth');
 
 const selfReviewLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -27,20 +26,20 @@ router.post('/log', teamLeaderController.postLog);
 router.post('/log/edit', teamLeaderController.postEditLog);
 router.post('/log/delete', teamLeaderController.postDeleteLog);
 
-router.get('/team-log', requirePrivilege('view_team_logs'), teamLeaderController.getTeamLog);
+router.get('/team-log', teamLeaderController.getTeamLog);
 
-router.get('/team-members', requirePrivilege('view_team_logs'), teamLeaderController.getTeamMembers);
-router.get('/team-members/search', requirePrivilege('view_team_logs'), teamLeaderController.searchAvailableUsers);
-router.get('/team-members/find', requirePrivilege('view_team_logs'), teamLeaderController.findTeamMembers);
-router.post('/team-members/add', requirePrivilege('view_team_logs'), teamLeaderController.addTeamMember);
-router.post('/team-members/remove', requirePrivilege('view_team_logs'), teamLeaderController.removeTeamMember);
+router.get('/team-members', teamLeaderController.getTeamMembers);
+router.get('/team-members/search', teamLeaderController.searchAvailableUsers);
+router.get('/team-members/find', teamLeaderController.findTeamMembers);
+router.post('/team-members/add', teamLeaderController.addTeamMember);
+router.post('/team-members/remove', teamLeaderController.removeTeamMember);
 
-router.post('/blockers/resolve', requirePrivilege('view_team_logs'), teamLeaderController.resolveBlocker);
+router.post('/blockers/resolve', teamLeaderController.resolveBlocker);
 
-router.post('/achievements/approve', requirePrivilege('view_team_logs'), teamLeaderController.approveAchievement);
-router.post('/achievements/reject', requirePrivilege('view_team_logs'), teamLeaderController.rejectAchievement);
+router.post('/achievements/approve', teamLeaderController.approveAchievement);
+router.post('/achievements/reject', teamLeaderController.rejectAchievement);
 
-router.get('/team-report', requirePrivilege('view_team_logs'), teamLeaderController.getTeamReport);
+router.get('/team-report', teamLeaderController.getTeamReport);
 
 router.get('/self-review', teamLeaderController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, teamLeaderController.generateSelfReview);

@@ -32,7 +32,7 @@
             id="completedInput"
             name="completed"
             rows="4"
-            placeholder="Describe your completed tasks..."
+            placeholder="Completed homepage redesign&#10;Fixed responsive issues"
             required
           ></textarea>
         </div>
@@ -43,7 +43,7 @@
             id="plannedInput"
             name="planned"
             rows="4"
-            placeholder="Describe your planned tasks for tomorrow..."
+            placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
             required
           ></textarea>
         </div>
@@ -147,7 +147,7 @@
           <div class="entry-actions">
             <span class="entry-date"><%= new Date(log.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
             <div style="display: flex; gap: 6px;">
-              <button class="btn-icon" type="button" title="Edit" onclick='openEditModal(<%- JSON.stringify(log).replace(/'/g, "&#39;") %>)'>
+              <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= JSON.stringify(log) %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
               <button class="btn-icon btn-danger" type="button" title="Delete" onclick="openDeleteModal(<%= log.id_log %>)">
@@ -277,88 +277,18 @@
 </div>
 
 <script>
-  const allProjects = <%- JSON.stringify(projects) %>;
+  setTimeout(() => {
+    const success = document.getElementById('toastSuccess');
+    const error = document.getElementById('toastError');
 
-  function openDeleteModal(id) {
-    document.getElementById('deleteIdLog').value = id;
-    document.getElementById('deleteModal').classList.add('active');
-  }
-
-  function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('active');
-  }
-
-  function openEditModal(log) {
-    document.getElementById('editIdLog').value = log.id_log;
-    document.getElementById('editCompleted').value = log.completed;
-    document.getElementById('editPlanned').value = log.planned;
-    
-    // Populate projects
-    const container = document.getElementById('editProjectSelects');
-    container.innerHTML = '';
-    
-    // Get currently linked projects for this log
-    // Note: in the fetchAll query, we have log.project_names (string)
-    // but we don't have the IDs easily available unless we parse them or change the query.
-    // However, the controller fetchAllByEmployee query only returns project_names as a string.
-    // Wait, let's check the controller again.
-    
-    allProjects.forEach(p => {
-      const isChecked = log.project_names.split(', ').includes(p.project_name);
-      const label = document.createElement('label');
-      label.style.display = 'block';
-      label.style.marginBottom = '4px';
-      label.innerHTML = `
-        <input type="checkbox" name="id_projects" value="${p.id_project}" ${isChecked ? 'checked' : ''}>
-        ${p.project_name}
-      `;
-      container.appendChild(label);
-    });
-
-    // Blocker
-    if (log.blockers && log.blockers.length > 0) {
-      const b = log.blockers[0];
-      document.getElementById('editBlocker').value = b.description;
-      document.getElementById('editBlockerId').value = b.id_blocker;
-      document.getElementById('editBlockerStatus').value = b.resolution_status;
-    } else {
-      document.getElementById('editBlocker').value = '';
-      document.getElementById('editBlockerId').value = '';
-      document.getElementById('editBlockerStatus').value = '';
+    if (success) {
+      success.style.opacity = '0';
+      setTimeout(() => success.remove(), 300);
     }
 
-    document.getElementById('editModal').classList.add('active');
-  }
-
-  function closeEditModal() {
-    document.getElementById('editModal').classList.remove('active');
-  }
-
-  // Close modals on overlay click
-  document.addEventListener('DOMContentLoaded', () => {
-    ['deleteModal', 'editModal'].forEach(id => {
-      const modal = document.getElementById(id);
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            id === 'deleteModal' ? closeDeleteModal() : closeEditModal();
-          }
-        });
-      }
-    });
-
-    // Toast auto-hide
-    setTimeout(() => {
-      const success = document.getElementById('toastSuccess');
-      const error = document.getElementById('toastError');
-      if (success) {
-        success.style.opacity = '0';
-        setTimeout(() => success.remove(), 300);
-      }
-      if (error) {
-        error.style.opacity = '0';
-        setTimeout(() => error.remove(), 300);
-      }
-    }, 3000);
-  });
+    if (error) {
+      error.style.opacity = '0';
+      setTimeout(() => error.remove(), 300);
+    }
+  }, 3000);
 </script>

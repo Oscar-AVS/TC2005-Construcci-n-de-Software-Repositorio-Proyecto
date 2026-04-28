@@ -1,57 +1,23 @@
-<meta name="csrf-token" content="<%= csrfToken %>" />
 <h1 id="pageTitle" class="page-title">Roles & Permissions</h1>
 
 <div class="report-card">
   <div class="report-card-header">
     <h2>System Roles</h2>
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <span class="item-count"><%= roles.length %> roles</span>
-      <button class="btn btn-primary" onclick="openCreateRoleModal()">
-        <i class="fa-solid fa-plus"></i> New Role
-      </button>
-    </div>
+    <span class="item-count"><%= roles.length %> roles</span>
   </div>
 
   <div class="report-card-body">
     <div class="roles-grid">
       <% roles.forEach(r => { %>
-        <div class="role-card <%= r.role_name %>-role" style="position: relative;">
-          <div class="role-card-header" style="justify-content: space-between; align-items: flex-start;">
+        <div class="role-card <%= r.role_name %>-role">
+          <div class="role-card-header">
             <div>
               <h3 class="role-card-title"><%= r.role_name.charAt(0).toUpperCase() + r.role_name.slice(1).replace(/-/g, ' ') %></h3>
-              <p style="font-size: 13px; color: #5f6b85; margin: 4px 0 0 0;"><%= r.description %></p>
-            </div>
-            <div class="role-actions" style="display: flex; gap: 8px;">
-              <button class="btn-icon" type="button" title="Edit Role" style="padding: 6px; font-size: 14px;"
-                onclick="openEditRoleModal(<%= r.id_role %>, '<%= r.role_name %>', '<%= r.description %>', <%= JSON.stringify(r.privileges.map(p => p.id_privilege)) %>)">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button class="btn-icon btn-danger" type="button" title="Delete Role" style="padding: 6px; font-size: 14px;"
-                onclick="openDeleteRoleModal(<%= r.id_role %>, '<%= r.role_name %>')">
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              <p class="role-card-count"><%= r.users.length %> user<%= r.users.length !== 1 ? 's' : '' %></p>
             </div>
           </div>
 
-          <div style="padding: 0 16px; margin-top: 10px;">
-            <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin: 0 0 8px 0;">Permissions</h4>
-            <% if (r.privileges && r.privileges.length > 0) { %>
-              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
-                <% r.privileges.forEach(p => { %>
-                  <span style="display: inline-flex; align-items: center; gap: 4px; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600;" title="<%= p.description %>">
-                    <i class="fa-solid fa-check" style="font-size: 10px;"></i>
-                    <%= p.privilege_name.replace(/_/g, ' ') %>
-                  </span>
-                <% }) %>
-              </div>
-            <% } else { %>
-              <p style="color: #5f6b85; font-size: 13px; margin-bottom: 16px; font-style: italic;">No permissions assigned.</p>
-            <% } %>
-            
-            <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin: 0 0 8px 0;">Assigned Users (<%= r.users.length %>)</h4>
-          </div>
-
-          <div class="role-permissions" style="padding-top: 0; max-height: 180px; overflow-y: auto;">
+          <div class="role-permissions">
             <% if (r.users.length > 0) { %>
               <% r.users.forEach((u, uIdx) => { %>
                 <div class="permission-item" data-user-idx="<%= uIdx %>" style="gap: 10px;">
@@ -65,7 +31,7 @@
                 </div>
               <% }) %>
             <% } else { %>
-              <p style="color: #5f6b85; font-size: 14px; padding: 0 16px;">No users assigned.</p>
+              <p style="color: #5f6b85; font-size: 14px;">No users assigned.</p>
             <% } %>
           </div>
 
@@ -80,113 +46,9 @@
   </div>
 </div>
 
-<!-- Create Role Modal -->
-<div id="createRoleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
-  <div style="background: #fff; width: min(560px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2);">
-    <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Create New Role</h3>
-    <form action="/admin/roles/create" method="POST" id="createRoleForm">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div class="form-field" style="margin-bottom: 12px;">
-        <label class="form-label" for="createRoleName">Role Name (e.g. guest)</label>
-        <input type="text" id="createRoleName" name="role_name" class="form-input" required />
-      </div>
-      <div class="form-field" style="margin-bottom: 12px;">
-        <label class="form-label" for="createRoleDesc">Description</label>
-        <input type="text" id="createRoleDesc" name="description" class="form-input" required />
-      </div>
-      <div class="form-field" style="margin-bottom: 24px;">
-        <label class="form-label">Permissions</label>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb;">
-          <% allPrivileges.forEach(p => { %>
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; cursor: pointer;">
-              <input type="checkbox" name="privileges[]" value="<%= p.id_privilege %>" style="width: 16px; height: 16px; accent-color: #f25c2a;" />
-              <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: 600;"><%= p.privilege_name.replace(/_/g, ' ') %></span>
-                <span style="font-size: 11px; color: #6b7280;"><%= p.description %></span>
-              </div>
-            </label>
-          <% }) %>
-        </div>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" onclick="closeCreateRoleModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-xmark"></i> Cancel
-        </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #27ae60; color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-check"></i> Create Role
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Edit Role Modal -->
-<div id="editRoleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
-  <div style="background: #fff; width: min(560px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2);">
-    <h3 style="margin: 0 0 20px 0; font-size: 22px; color: #1f2a44;">Edit Role</h3>
-    <form action="/admin/roles/edit" method="POST" id="editRoleForm">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <input type="hidden" name="id_role" id="editRoleId" />
-      <div class="form-field" style="margin-bottom: 12px;">
-        <label class="form-label" for="editRoleName">Role Name</label>
-        <input type="text" id="editRoleName" name="role_name" class="form-input" required />
-      </div>
-      <div class="form-field" style="margin-bottom: 12px;">
-        <label class="form-label" for="editRoleDesc">Description</label>
-        <input type="text" id="editRoleDesc" name="description" class="form-input" required />
-      </div>
-      <div class="form-field" style="margin-bottom: 24px;">
-        <label class="form-label">Permissions</label>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb;">
-          <% allPrivileges.forEach(p => { %>
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; cursor: pointer;">
-              <input type="checkbox" name="privileges[]" value="<%= p.id_privilege %>" class="edit-privilege-cb" style="width: 16px; height: 16px; accent-color: #f25c2a;" />
-              <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: 600;"><%= p.privilege_name.replace(/_/g, ' ') %></span>
-                <span style="font-size: 11px; color: #6b7280;"><%= p.description %></span>
-              </div>
-            </label>
-          <% }) %>
-        </div>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" onclick="closeEditRoleModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-xmark"></i> Cancel
-        </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f25c2a; color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-check"></i> Save Changes
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Delete Role Modal -->
-<div id="deleteRoleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
-  <div style="background: #fff; width: min(420px, 90vw); border-radius: 20px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); text-align: center;">
-    <div style="width: 56px; height: 56px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; color: #e74c3c;">
-      <i class="fa-solid fa-trash"></i>
-    </div>
-    <h3 style="margin: 0 0 8px 0; font-size: 22px; color: #1f2a44;">Delete Role</h3>
-    <p id="deleteRoleText" style="color: #5f6b85; margin-bottom: 28px; font-size: 14px; line-height: 1.5;"></p>
-    <form action="/admin/roles/delete" method="POST">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <input type="hidden" name="id_role" id="deleteRoleId" />
-      <div style="display: flex; justify-content: center; gap: 12px;">
-        <button type="button" onclick="closeDeleteRoleModal()" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #f1f5f9; color: #374151; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-xmark"></i> Cancel
-        </button>
-        <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; border: none; background: #e74c3c; color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px;">
-          <i class="fa-solid fa-trash"></i> Delete
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
 (function () {
-  const PER_PAGE = 3;
+  const PER_PAGE = 10;
   document.querySelectorAll('.role-card').forEach(function (card) {
     var items = Array.from(card.querySelectorAll('.permission-item'));
     if (items.length <= PER_PAGE) return;
@@ -216,47 +78,4 @@
     render();
   });
 })();
-
-function openCreateRoleModal() {
-  document.getElementById('createRoleForm').reset();
-  document.getElementById('createRoleModal').style.display = 'flex';
-}
-
-function closeCreateRoleModal() {
-  document.getElementById('createRoleModal').style.display = 'none';
-}
-
-function openEditRoleModal(id, name, desc, privs) {
-  document.getElementById('editRoleId').value = id;
-  document.getElementById('editRoleName').value = name;
-  document.getElementById('editRoleDesc').value = desc;
-  
-  const checkboxes = document.querySelectorAll('.edit-privilege-cb');
-  checkboxes.forEach(cb => {
-    cb.checked = privs.includes(parseInt(cb.value));
-  });
-
-  document.getElementById('editRoleModal').style.display = 'flex';
-}
-
-function closeEditRoleModal() {
-  document.getElementById('editRoleModal').style.display = 'none';
-}
-
-function openDeleteRoleModal(id, name) {
-  document.getElementById('deleteRoleId').value = id;
-  document.getElementById('deleteRoleText').textContent = `Are you sure you want to delete the role '${name}'? This cannot be undone.`;
-  document.getElementById('deleteRoleModal').style.display = 'flex';
-}
-
-function closeDeleteRoleModal() {
-  document.getElementById('deleteRoleModal').style.display = 'none';
-}
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-  if (e.target === document.getElementById('createRoleModal')) closeCreateRoleModal();
-  if (e.target === document.getElementById('editRoleModal')) closeEditRoleModal();
-  if (e.target === document.getElementById('deleteRoleModal')) closeDeleteRoleModal();
-});
 </script>

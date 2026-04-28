@@ -70,27 +70,25 @@
             <span>Projects</span>
           </a>
         </li>
-        <% if (typeof locals.privileges !== 'undefined' && locals.privileges.includes('view_team_logs')) { %>
-          <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Team</li>
-          <li class="nav-item <%= currentPage === 'team-log' ? 'active' : '' %>">
-            <a href="/team-leader/team-log">
-              <i class="fa-solid fa-users-rectangle" aria-hidden="true"></i>
-              <span>Team Log</span>
-            </a>
-          </li>
-          <li class="nav-item <%= currentPage === 'team-members' ? 'active' : '' %>">
-            <a href="/team-leader/team-members">
-              <i class="fa-solid fa-users" aria-hidden="true"></i>
-              <span>Team Members</span>
-            </a>
-          </li>
-          <li class="nav-item <%= currentPage === 'team-report' ? 'active' : '' %>">
-            <a href="/team-leader/team-report">
-              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
-              <span>Team Report</span>
-            </a>
-          </li>
-        <% } %>
+        <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Team</li>
+        <li class="nav-item <%= currentPage === 'team-log' ? 'active' : '' %>">
+          <a href="/team-leader/team-log">
+            <i class="fa-solid fa-users-rectangle" aria-hidden="true"></i>
+            <span>Team Log</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'team-members' ? 'active' : '' %>">
+          <a href="/team-leader/team-members">
+            <i class="fa-solid fa-users" aria-hidden="true"></i>
+            <span>Team Members</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'team-report' ? 'active' : '' %>">
+          <a href="/team-leader/team-report">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <span>Team Report</span>
+          </a>
+        </li>
 
       <% } else if (typeof role !== 'undefined' && role === 'manager') { %>
         <li class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
@@ -124,37 +122,31 @@
             <span>Projects</span>
           </a>
         </li>
-        <% if (typeof locals.privileges !== 'undefined' && (locals.privileges.includes('manage_goals') || locals.privileges.includes('generate_reports'))) { %>
-          <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Management</li>
-          <% if (locals.privileges.includes('manage_goals')) { %>
-          <li class="nav-item <%= currentPage === 'goals' ? 'active' : '' %>">
-            <a href="/manager/goals">
-              <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
-              <span>Goals</span>
-            </a>
-          </li>
-          <li class="nav-item <%= currentPage === 'highlights' ? 'active' : '' %>">
-            <a href="/manager/highlights">
-              <i class="fa-solid fa-star" aria-hidden="true"></i>
-              <span>Highlights</span>
-            </a>
-          </li>
-          <li class="nav-item <%= currentPage === 'history' ? 'active' : '' %>">
-            <a href="/manager/history">
-              <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
-              <span>History</span>
-            </a>
-          </li>
-          <% } %>
-          <% if (locals.privileges.includes('generate_reports')) { %>
-          <li class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>">
-            <a href="/manager/reports">
-              <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-          <% } %>
-        <% } %>
+        <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Management</li>
+        <li class="nav-item <%= currentPage === 'goals' ? 'active' : '' %>">
+          <a href="/manager/goals">
+            <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+            <span>Goals</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'highlights' ? 'active' : '' %>">
+          <a href="/manager/highlights">
+            <i class="fa-solid fa-star" aria-hidden="true"></i>
+            <span>Highlights</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'history' ? 'active' : '' %>">
+          <a href="/manager/history">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            <span>History</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>">
+          <a href="/manager/reports">
+            <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+            <span>Reports</span>
+          </a>
+        </li>
 
       <% } else if (typeof role !== 'undefined' && role === 'admin') { %>
         <li class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
@@ -188,33 +180,25 @@
             <span>Projects</span>
           </a>
         </li>
-        <% if (typeof locals.privileges !== 'undefined' && (locals.privileges.includes('manage_users') || locals.privileges.includes('manage_teams') || locals.privileges.includes('manage_roles'))) { %>
-          <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Administration</li>
-          <% if (locals.privileges.includes('manage_users')) { %>
-          <li class="nav-item <%= currentPage === 'users' ? 'active' : '' %>">
-            <a href="/admin/users">
-              <i class="fa-solid fa-users-gear" aria-hidden="true"></i>
-              <span>Users</span>
-            </a>
-          </li>
-          <% } %>
-          <% if (locals.privileges.includes('manage_teams')) { %>
-          <li class="nav-item <%= currentPage === 'teams' ? 'active' : '' %>">
-            <a href="/admin/teams">
-              <i class="fa-solid fa-people-group" aria-hidden="true"></i>
-              <span>Teams</span>
-            </a>
-          </li>
-          <% } %>
-          <% if (locals.privileges.includes('manage_roles')) { %>
-          <li class="nav-item <%= currentPage === 'roles' ? 'active' : '' %>">
-            <a href="/admin/roles">
-              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-              <span>Roles</span>
-            </a>
-          </li>
-          <% } %>
-        <% } %>
+        <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Administration</li>
+        <li class="nav-item <%= currentPage === 'users' ? 'active' : '' %>">
+          <a href="/admin/users">
+            <i class="fa-solid fa-users-gear" aria-hidden="true"></i>
+            <span>Users</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'teams' ? 'active' : '' %>">
+          <a href="/admin/teams">
+            <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+            <span>Teams</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'roles' ? 'active' : '' %>">
+          <a href="/admin/roles">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <span>Roles</span>
+          </a>
+        </li>
 
       <% } else if (typeof role !== 'undefined' && role === 'project-manager') { %>
         <li class="nav-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
@@ -242,25 +226,19 @@
             <span>Achievements</span>
           </a>
         </li>
-        <% if (typeof locals.privileges !== 'undefined' && (locals.privileges.includes('manage_projects') || locals.privileges.includes('generate_reports'))) { %>
-          <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Project Management</li>
-          <% if (locals.privileges.includes('manage_projects')) { %>
-          <li class="nav-item <%= currentPage === 'projects' ? 'active' : '' %>">
-            <a href="/project-manager/projects">
-              <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-              <span>Projects</span>
-            </a>
-          </li>
-          <% } %>
-          <% if (locals.privileges.includes('generate_reports')) { %>
-          <li class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>">
-            <a href="/project-manager/reports">
-              <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-          <% } %>
-        <% } %>
+        <li style="padding: 12px 20px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; pointer-events: none;">Project Management</li>
+        <li class="nav-item <%= currentPage === 'projects' ? 'active' : '' %>">
+          <a href="/project-manager/projects">
+            <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+            <span>Projects</span>
+          </a>
+        </li>
+        <li class="nav-item <%= currentPage === 'reports' ? 'active' : '' %>">
+          <a href="/project-manager/reports">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <span>Reports</span>
+          </a>
+        </li>
 
       <% } else { %>
         <li class="nav-item <%= typeof currentPage !== 'undefined' && currentPage === 'dashboard' ? 'active' : '' %>">

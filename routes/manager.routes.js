@@ -7,7 +7,6 @@ const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 const managerController = require('../controllers/manager.controller');
-const { requirePrivilege } = require('../util/is-auth');
 
 const selfReviewLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -20,42 +19,34 @@ const selfReviewLimiter = rateLimit({
 });
  
 router.get('/dashboard', managerController.getDashboard);
-
 router.get('/achievements', managerController.getAchievements);
 router.post('/achievements', managerController.postAchievement);
 router.post('/achievements/delete', managerController.deleteAchievement);
 router.post('/achievements/edit', managerController.editAchievement);
-
 router.get('/projects', managerController.getProjects);
-
-router.get('/goals', requirePrivilege('manage_goals'), managerController.getGoals);
-router.post('/goals', requirePrivilege('manage_goals'), managerController.createGoal);
-router.get('/goals/:id', requirePrivilege('manage_goals'), managerController.getGoalById);
-router.put('/goals/:id', requirePrivilege('manage_goals'), managerController.updateGoal);
-router.post('/goals/:id/link-project', requirePrivilege('manage_goals'), managerController.linkProjectToGoal);
-router.post('/goals/:id/unlink-project', requirePrivilege('manage_goals'), managerController.unlinkProjectFromGoal);
-router.post('/goals/:id/delete', requirePrivilege('manage_goals'), managerController.deleteGoal);
-router.post('/goals/:id/impact-summary', requirePrivilege('manage_goals'), managerController.generateGoalImpactSummary);
-router.post('/goals/:id/export-pdf', requirePrivilege('manage_goals'), managerController.exportGoalImpactPDF);
-
-router.get('/highlights', requirePrivilege('manage_goals'), managerController.getHighlights);
-router.post('/highlights', requirePrivilege('manage_goals'), managerController.createHighlight);
-router.delete('/highlights/:id', requirePrivilege('manage_goals'), managerController.deleteHighlight);
-router.put('/highlights/:id', requirePrivilege('manage_goals'), managerController.updateHighlight);
-
-router.get('/history', requirePrivilege('manage_goals'), managerController.getHistory);
-
-router.get('/reports', requirePrivilege('generate_reports'), managerController.getReports);
-router.get('/reports/compare-periods', requirePrivilege('generate_reports'), managerController.comparePeriods);
-
+router.get('/goals', managerController.getGoals);
+router.post('/goals', managerController.createGoal);
+router.get('/goals/:id', managerController.getGoalById);
+router.put('/goals/:id', managerController.updateGoal);
+router.get('/highlights', managerController.getHighlights);
+router.post('/highlights', managerController.createHighlight);
+router.delete('/highlights/:id', managerController.deleteHighlight);
+router.put('/highlights/:id', managerController.updateHighlight);
+router.get('/history', managerController.getHistory);
+router.get('/reports', managerController.getReports);
+// Endpoint para comparar actividad entre periodos
+router.get('/reports/compare-periods', managerController.comparePeriods);
 router.get('/log', managerController.getLog);
-
 router.get('/self-review', managerController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, managerController.generateSelfReview);
 router.post('/self-review/export-pdf', selfReviewLimiter, managerController.exportSelfReviewPDF);
-
 router.get('/profile', managerController.getProfile);
 router.post('/profile/slack', managerController.postSlack);
 router.post('/profile/password', managerController.postPassword);
+router.post('/goals/:id/link-project', managerController.linkProjectToGoal);
+router.post('/goals/:id/unlink-project', managerController.unlinkProjectFromGoal);
+router.post('/goals/:id/delete', managerController.deleteGoal);
+router.post('/goals/:id/impact-summary', managerController.generateGoalImpactSummary);
+router.post('/goals/:id/export-pdf', managerController.exportGoalImpactPDF);
 
 module.exports = router;

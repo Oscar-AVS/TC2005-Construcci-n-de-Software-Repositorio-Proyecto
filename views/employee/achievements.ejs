@@ -150,8 +150,8 @@
                   <%= new Date(a.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %>
                 </span>
                 <div style="display: flex; gap: 6px;">
-                <!-- Use a JSON string for safer parameter passing -->
-                <button class="btn-icon" type="button" title="Edit" onclick='openEditModal(<%- JSON.stringify(a).replace(/'/g, "&#39;") %>)'>
+                <!-- Use a specific date string representation for the date input -->
+                <button class="btn-icon" type="button" title="Edit" onclick="openEditModal(<%= a.id_achievement %>, '<%= (a.title || '').replace(/'/g, "\\'") %>', '<%= (a.description || '').replace(/'/g, "\\'") %>', '<%= new Date(a.created_at).toISOString().split('T')[0] %>')">
                   <i class="fa-solid fa-pen"></i>
                 </button>
                 <button class="btn-icon btn-delete" type="button" title="Delete" onclick="openDeleteModal(<%= a.id_achievement %>)">
@@ -312,12 +312,10 @@
 
   let currentEditId = null;
 
-  function openEditModal(achievement) {
-    currentEditId = achievement.id_achievement;
-    document.getElementById('editAchievementTitle').value = achievement.title || '';
-    document.getElementById('editAchievementDesc').value = achievement.description || '';
-    // Format date for input[type=date] (YYYY-MM-DD)
-    const date = new Date(achievement.created_at).toISOString().split('T')[0];
+  function openEditModal(id, title, desc, date) {
+    currentEditId = id;
+    document.getElementById('editAchievementTitle').value = title;
+    document.getElementById('editAchievementDesc').value = desc;
     document.getElementById('editAchievementDate').value = date;
     document.getElementById('editModal').classList.add('active');
   }

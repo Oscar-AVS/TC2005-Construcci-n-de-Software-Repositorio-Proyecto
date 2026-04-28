@@ -172,7 +172,7 @@
           <td>
             <div class="table-actions">
               <button class="btn-icon" type="button" title="Edit"
-                onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', <%= user.id_role || 'null' %>)">
+                onclick="openEditModal(<%= user.id %>, '<%= user.full_name %>', '<%= user.email %>', <%= user.id_role %>)">
                 <i class="fa-solid fa-pen"></i>
               </button>
               <% if (user.status !== 'denied') { %>
