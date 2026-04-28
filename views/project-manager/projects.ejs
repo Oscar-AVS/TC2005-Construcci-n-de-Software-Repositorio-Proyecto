@@ -11,6 +11,68 @@
  </div>
 <% } %>
 
+<!-- Caso 4.5: Project status chart -->
+<!-- Project status summary -->
+<div class="report-card" style="border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden; margin-bottom: 24px;">
+  <div class="report-card-header" style="background: #fff; border-bottom: 1px solid #f1f3f7; padding: 18px 22px;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2a44; margin: 0;">
+      Project Status Distribution
+    </h2>
+  </div>
+
+  <div class="report-card-body" style="padding: 20px 22px; display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start;">
+    <div style="height: 190px; max-width: 240px; position: relative;">
+      <canvas id="projectStatusChart"></canvas>
+    </div>
+
+    <div style="max-height: 210px; overflow-y: auto; padding-right: 8px;">
+      <% const groupedProjects = {
+        not_started: [],
+        in_progress: [],
+        on_hold: [],
+        at_risk: [],
+        completed: [],
+        archived: []
+      }; %>
+
+      <% projects.forEach(p => {
+        if (groupedProjects[p.progress_status]) {
+          groupedProjects[p.progress_status].push(p);
+        }
+      }); %>
+
+      <% const projectStatusLabels = {
+        not_started: 'Not Started',
+        in_progress: 'In Progress',
+        on_hold: 'On Hold',
+        at_risk: 'At Risk',
+        completed: 'Completed',
+        archived: 'Archived'
+      }; %>
+
+      <% Object.keys(groupedProjects).forEach(status => { %>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px;">
+          <h4 style="font-size: 12px; font-weight: 800; color: #1f2a44; margin: 0 0 6px;">
+            <%= projectStatusLabels[status] %> (<%= groupedProjects[status].length %>)
+          </h4>
+
+          <% if (groupedProjects[status].length === 0) { %>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0;">No projects</p>
+          <% } else { %>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <% groupedProjects[status].forEach(p => { %>
+                <li style="font-size: 11px; color: #334155; margin-bottom: 4px;">
+                  • <%= p.project_name %>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
 <!-- Action Bar -->
 <div class="action-bar">
   <div class="search-box">
@@ -179,9 +241,12 @@
   </div>
  </div>
 
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
  <script>
   const searchInput  = document.getElementById('searchInput');
   const statusFilter = document.getElementById('statusFilter');
+  const statusChartData = <%- JSON.stringify(statusChartData) %>;
 
   const CARDS_PER_PAGE = 6;
   let currentPage = 1;
@@ -217,6 +282,42 @@
 
     renderPagination(currentPage, total);
   }
+
+  // Gráfica del Caso 4.5: muestra cuántos proyectos existen por estado de avance
+  document.addEventListener('DOMContentLoaded', () => {
+  const chartCanvas = document.getElementById('projectStatusChart');
+
+  if (chartCanvas && window.Chart) {
+    new Chart(chartCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: statusChartData.map(item => item.label),
+        datasets: [{
+          data: statusChartData.map(item => item.total),
+          backgroundColor: [
+            '#1e3a8a',
+            '#1d4ed8',
+            '#2563eb',
+            '#3b82f6',
+            '#60a5fa',
+            '#93c5fd'
+          ],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+});
 
   searchInput.addEventListener('input',  () => { currentPage = 1; applyPage(); });
   statusFilter.addEventListener('change', () => { currentPage = 1; applyPage(); });

@@ -457,15 +457,48 @@ exports.postPassword = async (req, res) => {
   }
 };
 
+ // Grafica avance
+ 
 exports.getProjects = async (req, res) => {
   try {
     const [projects] = await Project.fetchAll();
+
+    const statusLabels = {
+      not_started: "Not Started",
+      in_progress: "In Progress",
+      on_hold: "On Hold",
+      at_risk: "At Risk",
+      completed: "Completed",
+      archived: "Archived",
+    };
+
+    const statusCounts = {
+      not_started: 0,
+      in_progress: 0,
+      on_hold: 0,
+      at_risk: 0,
+      completed: 0,
+      archived: 0,
+    };
+
+    projects.forEach((project) => {
+      if (statusCounts[project.progress_status] !== undefined) {
+        statusCounts[project.progress_status] += 1;
+      }
+    });
+
+    const statusChartData = Object.keys(statusCounts).map((status) => ({
+      status,
+      label: statusLabels[status],
+      total: statusCounts[status],
+    }));
 
     res.render("project-manager/projects", {
       title: "Projects",
       role: "project-manager",
       currentPage: "projects",
       projects,
+      statusChartData,
       error: req.query.error || "",
       success: req.query.success || "",
       csrfToken: req.csrfToken(),
