@@ -17,9 +17,7 @@
   </button>
 </div>
 
-<!-- =============================================
-     TAB 1: PM DASHBOARD
-     ============================================= -->
+<!-- TAB 1: PM DASHBOARD -->
 <div class="tab-content <%= activeTab === 'pm-dashboard' ? 'active' : '' %>" id="tab-pm-dashboard">
 
   <!-- Stats Row -->
@@ -362,3 +360,168 @@
   </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+    // Tabs principales: PM Dashboard / Activity
+    document.querySelectorAll('.dashboard-tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        window.location.href = `/project-manager/dashboard?tab=${tab}`;
+      });
+    });
+
+    // Tabs internas: Personal / Organization
+    document.querySelectorAll('.view-mode-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        window.location.href = `/project-manager/dashboard?tab=activity&view=${view}`;
+      });
+    });
+
+    // Gráfica personal
+    const personalCanvas = document.getElementById('personalActivityChart');
+
+    if (personalCanvas && window.Chart) {
+      new Chart(personalCanvas, {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            label: 'Personal logs',
+            data: window.personalWeeklyData || [0, 0, 0, 0, 0],
+            backgroundColor: '#f97316',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    // Gráfica organización
+    const orgCanvas = document.getElementById('orgActivityChart');
+
+    if (orgCanvas && window.Chart) {
+      new Chart(orgCanvas, {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            label: 'Organization logs',
+            data: window.orgWeeklyData || [0, 0, 0, 0, 0],
+            backgroundColor: '#3b82f6',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    // Render de actividad organizacional
+    const teamActivityFeed = document.getElementById('teamActivityFeed');
+    const teamFilter = document.getElementById('teamFilter');
+    const orgLoggedCount = document.getElementById('orgLoggedCount');
+
+    function renderOrgFeed() {
+      if (!teamActivityFeed) return;
+
+      const selectedTeam = teamFilter ? teamFilter.value : '';
+      const orgLogsByDay = window.orgLogsByDay || [];
+      const allLogs = orgLogsByDay.flat();
+
+      const filteredLogs = selectedTeam
+        ? allLogs.filter((log) => (log.team_names || '').includes(selectedTeam))
+        : allLogs;
+
+      if (orgLoggedCount) {
+        orgLoggedCount.textContent = filteredLogs.length;
+      }
+
+      if (filteredLogs.length === 0) {
+        teamActivityFeed.innerHTML = `
+          <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">
+            No organization activity found.
+          </p>
+        `;
+        return;
+      }
+
+      teamActivityFeed.innerHTML = filteredLogs.map((log) => `
+        <div class="activity-item">
+          <div class="activity-icon blue">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div class="activity-content">
+            <p class="activity-text">
+              <strong>${log.full_name || 'User'}</strong>: ${log.completed || ''}
+            </p>
+            <span class="activity-time">
+              ${log.team_names || 'No team assigned'}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    if (teamFilter) {
+      teamFilter.addEventListener('change', renderOrgFeed);
+    }
+
+    renderOrgFeed();
+
+    // Hacer cards del dashboard clickeables
+    const statCards = document.querySelectorAll('.pm-stats-row .stat-card');
+
+    if (statCards[0]) statCards[0].style.cursor = 'pointer';
+    if (statCards[0]) statCards[0].addEventListener('click', () => {
+      window.location.href = '/project-manager/projects';
+    });
+
+    if (statCards[2]) statCards[2].style.cursor = 'pointer';
+    if (statCards[2]) statCards[2].addEventListener('click', () => {
+      window.location.href = '/project-manager/blockers';
+    });
+
+    // Hacer proyectos del dashboard clickeables
+    document.querySelectorAll('.project-summary-card').forEach((card, index) => {
+      card.style.cursor = 'pointer';
+
+      const projects = <%- JSON.stringify(projects) %>;
+      const project = projects[index];
+
+      if (project && project.id_project) {
+        card.addEventListener('click', () => {
+          window.location.href = `/project-manager/project/${project.id_project}`;
+        });
+      }
+    });
+  });
+</script>
