@@ -44,7 +44,7 @@ module.exports = class User {
        LEFT JOIN user_role ur ON u.id_user = ur.id_user
        LEFT JOIN role r ON ur.id_role = r.id_role
        LEFT JOIN user_team ut ON u.id_user = ut.id_user
-       LEFT JOIN team t ON ut.id_team = t.id_team
+       LEFT JOIN team t ON t.id_team = ut.id_team OR t.id_leader = u.id_user
        WHERE u.status != 'pending'
        GROUP BY u.id_user, u.full_name, u.email, u.status, r.role_name, ur.id_role
        ORDER BY u.id_user DESC`,
@@ -72,10 +72,11 @@ module.exports = class User {
     );
   }
 
-  static updateRole(id_user, id_role) {
-    return db.execute(`UPDATE user_role SET id_role = ? WHERE id_user = ?`, [
-      id_role,
+  static async updateRole(id_user, id_role) {
+    await db.execute(`DELETE FROM user_role WHERE id_user = ?`, [id_user]);
+    return db.execute(`INSERT INTO user_role (id_user, id_role) VALUES (?, ?)`, [
       id_user,
+      id_role,
     ]);
   }
 

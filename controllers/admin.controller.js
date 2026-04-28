@@ -210,6 +210,8 @@ exports.getTeams = async (req, res) => {
   try {
     const [rows] = await Team.fetchAll();
     const [users] = await User.fetchAll();
+    
+    const teamLeaders = users.filter(u => u.role && u.role.toUpperCase() === 'TEAM-LEADER');
 
     const teamsMap = {};
     rows.forEach(row => {
@@ -238,7 +240,7 @@ exports.getTeams = async (req, res) => {
       currentPage: 'teams',
       role: 'admin',
       teams,
-      users,
+      users: teamLeaders,
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
@@ -285,8 +287,16 @@ exports.deleteTeam = async (req, res) => {
 
 exports.getRoles = async (req, res) => {
   try {
+    const [rolePrivs] = await db.query(
+      `SELECT rp.id_role, p.id_privilege, p.privilege_name, p.description
+       FROM role_privilege rp
+       JOIN privilege p ON rp.id_privilege = p.id_privilege`
+    );
+
+    const [allPrivileges] = await db.query(`SELECT * FROM privilege ORDER BY id_privilege`);
+
     const [rows] = await db.query(
-      `SELECT r.id_role, r.role_name,
+      `SELECT r.id_role, r.role_name, r.description,
         u.full_name, u.email
        FROM role r
        LEFT JOIN user_role ur ON r.id_role = ur.id_role
@@ -300,7 +310,9 @@ exports.getRoles = async (req, res) => {
         rolesMap[row.id_role] = {
           id_role: row.id_role,
           role_name: row.role_name,
+          description: row.description,
           users: [],
+          privileges: rolePrivs.filter(rp => rp.id_role === row.id_role)
         };
       }
       if (row.full_name) {
@@ -317,10 +329,85 @@ exports.getRoles = async (req, res) => {
       currentPage: 'roles',
       role: 'admin',
       roles,
+      allPrivileges,
+      csrfToken: req.csrfToken(),
     });
   } catch (err) {
     console.error('getRoles error:', err);
     res.status(500).send('Error loading roles');
+  }
+};
+
+exports.createRole = async (req, res) => {
+  const { role_name, description, privileges } = req.body;
+  try {
+    const [result] = await db.query(
+      'INSERT INTO role (role_name, description) VALUES (?, ?)',
+      [role_name, description]
+    );
+    const id_role = result.insertId;
+
+    if (privileges) {
+      const privs = Array.isArray(privileges) ? privileges : [privileges];
+      for (const id_privilege of privs) {
+        await db.query(
+          'INSERT INTO role_privilege (id_role, id_privilege) VALUES (?, ?)',
+          [id_role, id_privilege]
+        );
+      }
+    }
+    res.redirect('/admin/roles');
+  } catch (err) {
+    console.error('createRole error:', err);
+    res.status(500).send('Error creating role');
+  }
+};
+
+exports.editRole = async (req, res) => {
+  const { id_role, role_name, description, privileges } = req.body;
+  try {
+    await db.query(
+      'UPDATE role SET role_name = ?, description = ? WHERE id_role = ?',
+      [role_name, description, id_role]
+    );
+
+    await db.query('DELETE FROM role_privilege WHERE id_role = ?', [id_role]);
+
+    if (privileges) {
+      const privs = Array.isArray(privileges) ? privileges : [privileges];
+      for (const id_privilege of privs) {
+        await db.query(
+          'INSERT INTO role_privilege (id_role, id_privilege) VALUES (?, ?)',
+          [id_role, id_privilege]
+        );
+      }
+    }
+    res.redirect('/admin/roles');
+  } catch (err) {
+    console.error('editRole error:', err);
+    res.status(500).send('Error updating role');
+  }
+};
+
+exports.deleteRole = async (req, res) => {
+  const { id_role } = req.body;
+  try {
+    const [[userCount]] = await db.query(
+      'SELECT COUNT(*) as count FROM user_role WHERE id_role = ?',
+      [id_role]
+    );
+    
+    if (userCount.count > 0) {
+      return res.status(400).send('Cannot delete role with assigned users.');
+    }
+
+    await db.query('DELETE FROM role_privilege WHERE id_role = ?', [id_role]);
+    await db.query('DELETE FROM role WHERE id_role = ?', [id_role]);
+    
+    res.redirect('/admin/roles');
+  } catch (err) {
+    console.error('deleteRole error:', err);
+    res.status(500).send('Error deleting role');
   }
 };
 
