@@ -210,6 +210,8 @@ exports.getTeams = async (req, res) => {
   try {
     const [rows] = await Team.fetchAll();
     const [users] = await User.fetchAll();
+    
+    const teamLeaders = users.filter(u => u.role && u.role.toUpperCase() === 'TEAM-LEADER');
 
     const teamsMap = {};
     rows.forEach(row => {
@@ -238,7 +240,7 @@ exports.getTeams = async (req, res) => {
       currentPage: 'teams',
       role: 'admin',
       teams,
-      users,
+      users: teamLeaders,
       csrfToken: req.csrfToken(),
     });
   } catch (err) {
