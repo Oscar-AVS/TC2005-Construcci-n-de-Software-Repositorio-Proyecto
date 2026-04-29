@@ -347,4 +347,44 @@ module.exports = class Goal {
       [idGoal, idUser]
     );
   }
+
+  // (MANAGER DASHBOARD) Metodo para contar metas activas creadas por el manager
+static countActiveByManager(idUser) {
+  return db.execute(
+    `SELECT COUNT(*) AS count
+     FROM goal
+     WHERE id_user = ?
+       AND is_draft = 0
+       AND status = 'active'`,
+    [idUser]
+  );
+}
+
+// (MANAGER DASHBOARD) Metodo para traer metas criticas creadas por el manager
+static fetchCriticalByManager(idUser, limit = 3) {
+  return db.query(
+    `SELECT id_goal, title, end_date, status, priority
+     FROM goal
+     WHERE id_user = ?
+       AND is_draft = 0
+       AND priority = 'critical'
+     ORDER BY end_date ASC, created_at DESC
+     LIMIT ?`,
+    [idUser, parseInt(limit, 10)]
+  );
+}
+
+// (MANAGER DASHBOARD) Metodo para traer metas activas creadas por el manager
+static fetchActiveByManager(idUser, limit = 3) {
+  return db.query(
+    `SELECT id_goal, title, end_date, status, priority
+     FROM goal
+     WHERE id_user = ?
+       AND is_draft = 0
+       AND status = 'active'
+     ORDER BY end_date ASC, created_at DESC
+     LIMIT ?`,
+    [idUser, parseInt(limit, 10)]
+  );
+}
 };

@@ -460,4 +460,12 @@ static fetchHighlightsByPeriod({ date_from, date_to }) {
 
   return db.execute(query, params);
 }
+
+// (MANAGER DASHBOARD) Metodo para contar todos los logs registrados
+static countAllForManagerDashboard() {
+  return db.execute(
+    `SELECT COUNT(*) AS count
+     FROM log`
+  );
+}
 };

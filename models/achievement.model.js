@@ -49,4 +49,14 @@ module.exports = class Achievement {
       [title, description || '', created_at, id_achievement, id_user]
     );
   }
+
+  // (MANAGER DASHBOARD) Metodo para contar achievements creados por el manager
+static countByManager(idUser) {
+  return db.execute(
+    `SELECT COUNT(*) AS count
+     FROM achievement
+     WHERE id_user = ?`,
+    [idUser]
+  );
+}
 };

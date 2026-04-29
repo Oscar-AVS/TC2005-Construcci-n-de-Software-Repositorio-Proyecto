@@ -131,4 +131,23 @@ module.exports = class Blocker {
          b.detected_at DESC`
     );
   }
+
+  // (MANAGER DASHBOARD) Metodo para traer blockers activos sin usar columnas opcionales
+static fetchActiveForManagerDashboard(limit = 3) {
+  return db.query(
+    `SELECT
+       b.id_blocker,
+       b.description,
+       b.resolution_status,
+       l.created_at,
+       u.full_name AS reporter_name
+     FROM blocker b
+     INNER JOIN log l ON b.id_log = l.id_log
+     INNER JOIN user u ON l.id_user = u.id_user
+     WHERE b.resolution_status = 'pending'
+     ORDER BY l.created_at DESC
+     LIMIT ?`,
+    [parseInt(limit, 10)]
+  );
+}
 };
