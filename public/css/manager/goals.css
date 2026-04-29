@@ -538,3 +538,94 @@
   pointer-events: none;
 }
 
+.goal-card {
+  display: grid;
+  grid-template-columns: 48px minmax(320px, 1fr) minmax(360px, 1.2fr) 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+.goal-content {
+  min-width: 0;
+}
+
+.goal-linked-projects {
+  min-width: 0;
+}
+
+.linked-projects-area {
+  display: block;
+}
+
+.linked-project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+.goal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.goal-link-actions {
+  display: grid;
+  grid-template-columns: 220px 110px;
+  gap: 10px;
+  align-items: center;
+}
+
+.project-dropdown {
+  width: 220px;
+}
+
+.goal-link-button {
+  width: 110px;
+}
+.goal-card {
+  grid-template-columns: 48px minmax(320px, 1fr) minmax(360px, 1.2fr) 320px;
+  overflow: visible;
+}
+
+.goal-actions {
+  width: 320px;
+  overflow: visible;
+}
+
+.goal-link-actions {
+  display: grid;
+  grid-template-columns: 190px 90px;
+  gap: 10px;
+  align-items: start;
+  width: 290px;
+}
+
+.project-dropdown {
+  width: 190px;
+  position: relative;
+}
+
+.project-dropdown-toggle {
+  width: 190px;
+}
+
+.goal-link-button {
+  width: 90px;
+  height: 42px;
+}
+
+.project-dropdown-menu {
+  width: 190px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 20;
+}
+.goal-card:has(.project-dropdown-menu.open),
+.goal-card:has(.project-dropdown-menu.active),
+.goal-card:has(.project-dropdown.open) {
+  z-index: 30;
+}

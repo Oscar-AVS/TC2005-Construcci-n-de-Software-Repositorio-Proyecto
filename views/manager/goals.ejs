@@ -174,7 +174,7 @@
               </div>
             </div>
 
-            <div class="goal-linked-projects">
+           <div class="goal-linked-projects linked-projects-area">
               <span class="goal-meta-item">
                 <i class="fa-solid fa-diagram-project"></i>
                 Linked Projects:
@@ -204,7 +204,7 @@
             </div>
 
             <div class="goal-actions">
-              <div class="goal-link-project">
+              <div class="goal-link-project goal-link-actions">
                 <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
                 <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
 
