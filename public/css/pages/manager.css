@@ -1388,3 +1388,18 @@
 .goal-impact-summary-list li {
   margin-bottom: 6px;
 }
+.highlight-impact {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff4ed;
+  color: #757575;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.highlight-impact span {
+  color: #dc5524;
+  font-weight: 700;
+  margin-right: 4px;
+}

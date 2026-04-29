@@ -16,6 +16,10 @@ exports.getProfile = (req, res) => {
           currentPage: 'profile',
           role: 'manager',
           user: rows[0],
+          // CORRECCIÓN: Agregamos las variables que la vista espera
+          csrfToken: req.csrfToken(), 
+          error: '',
+          success: ''
         });
       } else {
         res.status(404).send('User not found');
