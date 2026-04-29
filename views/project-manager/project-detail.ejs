@@ -21,9 +21,12 @@
  
  
  <!-- Project Header -->
- <div class="project-detail-header">
+<div class="project-detail-header">
   <div class="project-detail-info">
-    <span class="project-status <%= project.progress_status %>"><%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+    <span class="project-status <%= project.progress_status %>">
+      <%= project.progress_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+    </span>
+
     <div class="project-dates-inline">
       <span>
         <i class="fa-solid fa-calendar-plus"></i>
@@ -37,21 +40,6 @@
         Due: <%= project.end_date
           ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : 'Not set' %>
-      </span>
-
-      <%
-        const progressLabels = {
-          not_started: 'Not Started',
-          in_progress: 'In Progress',
-          on_hold: 'On Hold',
-          at_risk: 'At Risk',
-          completed: 'Completed'
-        };
-      %>
-
-      <span class="project-progress-badge <%= project.progress_status %>">
-        <i class="fa-solid fa-chart-simple"></i>
-        <%= progressLabels[project.progress_status] || project.progress_status %>
       </span>
     </div>
   </div>
