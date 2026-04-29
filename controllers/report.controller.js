@@ -328,3 +328,4 @@ const generateAiSummary = async (req, res) => {
 };
 
 module.exports = { exportPDF, generateAiSummary };
+
