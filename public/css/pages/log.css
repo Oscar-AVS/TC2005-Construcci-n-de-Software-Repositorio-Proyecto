@@ -244,6 +244,38 @@
   flex: 1;
 }
 
+.project-checks-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.project-check-label:hover {
+  background: var(--bg);
+  border-color: var(--text-muted);
+}
+
+.project-check-label input[type="checkbox"] {
+  accent-color: var(--primary, #4f46e5);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* Icon buttons */
 .btn-icon {
   width: 32px;

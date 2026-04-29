@@ -37,6 +37,7 @@ module.exports = class Log {
     let query = `
       SELECT DISTINCT l.*,
         GROUP_CONCAT(DISTINCT p.project_name ORDER BY p.project_name SEPARATOR ', ') AS project_names,
+        GROUP_CONCAT(DISTINCT lp.id_project ORDER BY p.project_name SEPARATOR ',') AS project_ids,
         GROUP_CONCAT(DISTINCT t.team_name ORDER BY t.team_name SEPARATOR ', ') AS team_names
       FROM log l
       LEFT JOIN log_project lp ON l.id_log = lp.id_log

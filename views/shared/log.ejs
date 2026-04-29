@@ -32,7 +32,7 @@
             id="completedInput"
             name="completed"
             rows="4"
-            placeholder="Completed homepage redesign&#10;Fixed responsive issues"
+            placeholder="Describe your completed tasks..."
             required
           ></textarea>
         </div>
@@ -43,7 +43,7 @@
             id="plannedInput"
             name="planned"
             rows="4"
-            placeholder="Write unit tests for signup form&#10;Review and merge PR #42"
+            placeholder="Describe your planned tasks for tomorrow..."
             required
           ></textarea>
         </div>
@@ -250,7 +250,7 @@
 
       <div class="form-field">
         <label class="form-label">Projects</label>
-        <div id="editProjectSelects"></div>
+        <div id="editProjectChecks" class="project-checks-grid"></div>
       </div>
 
       <div class="form-field">
@@ -291,4 +291,58 @@
       setTimeout(() => error.remove(), 300);
     }
   }, 3000);
+
+  function openDeleteModal(id_log) {
+    document.getElementById('deleteIdLog').value = id_log;
+    document.getElementById('deleteModal').classList.add('active');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+  }
+
+  function openEditModal(log) {
+    document.getElementById('editIdLog').value = log.id_log;
+    document.getElementById('editCompleted').value = log.completed || '';
+    document.getElementById('editPlanned').value = log.planned || '';
+
+    const firstBlocker = log.blockers && log.blockers.length > 0 ? log.blockers[0] : null;
+    document.getElementById('editBlocker').value = firstBlocker ? firstBlocker.description : '';
+    document.getElementById('editBlockerId').value = firstBlocker ? firstBlocker.id_blocker : '';
+    document.getElementById('editBlockerStatus').value = firstBlocker ? firstBlocker.resolution_status : '';
+
+    const checkedIds = log.project_ids ? log.project_ids.split(',').map(id => id.trim()) : [];
+    const allProjects = <%- JSON.stringify(projects) %>;
+    const container = document.getElementById('editProjectChecks');
+    container.innerHTML = '';
+
+    allProjects.forEach(p => {
+      const label = document.createElement('label');
+      label.className = 'project-check-label';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = 'id_projects';
+      checkbox.value = p.id_project;
+      checkbox.checked = checkedIds.includes(String(p.id_project));
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(p.project_name));
+      container.appendChild(label);
+    });
+
+    document.getElementById('editModal').classList.add('active');
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+  }
+
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
 </script>
