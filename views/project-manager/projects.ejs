@@ -20,9 +20,13 @@
     </h2>
   </div>
 
-  <div class="report-card-body" style="padding: 20px 22px; display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start;">
-    <div style="height: 190px; max-width: 240px; position: relative;">
-      <canvas id="projectStatusChart"></canvas>
+  <div class="report-card-body" style="padding: 20px 22px; display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start;">
+    <div style="display:flex; align-items:center; gap:20px;">
+      <div style="height: 190px; width: 190px; flex-shrink:0; position: relative;">
+        <canvas id="projectStatusChart"></canvas>
+      </div>
+      <div id="customLegend" style="display:flex; flex-direction:column; justify-content:center; gap:6px;">
+      </div>
     </div>
 
     <div style="max-height: 210px; overflow-y: auto; padding-right: 8px;">
@@ -287,6 +291,11 @@
   document.addEventListener('DOMContentLoaded', () => {
   const chartCanvas = document.getElementById('projectStatusChart');
 
+  const colors = [
+    '#1e3a8a', '#1d4ed8', '#2563eb',
+    '#3b82f6', '#60a5fa', '#93c5fd'
+  ];
+
   if (chartCanvas && window.Chart) {
     new Chart(chartCanvas, {
       type: 'doughnut',
@@ -294,28 +303,32 @@
         labels: statusChartData.map(item => item.label),
         datasets: [{
           data: statusChartData.map(item => item.total),
-          backgroundColor: [
-            '#1e3a8a',
-            '#1d4ed8',
-            '#2563eb',
-            '#3b82f6',
-            '#60a5fa',
-            '#93c5fd'
-          ],
+          backgroundColor: colors,
           borderWidth: 2,
           borderColor: '#ffffff'
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
         plugins: {
-          legend: {
-            position: 'bottom'
-          }
+          legend: { display: false }
         }
       }
     });
+
+    // Generar leyenda personalizada
+    const legend = document.getElementById('customLegend');
+    if (legend) {
+      legend.innerHTML = statusChartData.map((item, i) => `
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="
+        width:10px; height:10px; border-radius:50%;
+        background:${colors[i % colors.length]};
+        flex-shrink:0; display:inline-block;
+        "></span>
+        <span style="font-size:11px; color:#334155;">${item.label}</span>
+        </div>
+        `).join('');
+    }
   }
 });
 
