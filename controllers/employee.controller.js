@@ -169,6 +169,8 @@ exports.postLog = (req, res) => {
   const fetchProjects =
     activeRole === 'team-leader'
       ? Project.fetchAllByTeam(teamId)
+      : (activeRole === 'project-manager' || activeRole === 'admin')
+      ? Project.fetchAll()
       : Project.fetchAllByEmployee(activeUserId);
 
   Log.create(activeUserId, completed, planned)
@@ -182,7 +184,7 @@ exports.postLog = (req, res) => {
             id_project: p.id_project,
             id_team: p.id_team || teamId || null,
           }))
-          .filter((p) => p.id_project && p.id_team);
+          .filter((p) => p.id_project);
 
         if (projectsToLink.length === 0) {
           throw new Error('No valid projects were selected for this user/team.');
@@ -215,6 +217,8 @@ exports.putLog = (req, res) => {
   const fetchProjects =
     activeRole === 'team-leader'
       ? Project.fetchAllByTeam(teamId)
+      : (activeRole === 'project-manager' || activeRole === 'admin')
+      ? Project.fetchAll()
       : Project.fetchAllByEmployee(activeUserId);
 
   Log.update(id_log, completed, planned)
@@ -228,7 +232,7 @@ exports.putLog = (req, res) => {
             id_project: p.id_project,
             id_team: p.id_team || teamId || null,
           }))
-          .filter((p) => p.id_project && p.id_team);
+          .filter((p) => p.id_project);
 
         if (projectsToLink.length === 0) return;
         return Log.updateProjects(id_log, projectsToLink);
