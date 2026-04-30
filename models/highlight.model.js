@@ -173,4 +173,35 @@ module.exports = class Highlight {
       ]
     );
   }
+
+  // (MANAGER DASHBOARD) Metodo para contar highlights creados por el manager
+static countByManager(idUser) {
+  return db.execute(
+    `SELECT COUNT(*) AS count
+     FROM highlight
+     WHERE id_user = ?`,
+    [idUser]
+  );
+}
+
+// (MANAGER DASHBOARD) Metodo para traer highlights recientes del manager
+static fetchRecentByManager(idUser, limit = 3) {
+  return db.query(
+    `SELECT
+       h.id_highlight,
+       h.title,
+       h.highlight_type,
+       h.highlight_date,
+       h.created_at,
+       p.project_name,
+       t.team_name
+     FROM highlight h
+     LEFT JOIN project p ON h.id_project = p.id_project
+     LEFT JOIN team t ON h.id_team = t.id_team
+     WHERE h.id_user = ?
+     ORDER BY h.highlight_date DESC, h.created_at DESC
+     LIMIT ?`,
+    [idUser, parseInt(limit, 10)]
+  );
+}
 };
