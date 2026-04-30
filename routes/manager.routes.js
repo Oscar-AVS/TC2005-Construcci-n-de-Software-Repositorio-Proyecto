@@ -49,6 +49,9 @@ router.get('/reports', requirePrivilege('generate_reports'), managerController.g
 router.get('/reports/compare-periods', requirePrivilege('generate_reports'), managerController.comparePeriods);
 
 router.get('/log', managerController.getLog);
+router.post('/log', managerController.postLog);
+router.post('/log/edit', managerController.postEditLog);
+router.post('/log/delete', managerController.postDeleteLog);
 
 router.get('/self-review', managerController.getSelfReview);
 router.get('/self-review/generate', selfReviewLimiter, managerController.generateSelfReview);

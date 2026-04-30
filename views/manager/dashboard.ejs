@@ -1,3 +1,4 @@
+<% var _ds = locals.dashboardStats || { totalEntries:0, achievements:0, blockers:0, activeGoals:0, activeEmployees:0, logsToday:0 }; %>
 <h1 id="pageTitle" class="page-title">Manager Dashboard</h1>
 
 <!-- Dashboard Tabs -->
@@ -28,7 +29,7 @@
         <i class="fa-solid fa-clipboard-list"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value"><%= dashboardStats.totalEntries %></p>
+        <p class="stat-value"><%= _ds.totalEntries %></p>
         <p class="stat-label">Total Entries</p>
       </div>
     </div>
@@ -38,7 +39,7 @@
         <i class="fa-solid fa-trophy"></i>
       </div>
       <div class="stat-info">
-        <p class="stat-value"><%= dashboardStats.achievements %></p>
+        <p class="stat-value"><%= _ds.achievements %></p>
         <p class="stat-label">Achievements</p>
       </div>
     </div>

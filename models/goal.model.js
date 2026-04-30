@@ -198,7 +198,7 @@ module.exports = class Goal {
         gp.linked_by,
         gp.linked_at,
         p.project_name,
-        p.status
+        p.progress_status AS status
       FROM goal_project gp
       INNER JOIN project p
         ON gp.id_project = p.id_project

@@ -590,11 +590,24 @@ exports.postCreateProject = async (req, res) => {
   const renderWithError = async (error) => {
     const [projects] = await Project.fetchAll();
 
+    const statusLabels = {
+      not_started: "Not Started",
+      in_progress: "In Progress",
+      on_hold: "On Hold",
+      at_risk: "At Risk",
+      completed: "Completed",
+      archived: "Archived",
+    };
+    const statusCounts = { not_started: 0, in_progress: 0, on_hold: 0, at_risk: 0, completed: 0, archived: 0 };
+    projects.forEach((p) => { if (statusCounts[p.progress_status] !== undefined) statusCounts[p.progress_status]++; });
+    const statusChartData = Object.keys(statusCounts).map((status) => ({ status, label: statusLabels[status], total: statusCounts[status] }));
+
     return res.render("project-manager/projects", {
       title: "Projects",
       role: "project-manager",
       currentPage: "projects",
       projects,
+      statusChartData,
       error,
       success: "",
       csrfToken: req.csrfToken(),

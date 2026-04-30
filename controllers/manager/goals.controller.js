@@ -204,7 +204,11 @@ exports.getGoalById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await Goal.fetchOneById(id, activeUserId);
+    const [[rows], [linkedProjects], [allProjects]] = await Promise.all([
+      Goal.fetchOneById(id, activeUserId),
+      Goal.fetchLinkedProjectsByGoal(id),
+      Project.fetchAvailableForGoalLink(),
+    ]);
 
     if (rows.length === 0) {
       return res.status(404).json({
@@ -213,9 +217,14 @@ exports.getGoalById = async (req, res) => {
       });
     }
 
+    const linkedIds = new Set(linkedProjects.map((p) => p.id_project));
+    const unlinkedProjects = allProjects.filter((p) => !linkedIds.has(p.id_project));
+
     return res.status(200).json({
       success: true,
       goal: rows[0],
+      linkedProjects,
+      unlinkedProjects,
     });
   } catch (err) {
     console.log(err);

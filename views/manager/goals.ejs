@@ -99,9 +99,6 @@
         </div>
 
         <div class="action-row">
-          <button id="cancelEditButton" class="btn-draft" type="button" style="display: none;">
-            Cancel Edit
-          </button>
           <button id="saveDraftButton" class="btn-draft" type="button">
             Save as Draft
           </button>
@@ -174,7 +171,7 @@
               </div>
             </div>
 
-           <div class="goal-linked-projects linked-projects-area">
+            <div class="goal-linked-projects linked-projects-area">
               <span class="goal-meta-item">
                 <i class="fa-solid fa-diagram-project"></i>
                 Linked Projects:
@@ -185,16 +182,6 @@
                   <% goal.linkedProjects.forEach((project) => { %>
                     <span class="linked-project-tag">
                       <span class="linked-project-name"><%= project.project_name %></span>
-                      <button
-                        type="button"
-                        class="unlink-project-button"
-                        data-goal-id="<%= goal.id_goal %>"
-                        data-project-id="<%= project.id_project %>"
-                        title="Unlink project"
-                        aria-label="Unlink project"
-                      >
-                        ×
-                      </button>
                     </span>
                   <% }); %>
                 </div>
@@ -204,50 +191,6 @@
             </div>
 
             <div class="goal-actions">
-              <div class="goal-link-project goal-link-actions">
-                <% const linkedProjectIds = (goal.linkedProjects || []).map((project) => String(project.id_project)); %>
-                <% const unlinkedProjects = availableProjects.filter((project) => !linkedProjectIds.includes(String(project.id_project))); %>
-
-                <div class="project-dropdown" data-goal-id="<%= goal.id_goal %>">
-                  <button
-                    type="button"
-                    class="project-dropdown-toggle"
-                    data-goal-id="<%= goal.id_goal %>"
-                    <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
-                  >
-                    <span>Select projects</span>
-                    <i class="fa-solid fa-chevron-down"></i>
-                  </button>
-
-                  <div class="project-dropdown-menu" data-goal-id="<%= goal.id_goal %>">
-                    <% if (unlinkedProjects.length > 0) { %>
-                      <% unlinkedProjects.forEach((project) => { %>
-                        <label class="project-option">
-                          <input
-                            type="checkbox"
-                            class="link-project-checkbox"
-                            data-goal-id="<%= goal.id_goal %>"
-                            value="<%= project.id_project %>"
-                          />
-                          <span><%= project.project_name %></span>
-                        </label>
-                      <% }); %>
-                    <% } else { %>
-                      <p class="project-dropdown-empty">All available projects are already linked.</p>
-                    <% } %>
-                  </div>
-                </div>
-
-                <button
-                  class="goal-link-button link-project-button"
-                  type="button"
-                  data-goal-id="<%= goal.id_goal %>"
-                  <%= unlinkedProjects.length === 0 ? 'disabled' : '' %>
-                >
-                  Link
-                </button>
-              </div>
-
               <div class="goal-secondary-actions">
                 <button
                   class="btn-icon edit-goal-button"
@@ -481,6 +424,88 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Goal Modal -->
+<div class="modal-overlay" id="editGoalModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Goal</h2>
+      <button class="modal-close" type="button" id="closeEditGoalModalBtn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div id="editGoalFormMessage" class="form-message" style="margin-bottom:12px;"></div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label">Goal Title</label>
+        <input type="text" id="editTitle" class="form-input" placeholder="Enter goal title..." />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Priority</label>
+        <select id="editPriority" class="form-select">
+          <option value="">Select priority...</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Description</label>
+      <textarea id="editDescription" rows="4" class="form-textarea" placeholder="Describe the goal and expected outcomes..."></textarea>
+    </div>
+
+    <div class="form-row-grid">
+      <div class="form-field">
+        <label class="form-label">Start Date</label>
+        <input type="date" id="editStartDate" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">End Date</label>
+        <input type="date" id="editEndDate" class="form-input" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Status</label>
+      <select id="editStatus" class="form-select">
+        <option value="">Select status...</option>
+        <option value="active">Active</option>
+        <option value="paused">Paused</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <hr style="border:none; border-top:1px solid #e5e7eb; margin:20px 0 16px;" />
+
+    <div class="form-field">
+      <label class="form-label">Linked Projects</label>
+      <div id="editLinkedProjects" style="display:flex; flex-wrap:wrap; gap:8px; min-height:30px; align-items:center; margin-top:6px;">
+        <p id="editNoLinkedMsg" style="margin:0; color:#9ca3af; font-size:0.88rem;">No linked projects.</p>
+      </div>
+    </div>
+
+    <div class="form-field" style="margin-top:12px;">
+      <label class="form-label">Add Projects</label>
+      <div id="editProjectCheckboxes" style="display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fafafa; margin-top:6px;">
+        <p id="editNoAvailableMsg" style="margin:0; color:#9ca3af; font-size:0.88rem;">All projects already linked.</p>
+      </div>
+      <button type="button" id="editLinkProjectsBtn" class="btn-draft" style="margin-top:8px; width:100%;">
+        <i class="fa-solid fa-link"></i> Link Selected
+      </button>
+    </div>
+
+    <div class="action-row" style="justify-content:flex-end; gap:12px; margin-top:16px;">
+      <button type="button" id="cancelEditGoalModalBtn" class="btn-draft">Cancel</button>
+      <button type="button" id="saveEditGoalBtn" class="btn-submit">Save Changes</button>
     </div>
   </div>
 </div>

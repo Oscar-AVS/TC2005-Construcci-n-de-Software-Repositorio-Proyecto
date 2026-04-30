@@ -53,3 +53,18 @@ exports.getLog = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+exports.postLog = async (req, res) => {
+  const employeeController = require('../employee.controller');
+  return employeeController.postLog(req, res);
+};
+
+exports.postEditLog = async (req, res) => {
+  const employeeController = require('../employee.controller');
+  return employeeController.putLog(req, res);
+};
+
+exports.postDeleteLog = async (req, res) => {
+  const employeeController = require('../employee.controller');
+  return employeeController.deleteLog(req, res);
+};

@@ -1,463 +1,265 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const highlightForm = document.getElementById('highlightForm');
-  const formMessage = document.getElementById('highlightFormMessage');
+  const CSRF         = document.getElementById('csrfToken')?.value || '';
+  const highlightForm  = document.getElementById('highlightForm');
+  const formMessage    = document.getElementById('highlightFormMessage');
   const highlightsGrid = document.getElementById('highlightsGrid');
-  const emptyState = document.getElementById('highlightsEmptyState');
-  const itemCount = document.querySelector('.item-count');
+  const emptyState     = document.getElementById('highlightsEmptyState');
+  const itemCount      = document.querySelector('.item-count');
 
-  if (!highlightForm) {
-    return;
-  }
+  if (!highlightForm) return;
 
-  const titleInput = document.getElementById('highlightTitle');
-  const projectInput = document.getElementById('highlightProject');
-  const typeInput = document.getElementById('highlightType');
-  const dateInput = document.getElementById('highlightDate');
-  const descriptionInput = document.getElementById('highlightDesc');
-  const impactInput = document.getElementById('highlightImpact');
-  const csrfTokenInput = document.getElementById('csrfToken');
-  const submitButton = highlightForm.querySelector('.btn-submit');
-  const editingHighlightIdInput = document.getElementById('editingHighlightId');
-  const highlightFormModeInput = document.getElementById('highlightFormMode');
-  const cancelEditButton = document.getElementById('cancelHighlightEdit');
+  // ── Utilidades ──────────────────────────────────────────────────────────────
 
-  const deleteModal = document.getElementById('deleteModal');
-  const confirmDeleteBtn = document.getElementById('confirmDelete');
-  const cancelDeleteBtn = document.getElementById('cancelDelete');
-
-  let highlightToDelete = null;
-  let cardToDelete = null;
-
-  const requiredInputs = [
-    titleInput,
-    typeInput,
-    dateInput,
-    descriptionInput,
-  ];
-
-  const showFormMessage = (message, isError = false) => {
-    formMessage.textContent = message;
-    formMessage.style.display = 'block';
-    formMessage.style.color = isError ? '#b42318' : '#027a48';
+  const showMsg = (el, text, isError = false) => {
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = isError ? '#b42318' : '#027a48';
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
   };
 
-  const clearFormMessage = () => {
-    formMessage.textContent = '';
-    formMessage.style.display = 'none';
-  };
+  const formatDate = (dateString) =>
+    new Date(`${dateString}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
-  const clearValidationStyles = () => {
-    requiredInputs.forEach((input) => {
-      input.style.border = '';
-    });
-  };
-
-  const markInvalidFields = () => {
-    if (!titleInput.value.trim()) {
-      titleInput.style.border = '1px solid #f04438';
-    }
-
-    if (!typeInput.value) {
-      typeInput.style.border = '1px solid #f04438';
-    }
-
-    if (!dateInput.value) {
-      dateInput.style.border = '1px solid #f04438';
-    }
-
-    if (!descriptionInput.value.trim()) {
-      descriptionInput.style.border = '1px solid #f04438';
-    }
-  };
-
-  const formatHighlightDate = (dateString) => {
-    const parsedDate = new Date(`${dateString}T00:00:00`);
-
-    return parsedDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const normalizeLabel = (highlight) => {
-    if (highlight.project_name) {
-      return highlight.project_name;
-    }
-
-    if (highlight.team_name) {
-      return highlight.team_name;
-    }
-
-    if (highlight.highlight_type) {
-      return highlight.highlight_type.charAt(0).toUpperCase() + highlight.highlight_type.slice(1);
-    }
-
-    return 'Highlight';
-  };
+  const normalizeLabel = (h) =>
+    h.project_name || h.team_name ||
+    (h.highlight_type ? h.highlight_type.charAt(0).toUpperCase() + h.highlight_type.slice(1) : 'Highlight');
 
   const updateItemCount = () => {
-    const totalHighlights = highlightsGrid
-      ? highlightsGrid.querySelectorAll('.highlight-card').length
-      : 0;
-
-    if (!itemCount) {
-      return;
-    }
-
-    itemCount.textContent = `${totalHighlights} highlight${totalHighlights === 1 ? '' : 's'}`;
+    if (!itemCount) return;
+    const n = highlightsGrid ? highlightsGrid.querySelectorAll('.highlight-card').length : 0;
+    itemCount.textContent = `${n} highlight${n === 1 ? '' : 's'}`;
   };
 
-  const ensureEmptyStateVisibility = () => {
-    const totalHighlights = highlightsGrid
-      ? highlightsGrid.querySelectorAll('.highlight-card').length
-      : 0;
-
-    if (totalHighlights === 0) {
-      if (highlightsGrid) {
-        highlightsGrid.style.display = 'none';
-      }
-
-      if (emptyState) {
-        emptyState.style.display = 'block';
-      }
-    } else {
-      if (highlightsGrid) {
-        highlightsGrid.style.display = 'grid';
-      }
-
-      if (emptyState) {
-        emptyState.style.display = 'none';
-      }
-    }
+  const syncEmptyState = () => {
+    const n = highlightsGrid ? highlightsGrid.querySelectorAll('.highlight-card').length : 0;
+    if (highlightsGrid) highlightsGrid.style.display = n ? 'grid' : 'none';
+    if (emptyState)     emptyState.style.display     = n ? 'none' : 'block';
   };
 
-  const buildEditButtonHtml = (highlight) => {
-    const safeTitle = String(highlight.title || '').replace(/"/g, '&quot;');
-    const safeDescription = String(highlight.description || '').replace(/"/g, '&quot;');
-    const safeImpact = String(highlight.impact || '').replace(/"/g, '&quot;');
-    const safeType = String(highlight.highlight_type || '').replace(/"/g, '&quot;');
-    const safeDate = String(highlight.highlight_date || '').replace(/"/g, '&quot;');
-    const safeProject = String(highlight.id_project || '').replace(/"/g, '&quot;');
+  // ── Crear card en DOM ────────────────────────────────────────────────────────
 
-    return `
-      <button
-        class="btn-icon edit-highlight-btn"
-        type="button"
-        title="Edit"
-        data-id="${highlight.id_highlight}"
-        data-title="${safeTitle}"
-        data-description="${safeDescription}"
-        data-impact="${safeImpact}"
-        data-type="${safeType}"
-        data-date="${safeDate}"
-        data-project="${safeProject}"
-      >
-        <i class="fa-solid fa-pen"></i>
-      </button>
-    `;
+  const buildEditAttrs = (h) => {
+    const esc = (v) => String(v || '').replace(/"/g, '&quot;');
+    return `data-id="${h.id_highlight}" data-title="${esc(h.title)}"
+      data-description="${esc(h.description)}" data-impact="${esc(h.impact)}"
+      data-type="${esc(h.highlight_type)}" data-date="${esc(h.highlight_date)}"
+      data-project="${esc(h.id_project)}"`;
   };
 
-  const createHighlightCard = (highlight) => {
+  const createCard = (h) => {
     const card = document.createElement('div');
     card.className = 'highlight-card';
-    card.setAttribute('data-id', highlight.id_highlight);
-
-    const impactHtml = highlight.impact
-      ? `
-        <p class="highlight-desc">
-          <strong>Impact:</strong> ${highlight.impact}
-        </p>
-      `
-      : '';
-
+    card.setAttribute('data-id', h.id_highlight);
     card.innerHTML = `
       <div class="highlight-header">
-        <div class="highlight-icon">
-          <i class="fa-solid fa-trophy"></i>
-        </div>
-
-        <span class="highlight-date">
-          ${formatHighlightDate(highlight.highlight_date)}
-        </span>
+        <div class="highlight-icon"><i class="fa-solid fa-trophy"></i></div>
+        <span class="highlight-date">${formatDate(h.highlight_date)}</span>
       </div>
-
-      <h3 class="highlight-title">${highlight.title}</h3>
-
-      <p class="highlight-desc">${highlight.description}</p>
-
-      ${impactHtml}
-
+      <h3 class="highlight-title">${h.title}</h3>
+      <p class="highlight-desc">${h.description}</p>
+      ${h.impact ? `<p class="highlight-impact"><span>Impact:</span> ${h.impact}</p>` : ''}
       <div class="highlight-footer">
-        <div class="highlight-tags">
-          <span class="highlight-tag">${normalizeLabel(highlight)}</span>
-        </div>
-
+        <div class="highlight-tags"><span class="highlight-tag">${normalizeLabel(h)}</span></div>
         <div class="highlight-actions">
-          ${buildEditButtonHtml(highlight)}
+          <button class="btn-icon edit-highlight-btn" type="button" title="Edit" ${buildEditAttrs(h)}>
+            <i class="fa-solid fa-pen"></i>
+          </button>
           <button class="btn-icon btn-danger delete-highlight-btn" type="button" title="Delete">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
-      </div>
-    `;
-
+      </div>`;
     return card;
   };
 
-  const updateHighlightCard = (highlight) => {
-    const existingCard = document.querySelector(`.highlight-card[data-id="${highlight.id_highlight}"]`);
+  // ── Formulario de crear ──────────────────────────────────────────────────────
 
-    if (!existingCard) {
-      return;
-    }
+  const titleInput       = document.getElementById('highlightTitle');
+  const projectInput     = document.getElementById('highlightProject');
+  const typeInput        = document.getElementById('highlightType');
+  const dateInput        = document.getElementById('highlightDate');
+  const descriptionInput = document.getElementById('highlightDesc');
+  const impactInput      = document.getElementById('highlightImpact');
+  const submitBtn        = highlightForm.querySelector('.btn-submit');
 
-    const newCard = createHighlightCard(highlight);
-    existingCard.replaceWith(newCard);
-  };
+  const requiredInputs = [titleInput, typeInput, dateInput, descriptionInput];
 
-  const insertNewHighlight = (highlight) => {
-    if (!highlightsGrid) {
-      return;
-    }
-
-    const newCard = createHighlightCard(highlight);
-    highlightsGrid.insertAdjacentElement('afterbegin', newCard);
-
-    updateItemCount();
-    ensureEmptyStateVisibility();
-  };
-
-  const deleteHighlightCard = (cardElement) => {
-    if (!cardElement) {
-      return;
-    }
-
-    cardElement.remove();
-    updateItemCount();
-    ensureEmptyStateVisibility();
-  };
-
-  const resetFormToCreateMode = () => {
-    highlightForm.reset();
-    editingHighlightIdInput.value = '';
-    highlightFormModeInput.value = 'create';
-    submitButton.textContent = 'Add Highlight';
-    cancelEditButton.style.display = 'none';
-    clearValidationStyles();
-    clearFormMessage();
-  };
-
-  const setFormToEditMode = (button) => {
-    editingHighlightIdInput.value = button.dataset.id || '';
-    highlightFormModeInput.value = 'edit';
-
-    titleInput.value = button.dataset.title || '';
-    descriptionInput.value = button.dataset.description || '';
-    impactInput.value = button.dataset.impact || '';
-    typeInput.value = button.dataset.type || '';
-    dateInput.value = button.dataset.date || '';
-    projectInput.value = button.dataset.project || '';
-
-    submitButton.textContent = 'Save Changes';
-    cancelEditButton.style.display = 'inline-flex';
-
-    clearValidationStyles();
-    clearFormMessage();
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
-
-  requiredInputs.forEach((input) => {
-    input.addEventListener('input', () => {
-      input.style.border = '';
-      clearFormMessage();
-    });
-
-    input.addEventListener('change', () => {
-      input.style.border = '';
-      clearFormMessage();
-    });
+  requiredInputs.forEach(inp => {
+    inp.addEventListener('input',  () => { inp.style.border = ''; });
+    inp.addEventListener('change', () => { inp.style.border = ''; });
   });
 
-  cancelEditButton.addEventListener('click', () => {
-    resetFormToCreateMode();
-  });
+  highlightForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  highlightForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    clearFormMessage();
-    clearValidationStyles();
+    const missing = !titleInput.value.trim() || !typeInput.value ||
+                    !dateInput.value || !descriptionInput.value.trim();
+    if (missing) {
+      requiredInputs.forEach(inp => { if (!inp.value.trim()) inp.style.border = '1px solid #f04438'; });
+      showMsg(formMessage, 'Please complete all required fields.', true);
+      return;
+    }
 
-    const formData = {
-      title: titleInput.value.trim(),
-      id_project: projectInput.value,
+    const body = {
+      title:          titleInput.value.trim(),
+      id_project:     projectInput.value,
       highlight_type: typeInput.value,
       highlight_date: dateInput.value,
-      description: descriptionInput.value.trim(),
-      impact: impactInput.value.trim(),
+      description:    descriptionInput.value.trim(),
+      impact:         impactInput.value.trim(),
     };
 
-    const requiredFieldsMissing =
-      !formData.title ||
-      !formData.description ||
-      !formData.highlight_type ||
-      !formData.highlight_date;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
 
-    if (requiredFieldsMissing) {
-      markInvalidFields();
-      showFormMessage(
-        'Before adding this highlight, please complete all required fields.',
-        true
-      );
+    try {
+      const res  = await fetch('/manager/highlights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CSRF-Token': CSRF },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) { showMsg(formMessage, data.message || 'Could not save highlight.', true); return; }
+
+      showMsg(formMessage, data.message || 'Highlight registered successfully.');
+      if (data.highlight) {
+        highlightsGrid.insertAdjacentElement('afterbegin', createCard(data.highlight));
+        updateItemCount();
+        syncEmptyState();
+      }
+      highlightForm.reset();
+      requiredInputs.forEach(inp => { inp.style.border = ''; });
+    } catch (err) {
+      showMsg(formMessage, err.message || 'Unexpected error.', true);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Highlight';
+    }
+  });
+
+  // ── Modal de edición ─────────────────────────────────────────────────────────
+
+  const editModal   = document.getElementById('editHighlightModal');
+  const editMsg     = document.getElementById('editHighlightMessage');
+  let   editingId   = null;
+
+  const openEditModal  = () => editModal.classList.add('active');
+  const closeEditModal = () => { editModal.classList.remove('active'); editingId = null; };
+
+  document.getElementById('closeEditHighlightModal').addEventListener('click', closeEditModal);
+  document.getElementById('cancelEditHighlightModal').addEventListener('click', closeEditModal);
+  editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.edit-highlight-btn');
+    if (!btn) return;
+
+    editingId = btn.dataset.id;
+    document.getElementById('editHighlightTitle').value   = btn.dataset.title       || '';
+    document.getElementById('editHighlightDesc').value    = btn.dataset.description || '';
+    document.getElementById('editHighlightImpact').value  = btn.dataset.impact      || '';
+    document.getElementById('editHighlightType').value    = btn.dataset.type        || '';
+    document.getElementById('editHighlightDate').value    = btn.dataset.date        || '';
+    document.getElementById('editHighlightProject').value = btn.dataset.project     || '';
+
+    editMsg.style.display = 'none';
+    openEditModal();
+  });
+
+  document.getElementById('saveEditHighlightBtn').addEventListener('click', async () => {
+    if (!editingId) return;
+
+    const body = {
+      title:          document.getElementById('editHighlightTitle').value.trim(),
+      id_project:     document.getElementById('editHighlightProject').value,
+      highlight_type: document.getElementById('editHighlightType').value,
+      highlight_date: document.getElementById('editHighlightDate').value,
+      description:    document.getElementById('editHighlightDesc').value.trim(),
+      impact:         document.getElementById('editHighlightImpact').value.trim(),
+    };
+
+    if (!body.title || !body.highlight_type || !body.highlight_date || !body.description) {
+      showMsg(editMsg, 'Please complete all required fields.', true);
       return;
     }
 
-    const isEditMode = highlightFormModeInput.value === 'edit';
-    const editingId = editingHighlightIdInput.value;
-
-    submitButton.disabled = true;
-    submitButton.textContent = isEditMode ? 'Saving...' : 'Saving...';
+    const saveBtn = document.getElementById('saveEditHighlightBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
 
     try {
-      const endpoint = isEditMode
-        ? `/manager/highlights/${editingId}`
-        : '/manager/highlights';
-
-      const method = isEditMode ? 'PUT' : 'POST';
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'CSRF-Token': csrfTokenInput.value,
-        },
-        body: JSON.stringify(formData),
+      const res  = await fetch(`/manager/highlights/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'CSRF-Token': CSRF },
+        body: JSON.stringify(body),
       });
+      const data = await res.json();
 
-      const responseText = await response.text();
-      let data = {};
-
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (parseError) {
-        throw new Error(responseText || 'Unexpected server response.');
-      }
-
-      if (!response.ok) {
-        showFormMessage(
-          data.message || (isEditMode ? 'Could not update highlight.' : 'Could not save highlight.'),
-          true
-        );
-        return;
-      }
-
-      showFormMessage(
-        data.message || (isEditMode ? 'Highlight updated successfully.' : 'Highlight registered successfully.')
-      );
+      if (!res.ok) { showMsg(editMsg, data.message || 'Could not update highlight.', true); return; }
 
       if (data.highlight) {
-        if (isEditMode) {
-          updateHighlightCard(data.highlight);
-        } else {
-          insertNewHighlight(data.highlight);
-        }
+        const existing = document.querySelector(`.highlight-card[data-id="${editingId}"]`);
+        if (existing) existing.replaceWith(createCard(data.highlight));
       }
 
-      resetFormToCreateMode();
-      showFormMessage(
-        data.message || (isEditMode ? 'Highlight updated successfully.' : 'Highlight registered successfully.')
-      );
-    } catch (error) {
-      console.error(error);
-      showFormMessage(error.message || 'Unexpected error while saving highlight.', true);
+      closeEditModal();
+      showMsg(formMessage, data.message || 'Highlight updated successfully.');
+    } catch (err) {
+      showMsg(editMsg, err.message || 'Unexpected error.', true);
     } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = highlightFormModeInput.value === 'edit'
-        ? 'Save Changes'
-        : 'Add Highlight';
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
     }
   });
 
-  document.addEventListener('click', async (event) => {
-    const editButton = event.target.closest('.edit-highlight-btn');
+  // ── Modal de eliminar ────────────────────────────────────────────────────────
 
-    if (editButton) {
-      setFormToEditMode(editButton);
-      return;
-    }
+  const deleteModal    = document.getElementById('deleteHighlightModal');
+  const confirmDelBtn  = document.getElementById('confirmDeleteHighlight');
+  const cancelDelBtn   = document.getElementById('cancelDeleteHighlight');
+  let   highlightToDelete = null;
+  let   cardToDelete      = null;
 
-    const deleteButton = event.target.closest('.delete-highlight-btn');
+  const openDeleteModal  = () => deleteModal.classList.add('active');
+  const closeDeleteModal = () => { deleteModal.classList.remove('active'); highlightToDelete = null; cardToDelete = null; };
 
-    if (!deleteButton) {
-      return;
-    }
+  cancelDelBtn.addEventListener('click', closeDeleteModal);
+  deleteModal.addEventListener('click', e => { if (e.target === deleteModal) closeDeleteModal(); });
 
-    const highlightCard = deleteButton.closest('.highlight-card');
-
-    if (!highlightCard) {
-      return;
-    }
-
-    const highlightId = highlightCard.getAttribute('data-id');
-
-    if (!highlightId) {
-      return;
-    }
-
-    highlightToDelete = highlightId;
-    cardToDelete = highlightCard;
-
-    deleteModal.style.display = 'flex';
+  document.addEventListener('click', (e) => {
+    const btn  = e.target.closest('.delete-highlight-btn');
+    if (!btn) return;
+    const card = btn.closest('.highlight-card');
+    if (!card) return;
+    highlightToDelete = card.getAttribute('data-id');
+    cardToDelete      = card;
+    openDeleteModal();
   });
 
-  confirmDeleteBtn.addEventListener('click', async () => {
-    if (!highlightToDelete) {
-      return;
-    }
+  confirmDelBtn.addEventListener('click', async () => {
+    if (!highlightToDelete) return;
 
     try {
-      const response = await fetch(`/manager/highlights/${highlightToDelete}`, {
+      const res  = await fetch(`/manager/highlights/${highlightToDelete}`, {
         method: 'DELETE',
-        headers: {
-          'CSRF-Token': csrfTokenInput.value,
-        },
+        headers: { 'CSRF-Token': CSRF },
       });
+      const data = await res.json();
 
-      const responseText = await response.text();
-      let data = {};
+      if (!res.ok) { showMsg(formMessage, data.message || 'Could not delete highlight.', true); return; }
 
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (parseError) {
-        throw new Error(responseText || 'Unexpected server response.');
-      }
-
-      if (!response.ok) {
-        showFormMessage(data.message || 'Could not delete highlight.', true);
-        return;
-      }
-
-      deleteHighlightCard(cardToDelete);
-      showFormMessage(data.message || 'Highlight deleted successfully.');
-    } catch (error) {
-      console.error(error);
-      showFormMessage(error.message || 'Unexpected error while deleting highlight.', true);
+      if (cardToDelete) cardToDelete.remove();
+      updateItemCount();
+      syncEmptyState();
+      showMsg(formMessage, data.message || 'Highlight deleted successfully.');
+    } catch (err) {
+      showMsg(formMessage, err.message || 'Unexpected error.', true);
     } finally {
-      deleteModal.style.display = 'none';
-      highlightToDelete = null;
-      cardToDelete = null;
+      closeDeleteModal();
     }
   });
 
-  cancelDeleteBtn.addEventListener('click', () => {
-    deleteModal.style.display = 'none';
-    highlightToDelete = null;
-    cardToDelete = null;
-  });
-
-  ensureEmptyStateVisibility();
+  syncEmptyState();
 });

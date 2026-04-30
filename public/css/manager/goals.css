@@ -610,7 +610,29 @@
 }
 
 .project-dropdown-toggle {
-  width: 190px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.project-dropdown-toggle:hover:not(:disabled) {
+  border-color: #f15a24;
+}
+
+.project-dropdown-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .goal-link-button {
@@ -619,10 +641,46 @@
 }
 
 .project-dropdown-menu {
-  width: 190px;
-  max-height: 150px;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 200px;
+  max-height: 180px;
   overflow-y: auto;
-  z-index: 20;
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 6px;
+}
+
+.project-dropdown-menu.open {
+  display: block;
+}
+
+.project-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #374151;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.project-option:hover {
+  background: #f3f4f6;
+}
+
+.project-dropdown-empty {
+  padding: 8px 10px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 0;
 }
 .goal-card:has(.project-dropdown-menu.open),
 .goal-card:has(.project-dropdown-menu.active),

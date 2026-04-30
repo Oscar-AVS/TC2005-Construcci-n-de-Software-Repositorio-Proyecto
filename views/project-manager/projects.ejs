@@ -20,12 +20,44 @@
     </h2>
   </div>
 
+  <%
+    var _COLORS = ['#1e3a8a','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd'];
+    var _sk = ['not_started','in_progress','on_hold','at_risk','completed','archived'];
+    var _sl = {not_started:'Not Started',in_progress:'In Progress',on_hold:'On Hold',at_risk:'At Risk',completed:'Completed',archived:'Archived'};
+    var _sc = {not_started:0,in_progress:0,on_hold:0,at_risk:0,completed:0,archived:0};
+    projects.forEach(function(p){ if(_sc[p.progress_status]!==undefined) _sc[p.progress_status]++; });
+    var _chartItems = _sk.map(function(s){ return {label:_sl[s], total:_sc[s]}; });
+    var _total = _chartItems.reduce(function(s,d){ return s+d.total; },0) || 1;
+    var _C = 2 * Math.PI * 70;
+    var _cum = 0;
+  %>
   <div class="report-card-body" style="padding: 20px 22px; display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start;">
     <div style="display:flex; align-items:center; gap:20px;">
-      <div style="height: 190px; width: 190px; flex-shrink:0; position: relative;">
-        <canvas id="projectStatusChart"></canvas>
+      <div style="width:190px; height:190px; flex-shrink:0;">
+        <svg viewBox="0 0 190 190" width="190" height="190" style="transform:rotate(-90deg)">
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#f1f5f9" stroke-width="22"/>
+          <% _chartItems.forEach(function(item, idx) { %>
+            <% if (item.total > 0) { %>
+              <% var _seg = (item.total / _total * _C).toFixed(2); %>
+              <% var _off = (-_cum  / _total * _C).toFixed(2); %>
+              <circle cx="95" cy="95" r="70" fill="none"
+                stroke="<%= _COLORS[idx % _COLORS.length] %>"
+                stroke-width="22"
+                stroke-dasharray="<%= _seg %> <%= _C.toFixed(2) %>"
+                stroke-dashoffset="<%= _off %>"/>
+              <% _cum += item.total; %>
+            <% } %>
+          <% }); %>
+        </svg>
       </div>
-      <div id="customLegend" style="display:flex; flex-direction:column; justify-content:center; gap:6px;">
+      <div style="display:flex; flex-direction:column; justify-content:center; gap:6px;">
+        <% _chartItems.forEach(function(item, idx) { %>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:<%= _COLORS[idx % _COLORS.length] %>;flex-shrink:0;display:inline-block;"></span>
+            <span style="font-size:11px;color:#334155;"><%= item.label %></span>
+            <span style="font-size:11px;font-weight:700;color:#1f2a44;">(<%= item.total %>)</span>
+          </div>
+        <% }); %>
       </div>
     </div>
 
@@ -245,12 +277,9 @@
   </div>
  </div>
 
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
  <script>
   const searchInput  = document.getElementById('searchInput');
   const statusFilter = document.getElementById('statusFilter');
-  const statusChartData = <%- JSON.stringify(statusChartData) %>;
 
   const CARDS_PER_PAGE = 6;
   let currentPage = 1;
@@ -286,51 +315,6 @@
 
     renderPagination(currentPage, total);
   }
-
-  // Gráfica del Caso 4.5: muestra cuántos proyectos existen por estado de avance
-  document.addEventListener('DOMContentLoaded', () => {
-  const chartCanvas = document.getElementById('projectStatusChart');
-
-  const colors = [
-    '#1e3a8a', '#1d4ed8', '#2563eb',
-    '#3b82f6', '#60a5fa', '#93c5fd'
-  ];
-
-  if (chartCanvas && window.Chart) {
-    new Chart(chartCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: statusChartData.map(item => item.label),
-        datasets: [{
-          data: statusChartData.map(item => item.total),
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: '#ffffff'
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { display: false }
-        }
-      }
-    });
-
-    // Generar leyenda personalizada
-    const legend = document.getElementById('customLegend');
-    if (legend) {
-      legend.innerHTML = statusChartData.map((item, i) => `
-      <div style="display:flex; align-items:center; gap:6px;">
-        <span style="
-        width:10px; height:10px; border-radius:50%;
-        background:${colors[i % colors.length]};
-        flex-shrink:0; display:inline-block;
-        "></span>
-        <span style="font-size:11px; color:#334155;">${item.label}</span>
-        </div>
-        `).join('');
-    }
-  }
-});
 
   searchInput.addEventListener('input',  () => { currentPage = 1; applyPage(); });
   statusFilter.addEventListener('change', () => { currentPage = 1; applyPage(); });
