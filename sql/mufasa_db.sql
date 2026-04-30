@@ -10352,7 +10352,8 @@ INSERT INTO `privilege` (`id_privilege`, `privilege_name`, `description`, `creat
 (7, 'create_log', 'Create personal log entries', '2026-04-20 00:26:17'),
 (8, 'view_own_logs', 'View own log history', '2026-04-20 00:26:17'),
 (9, 'create_self_review', 'Generate self-review', '2026-04-20 00:26:17'),
-(10, 'view_projects', 'View assigned projects', '2026-04-20 00:26:17');
+(10, 'view_projects', 'View assigned projects', '2026-04-20 00:26:17'),
+(11, 'manage_projects', 'Manage and oversee all company projects', '2026-04-20 00:26:17');
 
 -- --------------------------------------------------------
 
@@ -10531,7 +10532,13 @@ INSERT INTO `role_privilege` (`id_role`, `id_privilege`, `created_at`) VALUES
 (4, 7, '2026-04-20 00:26:17'),
 (4, 8, '2026-04-20 00:26:17'),
 (4, 9, '2026-04-20 00:26:17'),
-(4, 10, '2026-04-20 00:26:17');
+(4, 10, '2026-04-20 00:26:17'),
+(5, 6, '2026-04-20 00:26:17'),
+(5, 7, '2026-04-20 00:26:17'),
+(5, 8, '2026-04-20 00:26:17'),
+(5, 9, '2026-04-20 00:26:17'),
+(5, 10, '2026-04-20 00:26:17'),
+(5, 11, '2026-04-20 00:26:17');
 
 -- --------------------------------------------------------
 
